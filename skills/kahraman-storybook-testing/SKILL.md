@@ -1,6 +1,6 @@
 ---
 name: kahraman-storybook-testing
-description: Apply kahraman's recommended style when writing, extending, reviewing, or debugging Storybook interaction tests and portable stories. Use for Storybook `*.stories.ts(x)` tests, accessible actor/locator assertions, user-journey structure, and async stabilization. Also guides optional MSW state stories and responsive variants when the project has those integrations configured.
+description: Apply kahraman's recommended style when writing, extending, reviewing, or debugging Storybook interaction tests and portable stories. Use for Storybook `*.stories.ts(x)` tests, accessible actor/locator assertions, user-journey structure, async stabilization, and maintaining a project-local `.storybook/README.md`. Also guides optional MSW state stories and responsive variants when configured.
 license: MIT
 compatibility: Requires kahraman and an existing browser-capable Storybook 9+ setup with an established story format (CSF or Storybook preview factories). Optional recommendations have additional setup prerequisites described below.
 metadata:
@@ -58,11 +58,66 @@ test callbacks, handler wiring, viewport names, or routing parameters.
 
 ## First inspect the project's conventions
 
-Find `.storybook/preview.*`, an interaction story near the feature, and actor
-helpers. When optional integrations are relevant, also inspect their existing
-handlers, decorators, globals, and parameters. Reuse the project's Storybook API
-(`preview.meta(...).story(...)` or CSF `Meta` / `StoryObj`) rather than mixing
-patterns.
+Read `.storybook/README.md` first when it exists. Then verify its claims against
+`.storybook/main.*`, `.storybook/preview.*`, package scripts, an interaction
+story near the feature, and actor helpers. When optional integrations are
+relevant, also inspect their existing handlers, decorators, globals, and
+parameters. Reuse the project's Storybook API (`preview.meta(...).story(...)` or
+CSF `Meta` / `StoryObj`) rather than mixing patterns.
+
+## Maintain a project-local Storybook guide
+
+Recommend keeping `.storybook/README.md` beside the configuration as the
+project's self-contained guide for writing and reviewing interaction stories.
+This local document should preserve the essence of Kahraman's recommended style
+while replacing generic setup guidance with verified project facts.
+
+Create or update it after inspecting the project, not by blindly copying this
+skill. Strip prerequisites that the repository already satisfies, generic
+installation instructions, alternative APIs the project does not use, and
+examples that conflict with local conventions. Keep a short link to Kahraman as
+the upstream rationale, but make the local guide sufficient for everyday work.
+
+Capture the conventions a contributor otherwise has to rediscover:
+
+- the exact story format and actor initialization hook (`loaders`, `beforeEach`,
+  or `play`), with imports from the project's adapter;
+- where stories, fixtures, page actors, mock handlers, and low-level test helpers
+  belong, including the boundary between reusable mechanics and domain journeys;
+- accessible locator, scoping, stabilization, retry, and optional-UI agreements;
+- package-manager scripts for Storybook, interaction tests, watch mode, and
+  focused runs, including unsupported CLI flags or other local gotchas;
+- tag meanings and CI agreements, such as `@smoke` for gating journeys and
+  `@visual` for intentional screenshot contracts;
+- configured viewport names, their source file, breakpoint agreement, and the
+  preview test-runner resize workaround when responsive testing is enabled;
+- MSW handler registration and override conventions, routing/deep-link
+  parameters, persisted-state reset behavior, and cleanup hooks when present;
+- screenshot helpers, baseline naming/review policy, diagnostics flags, and
+  boundaries that legitimately require raw DOM or browser APIs.
+
+Only document conventions supported by code or scripts in the current
+repository. Use exact local paths and commands. If the guide is stale, update it
+in the same change when the relevant Storybook agreement changes. Avoid turning
+it into a copy of all Storybook configuration; explain the contributor-facing
+contract and point to implementation files for details.
+
+## Reference application setups
+
+Use these applications as examples of the recommended style in a working
+Storybook stack:
+
+- [`guria/modern-stack/.storybook`](https://github.com/guria/modern-stack/tree/main/.storybook)
+  — application integration stories with MSW, routing, project breakpoints, and
+  a preview hook that applies viewport globals to the browser test page.
+- [`reatom/reatom/packages/admin/.storybook`](https://github.com/reatom/reatom/tree/main/packages/admin/.storybook)
+  — Reatom Admin's project adapter, preview factory, browser-test setup, viewport
+  configuration, and project-local testing guide.
+
+Read their current configuration and nearby stories when a concrete example is
+useful. Treat them as references, not templates: copy no alias, command, tag,
+handler, breakpoint, or lifecycle convention until the target project supports
+it.
 
 For a project using kahraman, import the page actor and semantic locators:
 
@@ -301,6 +356,8 @@ setup as a separate explicit task.
 
 ## Review checklist
 
+- `.storybook/README.md` was read first when present, and changes to Storybook
+  conventions are reflected there with verified local commands and paths.
 - The story initializes kahraman and uses the local Storybook convention.
 - Locators use roles and accessible names; scopes prevent accidental global hits.
 - Async assertions wait on visible lifecycle state, not arbitrary timeouts.

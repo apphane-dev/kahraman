@@ -92,6 +92,18 @@ The skill lives at
 so `npx skills add apphane-dev/kahraman --list` can discover it from the GitHub
 repository.
 
+### Reference application setups
+
+- [`guria/modern-stack/.storybook`](https://github.com/guria/modern-stack/tree/main/.storybook)
+  — application integration stories with MSW, routing, and viewport-aware
+  browser tests.
+- [`reatom/reatom/packages/admin/.storybook`](https://github.com/reatom/reatom/tree/main/packages/admin/.storybook)
+  — Reatom Admin's adapter, preview factory, test setup, viewports, and local
+  Storybook testing guide.
+
+These are examples rather than required infrastructure; adopt only the parts
+supported by your project's Storybook setup.
+
 ## Usage
 
 ### Create and initialize an actor
