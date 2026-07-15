@@ -13,8 +13,10 @@
  */
 export type Canvas = ReturnType<typeof import('storybook/test').within>
 
-/** The `userEvent` instance re-exported by `storybook/test`. */
-export type UserEvent = typeof import('storybook/test').userEvent
+type StorybookUserEvent = typeof import('storybook/test').userEvent
+
+/** The subset of Storybook's `userEvent` instance used by the actor. */
+export type UserEvent = Pick<StorybookUserEvent, 'clear' | 'click' | 'keyboard' | 'tab' | 'type'>
 
 /**
  * The minimal, renderer-agnostic slice of a Storybook `StoryContext` the actor
