@@ -94,7 +94,7 @@ repository.
 
 ### Reference application setups
 
-- [`guria/modern-stack/.storybook`](https://github.com/guria/modern-stack/tree/main/.storybook)
+- [`apphane-dev/karkas/.storybook`](https://github.com/apphane-dev/karkas/tree/main/.storybook)
   — application integration stories with MSW, routing, and viewport-aware
   browser tests.
 - [`reatom/reatom/packages/admin/.storybook`](https://github.com/reatom/reatom/tree/main/packages/admin/.storybook)
@@ -229,7 +229,7 @@ const I = createActor().extend(withPageError({ title: 'Something went wrong' }))
 See [`examples/pageActor.ts`](./examples/pageActor.ts) for a fuller illustration.
 
 For a real-world app that exercises `kahraman` in its Storybook stories, see
-[`guria/modern-setup`](https://github.com/guria/modern-setup).
+[`apphane-dev/karkas`](https://github.com/apphane-dev/karkas).
 
 ## Failure diagnostics
 

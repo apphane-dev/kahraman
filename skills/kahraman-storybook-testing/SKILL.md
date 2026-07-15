@@ -107,7 +107,7 @@ contract and point to implementation files for details.
 Use these applications as examples of the recommended style in a working
 Storybook stack:
 
-- [`guria/modern-stack/.storybook`](https://github.com/guria/modern-stack/tree/main/.storybook)
+- [`apphane-dev/karkas/.storybook`](https://github.com/apphane-dev/karkas/tree/main/.storybook)
   — application integration stories with MSW, routing, project breakpoints, and
   a preview hook that applies viewport globals to the browser test page.
 - [`reatom/reatom/packages/admin/.storybook`](https://github.com/reatom/reatom/tree/main/packages/admin/.storybook)
