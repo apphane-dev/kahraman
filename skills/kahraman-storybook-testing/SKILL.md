@@ -1,6 +1,6 @@
 ---
 name: kahraman-storybook-testing
-description: Apply kahraman's recommended style when writing, extending, reviewing, or debugging Storybook interaction tests and portable stories. Use for Storybook `*.stories.ts(x)` tests, accessible actor/locator assertions, user-journey structure, async stabilization, and maintaining a project-local `.storybook/README.md`. Also guides optional MSW state stories and responsive variants when configured.
+description: Apply kahraman's recommended style when writing, extending, reviewing, or debugging Storybook interaction tests and portable stories. Use for Storybook `*.stories.ts(x)` tests, accessible actor/locator assertions, user-journey structure, async stabilization, taming noisy Testing Library element-not-found diagnostics, and maintaining a project-local `.storybook/README.md`. Also guides optional MSW state stories and responsive variants when configured.
 license: MIT
 compatibility: Requires kahraman and an existing browser-capable Storybook 9+ setup with an established story format (CSF or Storybook preview factories). Optional recommendations have additional setup prerequisites described below.
 metadata:
@@ -140,6 +140,38 @@ export default meta
 `userEvent`, and a fresh step trace. If the repository uses plain `StoryObj`,
 initialize the actor at the beginning of `play` instead.
 
+## Use the actor API before dropping to low-level test calls
+
+Prefer Kahraman's intent-level methods when they express the interaction or
+assertion. Besides `see`, `dontSee`, `click`, and `fill`, check for the existing
+actor operations before reaching for raw `userEvent` or DOM assertions:
+
+- field and state assertions: `seeInField`, `seeChecked`, `seeDisabled`,
+  `seeAttribute`, and `seeNumberOfElements`;
+- interactions: `clear`, `selectOption`, and `press`;
+- extraction: `grabTextFrom` and `grabTextFromAll`;
+- controlled resilience: `tryTo`, `retryTo`, and `hopeThat`.
+
+Use `tryTo` only for genuinely optional behavior, not to turn a required outcome
+into a silent branch. Use `hopeThat` when several independent assertions should
+be reported together, and finish with `I.hopeThat.noErrors()` so collected
+failures cannot pass unnoticed. Raw Storybook/browser APIs remain appropriate
+for capabilities the actor does not model, such as focus, history, geometry, or
+screenshots.
+
+## Build reusable page vocabulary with actor extensions
+
+Use `I.extend(...)` for reusable page-level controls and expectations. Keep an
+extension narrowly typed to the base actor methods it needs, and name its methods
+in user/domain language. Extensions should remove repeated mechanics without
+hiding the causal steps or business outcome of a story. Prefer `seeError()` or
+`selectCountry()` over an opaque `completeCheckoutJourney()` helper.
+
+Keep environment-specific pacing explicit in actor construction. If manual
+Storybook playback benefits from visible clicks, configure `clickDelay` in the
+project adapter while retaining a zero delay for automation; do not slow every
+browser test by default.
+
 ## Address the UI as a user would
 
 Use `role`, `heading`, `button`, `link`, and `text`, with accessible names:
@@ -254,6 +286,70 @@ feature workflow steps, expected copy, and business outcomes in the story;
 shared actors are for reusable page controls and assertions, not opaque methods
 such as `playCheckoutFlow()`.
 
+## Opt in to concise element-not-found diagnostics
+
+On a full application mount, a failed Testing Library `getByRole` query can print
+hundreds of lines because its error lists every accessible role on the page. When
+that noise makes Storybook interaction failures hard to inspect, recommend the
+opt-in `kahraman/preview` annotation. It keeps only the queried role's relevant
+near-misses and caps the diagnostic DOM output:
+
+```ts
+// .storybook/preview.ts
+import kahraman from 'kahraman/preview'
+
+export default {
+	...kahraman,
+	// ...the project's other preview config
+}
+```
+
+Compose this with the project's existing preview export rather than replacing
+its decorators, loaders, parameters, or lifecycle hooks. Inspect the local
+preview format first and preserve any existing `beforeEach` behavior. If a
+simple object spread would overwrite the project's hook, call
+`configureDiagnostics(context.parameters?.kahraman)` from the existing hook
+instead of dropping either behavior.
+
+Tune or opt out for an individual story through `parameters.kahraman`:
+
+```ts
+parameters: {
+	kahraman: {
+		captureRoleListing: false, // retain Testing Library's full role listing
+		maxLength: 4000, // raise the truncation ceiling
+		// getElementError: myOwnHandler, // the custom handler wins entirely
+	},
+}
+```
+
+`captureRoleListing: false` disables role-list filtering but still applies the
+length cap. `maxLength` changes that cap. Supplying `getElementError` bypasses
+Kahraman's formatting entirely, so preserve a project's custom handler instead
+of silently overriding it.
+
+Outside Storybook, or when the project explicitly prefers imperative setup,
+install the same behavior with `configureDiagnostics()`:
+
+```ts
+import { configureDiagnostics } from 'kahraman/preview'
+
+configureDiagnostics({ maxLength: 4000 })
+```
+
+This annotation changes Testing Library's element-not-found output only; it
+does not replace actor initialization or fix an inaccessible/missing element.
+Kahraman actor failures still provide their step trace and retargeted story/page-
+actor stack. Keep the queried role and accessible-name diagnosis visible, and do
+not use truncation to hide the cause of a failing journey.
+
+Live actor-step logging (`VITE_TEST_STEPS`) and failure screenshots
+(`test.browser.screenshotFailures`) are consumer-runner settings, not preview
+annotation options. Reuse the project's environment and Vitest conventions
+rather than silently enabling them. Record preview wiring, project-wide
+parameter defaults, and any such diagnostics flags in `.storybook/README.md`
+when they become part of the local testing contract.
+
 ## Write journeys, not implementation probes
 
 Name the test after the user-visible outcome and keep steps in causal order:
@@ -361,6 +457,8 @@ setup as a separate explicit task.
 - The story initializes kahraman and uses the local Storybook convention.
 - Locators use roles and accessible names; scopes prevent accidental global hits.
 - Async assertions wait on visible lifecycle state, not arbitrary timeouts.
+- When `kahraman/preview` diagnostics are enabled, existing preview hooks remain
+  composed and per-story `parameters.kahraman` overrides are intentional.
 - The story spells out domain behavior; shared actor helpers remain generic and
   readable.
 - Test names describe outcomes and comments explain non-obvious regressions or
