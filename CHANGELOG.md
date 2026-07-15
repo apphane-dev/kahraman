@@ -1,5 +1,11 @@
 # kahraman
 
+## 0.1.1
+
+### Patch Changes
+
+- c3f0cb0: Accept Storybook 9 and 10.4 story contexts whose `userEvent.setup` signature differs from the version used to build kahraman.
+
 ## 0.1.0
 
 ### Minor Changes
