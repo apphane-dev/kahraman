@@ -1,0 +1,8 @@
+# Allow these dependencies to run their install/build scripts on a fresh install
+# (esbuild links its native binary). strictDepBuilds:false keeps `pnpm install
+# --frozen-lockfile` from exiting non-zero when an approved build is merely
+# pending on a warm store. Kept here rather than in .npmrc so `npm` doesn't warn
+# about an unknown config key during publish.
+onlyBuiltDependencies:
+  - esbuild
+strictDepBuilds: false

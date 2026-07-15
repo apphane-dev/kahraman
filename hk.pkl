@@ -1,0 +1,69 @@
+amends "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Config.pkl"
+import "package://github.com/jdx/hk/releases/download/v1.50.0/hk@1.50.0#/Builtins.pkl"
+
+// Hooks run from the repo root; put the local bin dir on PATH so the Vite+ `vp`
+// CLI (and tsc/fallow) resolve without a global install.
+env {
+  ["PATH"] = "node_modules/.bin:\(read("env:PATH"))"
+}
+
+// Formatter/linter/typecheck run through the same Vite+ / TS7 tooling as the
+// pnpm scripts; fallow (dead-code + dupes + health) reads the root fallow.toml.
+local format = (Builtins.vp_fmt) {
+  workspace_indicator = null
+}
+
+local lint = (Builtins.vp_lint) {
+  workspace_indicator = null
+}
+
+// Call the binaries directly (node_modules/.bin is on PATH via `env` above)
+// rather than `pnpm run`, so the hook never triggers pnpm's deps-status check.
+local typecheck = (Builtins.tsc) {
+  check = "tsc --noEmit"
+}
+
+local fallow = new Step {
+  check = "fallow dead-code --fail-on-issues && fallow dupes --fail-on-issues && fallow health --complexity --fail-on-issues"
+}
+
+local hygieneSteps = new Mapping<String, Step> {
+  ["check-added-large-files"] = Builtins.check_added_large_files
+  ["check-case-conflict"] = Builtins.check_case_conflict
+  ["check-merge-conflict"] = Builtins.check_merge_conflict
+  ["check-symlinks"] = Builtins.check_symlinks
+  ["detect-private-key"] = Builtins.detect_private_key
+}
+
+local fastSteps = new Mapping<String, Step> {
+  ...hygieneSteps
+  ["format"] = format
+  ["lint"] = lint
+  ["typecheck"] = typecheck
+}
+
+local checkSteps = new Mapping<String, Step> {
+  ...fastSteps
+  ["fallow"] = fallow
+}
+
+hooks {
+  ["pre-commit"] {
+    fix = true
+    stash = "git"
+    steps = fastSteps
+  }
+
+  ["pre-push"] {
+    steps = checkSteps
+  }
+
+  ["check"] {
+    steps = checkSteps
+  }
+
+  ["fix"] {
+    fix = true
+    steps = fastSteps
+  }
+}

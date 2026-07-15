@@ -1,0 +1,34 @@
+# Fallow codebase-intelligence config. Run via `pnpm run lint:fallow`
+# (dead-code + dupes + health). See https://docs.fallow.tools.
+
+# The published package entrypoints and dev/test files are the roots — exported
+# public API reachable from here must not be reported as unused.
+entry = [
+	"src/index.ts",
+	"src/preview.ts",
+	"test/**/*.test.ts",
+	"examples/**/*.ts",
+	"vite.config.ts",
+	"tsdown.config.ts",
+	"jsrepo.config.ts",
+]
+
+# `storybook` is a peer dependency, resolved by consumers — not a direct import
+# graph dependency to police here.
+ignoreDependencies = ["storybook"]
+
+ignorePatterns = ["dist/**", "coverage/**"]
+
+[duplicates]
+ignoreImports = true
+
+# actor.ts and preview.ts run only inside a Storybook browser context, so they
+# are intentionally not unit-covered here (see README — Testing the pure
+# helpers). Fallow estimates coverage from the module graph when no coverage
+# data is supplied, which inflates CRAP for these functions even though their
+# raw complexity is low (elementsFrom: cyclomatic 7, cognitive 6). Keep a
+# visible numeric ceiling instead of a blanket suppression.
+[[health.thresholdOverrides]]
+files = ["src/actor.ts"]
+maxCrap = 60
+reason = "Browser-only runtime; not unit-covered here, so estimated CRAP is pessimistic."

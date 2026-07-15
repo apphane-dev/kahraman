@@ -1,0 +1,16 @@
+node_modules
+dist
+coverage
+*.tgz
+*.log
+.DS_Store
+.turbo
+.vitest
+
+# Editor / local tooling
+.vscode
+.idea
+
+# Fallow local artifacts
+.fallow
+.var

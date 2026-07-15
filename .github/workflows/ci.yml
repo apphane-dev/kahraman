@@ -1,0 +1,59 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Typecheck (TypeScript 7 native)
+        run: pnpm run typecheck
+
+      - name: Lint (oxlint)
+        run: pnpm run lint
+
+      - name: Codebase intelligence (fallow)
+        run: pnpm run lint:fallow
+
+      - name: Format (oxfmt)
+        run: pnpm run format
+
+      - name: Test (vitest)
+        run: pnpm run test
+
+      - name: Build (tsdown)
+        run: pnpm run build
+
+      - name: Publish lint (publint)
+        run: pnpm run publint
+
+      - name: Types lint (are-the-types-wrong)
+        run: pnpm run attw
+
+      - name: Registry manifest is up to date (jsrepo)
+        run: |
+          pnpm run registry:build
+          git diff --exit-code registry.json

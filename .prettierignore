@@ -1,0 +1,7 @@
+# oxfmt (vp fmt) honors .gitignore and .prettierignore. Generated artifacts that
+# other tools own the formatting of:
+registry.json
+dist
+coverage
+pnpm-lock.yaml
+CHANGELOG.md

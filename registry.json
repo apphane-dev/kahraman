@@ -1,0 +1,323 @@
+{
+	"name": "kahraman",
+	"bugs": "https://github.com/apphane-dev/kahraman/issues",
+	"description": "Accessibility-first, codecept-style test actor and locator DSL for Storybook.",
+	"homepage": "https://apphane.dev/",
+	"repository": "https://github.com/apphane-dev/kahraman",
+	"tags": [
+		"storybook",
+		"testing",
+		"actor",
+		"a11y",
+		"testing-library"
+	],
+	"version": "package",
+	"type": "repository",
+	"items": [
+		{
+			"name": "actor",
+			"title": "Actor + locator DSL",
+			"description": "createActor() and the role/text/heading/button/link locator DSL, with step-trace diagnostics and call-site stack retargeting.",
+			"type": "lib",
+			"add": "when-added",
+			"registryDependencies": [],
+			"dependencies": [],
+			"devDependencies": [],
+			"files": [
+				{
+					"type": "lib",
+					"role": "file",
+					"path": "index.ts",
+					"relativePath": "src/index.ts",
+					"_imports_": [
+						{
+							"import": "./actor",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "actor.ts"
+							},
+							"meta": {}
+						},
+						{
+							"import": "./loc",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "loc.ts"
+							},
+							"meta": {}
+						},
+						{
+							"import": "./context",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "context.ts"
+							},
+							"meta": {}
+						},
+						{
+							"import": "./invariant",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "invariant.ts"
+							},
+							"meta": {}
+						}
+					],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": []
+				},
+				{
+					"type": "lib",
+					"role": "file",
+					"path": "actor.ts",
+					"relativePath": "src/actor.ts",
+					"_imports_": [
+						{
+							"import": "./loc",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "loc.ts"
+							},
+							"meta": {}
+						},
+						{
+							"import": "./context",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "context.ts"
+							},
+							"meta": {}
+						},
+						{
+							"import": "./invariant",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "invariant.ts"
+							},
+							"meta": {}
+						},
+						{
+							"import": "./steps",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "steps.ts"
+							},
+							"meta": {}
+						}
+					],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": []
+				},
+				{
+					"type": "lib",
+					"role": "file",
+					"path": "loc.ts",
+					"relativePath": "src/loc.ts",
+					"_imports_": [
+						{
+							"import": "./context",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "context.ts"
+							},
+							"meta": {}
+						}
+					],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": []
+				},
+				{
+					"type": "lib",
+					"role": "file",
+					"path": "steps.ts",
+					"relativePath": "src/steps.ts",
+					"_imports_": [],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": []
+				},
+				{
+					"type": "lib",
+					"role": "file",
+					"path": "invariant.ts",
+					"relativePath": "src/invariant.ts",
+					"_imports_": [],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": []
+				},
+				{
+					"type": "lib",
+					"role": "file",
+					"path": "context.ts",
+					"relativePath": "src/context.ts",
+					"_imports_": [],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": []
+				},
+				{
+					"type": "lib",
+					"role": "test",
+					"path": "loc.test.ts",
+					"relativePath": "test/loc.test.ts",
+					"_imports_": [
+						{
+							"import": "../src/loc",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "loc.ts"
+							},
+							"meta": {}
+						}
+					],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": [
+						{
+							"ecosystem": "js",
+							"name": "vitest",
+							"version": "4.1.10"
+						}
+					]
+				},
+				{
+					"type": "lib",
+					"role": "test",
+					"path": "steps.test.ts",
+					"relativePath": "test/steps.test.ts",
+					"_imports_": [
+						{
+							"import": "../src/loc",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "loc.ts"
+							},
+							"meta": {}
+						},
+						{
+							"import": "../src/steps",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "steps.ts"
+							},
+							"meta": {}
+						}
+					],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": [
+						{
+							"ecosystem": "js",
+							"name": "vitest",
+							"version": "4.1.10"
+						}
+					]
+				},
+				{
+					"type": "lib",
+					"role": "example",
+					"path": "pageActor.ts",
+					"relativePath": "examples/pageActor.ts",
+					"_imports_": [
+						{
+							"import": "../src",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "index.ts"
+							},
+							"meta": {}
+						}
+					],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": []
+				}
+			]
+		},
+		{
+			"name": "preview",
+			"title": "Diagnostics preview annotation",
+			"description": "Opt-in Storybook preview annotation that tames Testing-Library element-not-found output (role-listing filter + DOM cap).",
+			"type": "lib",
+			"add": "when-added",
+			"registryDependencies": [],
+			"dependencies": [],
+			"devDependencies": [],
+			"files": [
+				{
+					"type": "lib",
+					"role": "file",
+					"path": "preview.ts",
+					"relativePath": "src/preview.ts",
+					"_imports_": [
+						{
+							"import": "./diagnostics",
+							"item": "preview",
+							"file": {
+								"type": "lib",
+								"path": "diagnostics.ts"
+							},
+							"meta": {}
+						}
+					],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": []
+				},
+				{
+					"type": "lib",
+					"role": "file",
+					"path": "diagnostics.ts",
+					"relativePath": "src/diagnostics.ts",
+					"_imports_": [],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": []
+				},
+				{
+					"type": "lib",
+					"role": "test",
+					"path": "diagnostics.test.ts",
+					"relativePath": "test/diagnostics.test.ts",
+					"_imports_": [
+						{
+							"import": "../src/diagnostics",
+							"item": "preview",
+							"file": {
+								"type": "lib",
+								"path": "diagnostics.ts"
+							},
+							"meta": {}
+						}
+					],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": [
+						{
+							"ecosystem": "js",
+							"name": "vitest",
+							"version": "4.1.10"
+						}
+					]
+				}
+			]
+		}
+	]
+}

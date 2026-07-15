@@ -1,0 +1,56 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+concurrency:
+  group: release-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+permissions: {}
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # create the "Version Packages" PR and git tags
+      pull-requests: write # open/update the release PR
+      id-token: write # OIDC trusted publishing + provenance
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+
+      # Trusted publishing (OIDC) needs a recent npm. Long-lived automation
+      # tokens are being phased out for publish (npm, ~Jan 2027) — configure a
+      # trusted publisher for this repo/workflow on npmjs.com and no NPM_TOKEN is
+      # needed; npm mints a short-lived OIDC credential and attaches provenance
+      # automatically. NODE_AUTH_TOKEN below is only a fallback for bootstrapping
+      # the very first publish before the package (and its trusted publisher)
+      # exists; remove it once OIDC is configured.
+      - name: Update npm (OIDC trusted publishing)
+        run: npm install -g npm@latest
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm run build
+
+      - name: Create release PR or publish to npm
+        uses: changesets/action@v1
+        with:
+          version: pnpm changeset version
+          publish: pnpm run release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          # Automatic under OIDC; keeps provenance on the token bootstrap path too.
+          NPM_CONFIG_PROVENANCE: 'true'
