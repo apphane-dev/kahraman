@@ -28,13 +28,10 @@ jobs:
           cache: pnpm
           registry-url: https://registry.npmjs.org
 
-      # Trusted publishing (OIDC) needs a recent npm. Long-lived automation
-      # tokens are being phased out for publish (npm, ~Jan 2027) — configure a
-      # trusted publisher for this repo/workflow on npmjs.com and no NPM_TOKEN is
-      # needed; npm mints a short-lived OIDC credential and attaches provenance
-      # automatically. NODE_AUTH_TOKEN below is only a fallback for bootstrapping
-      # the very first publish before the package (and its trusted publisher)
-      # exists; remove it once OIDC is configured.
+      # Tokenless publish via OIDC trusted publishing (configured on npmjs.com
+      # for this repo + release.yml). npm mints a short-lived credential and
+      # attaches provenance automatically — no NPM_TOKEN secret. Needs a recent
+      # npm, so update it here.
       - name: Update npm (OIDC trusted publishing)
         run: npm install -g npm@latest
 
@@ -51,6 +48,3 @@ jobs:
           publish: pnpm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
-          # Automatic under OIDC; keeps provenance on the token bootstrap path too.
-          NPM_CONFIG_PROVENANCE: 'true'

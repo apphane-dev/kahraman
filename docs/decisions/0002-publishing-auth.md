@@ -31,27 +31,30 @@ Publish from CI via **OIDC trusted publishing**, tokenless.
   that supports trusted publishing before publishing.
 - Under a configured trusted publisher, npm mints a short-lived OIDC credential
   and attaches **provenance automatically** — no `NPM_TOKEN` secret to store or
-  rotate.
-- `NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}` is retained **only** as a bootstrap
-  fallback for the very first publish (see below) and should be removed once the
-  trusted publisher is configured.
+  rotate, and no `NODE_AUTH_TOKEN` / `NPM_CONFIG_PROVENANCE` env in the workflow.
 
-## Bootstrap wrinkle (first publish)
+## Bootstrap (done)
 
 Trusted publishing is configured per package on npmjs.com, which requires the
-package to exist. For the first-ever `0.1.0`:
+package to exist. The chicken-and-egg was resolved by bootstrapping `0.0.1`:
 
-1. Publish once with a short-lived automation token (`NPM_TOKEN` secret) **or**
-   locally with 2FA, then
-2. configure the trusted publisher on npmjs.com (this repo +
-   `.github/workflows/release.yml`), then
-3. delete the `NPM_TOKEN` secret and the `NODE_AUTH_TOKEN` env line — all
-   subsequent releases are tokenless.
+1. Published `0.0.1` **locally with 2FA** (`npm publish --otp=…`) to create the
+   package — no CI token involved.
+2. Configured the trusted publisher on npmjs.com: publisher **GitHub Actions**,
+   `apphane-dev/kahraman`, workflow filename **`release.yml`**, no environment,
+   allowed action **`npm publish`**.
+3. Set package **Publishing access** to _require 2FA and disallow tokens_ —
+   trusted publishers keep working; long-lived tokens are blocked.
+
+`0.0.1` is a throwaway bootstrap; the first proper release is `0.1.0` (the
+pending `minor` changeset takes `0.0.1 → 0.1.0`) via CI.
 
 ## Consequences / follow-up
 
-- Set up the trusted publisher on npmjs.com right after the first publish.
-- Revisit before **January 2027**: by then token publishing is gone, so OIDC (or
-  staged + human approval) must be the only path.
+- CI is tokenless: `release.yml` has no `NODE_AUTH_TOKEN` and no `NPM_TOKEN`
+  secret. The local `0.0.1` publish has no provenance (local can't do OIDC);
+  every CI release does.
+- Revisit before **January 2027**: token publishing is gone by then, so OIDC (or
+  staged + human approval) must be the only path — already the case here.
 - Consumers on npm v12 get kahraman's install-script-free package with no extra
   allow-listing needed.
