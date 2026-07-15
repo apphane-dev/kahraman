@@ -11,8 +11,6 @@ canvas and `userEvent`.
 
 Built and maintained by [apphane](https://apphane.dev/).
 
-[![Skills](https://skills.sh/b/apphane-dev/kahraman)](https://skills.sh/apphane-dev/kahraman)
-
 ```ts
 import { createActor, button, heading, role } from 'kahraman'
 
@@ -74,8 +72,10 @@ available for reference even when you install the package normally.
 
 ## AI agent skill
 
-The repository includes a portable Agent Skill for writing and reviewing these
-Storybook tests. Install it with [`skills`](https://skills.sh):
+The repository includes
+[`kahraman-storybook-testing`](https://skills.sh/apphane-dev/kahraman/kahraman-storybook-testing),
+a portable Agent Skill for writing and reviewing these Storybook tests. Install
+it with [`skills`](https://skills.sh):
 
 ```sh
 npx skills add apphane-dev/kahraman --skill kahraman-storybook-testing
