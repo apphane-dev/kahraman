@@ -6,3 +6,12 @@
 onlyBuiltDependencies:
   - esbuild
 strictDepBuilds: false
+
+# Exempt fallow from the minimum-release-age supply-chain policy. fallow is a
+# dev-only static-analysis tool that ships fast; a just-published version would
+# otherwise fail `pnpm install --frozen-lockfile` in CI until it ages past the
+# window. It is never part of the published package. All other deps still honor
+# the policy.
+minimumReleaseAgeExclude:
+  - fallow
+  - '@fallow-cli/*'
