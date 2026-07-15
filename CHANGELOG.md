@@ -1,5 +1,11 @@
 # kahraman
 
+## 0.2.0
+
+### Minor Changes
+
+- e4577c9: Add an opt-in `clickDelay` actor option for pacing interactions during manually played Storybook stories without slowing automated tests by default.
+
 ## 0.1.1
 
 ### Patch Changes
