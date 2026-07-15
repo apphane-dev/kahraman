@@ -3,17 +3,30 @@
 	"version": "0.0.1",
 	"description": "Accessibility-first, codecept-style test actor and locator DSL for Storybook portable stories and Vitest browser mode.",
 	"keywords": [
-		"a11y",
-		"accessibility",
-		"actor",
-		"codeceptjs",
-		"e2e",
-		"locator",
+		"storybook-addon",
+		"test",
 		"storybook",
 		"testing",
+		"actor",
 		"testing-library",
-		"vitest"
+		"a11y",
+		"accessibility",
+		"e2e",
+		"codeceptjs",
+		"vitest",
+		"locator"
 	],
+	"storybook": {
+		"displayName": "kahraman",
+		"supportedFrameworks": [
+			"react",
+			"vue",
+			"svelte",
+			"preact",
+			"web-components",
+			"html"
+		]
+	},
 	"homepage": "https://apphane.dev/",
 	"bugs": {
 		"url": "https://github.com/apphane-dev/kahraman/issues"

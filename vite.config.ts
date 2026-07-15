@@ -16,6 +16,9 @@ export default defineConfig({
 		singleQuote: true,
 		printWidth: 100,
 		trailingComma: 'all',
+		// Don't reorder package.json — the Storybook catalog requires
+		// `storybook-addon` to be the FIRST keyword.
+		sortPackageJson: false,
 	},
 	lint: {
 		categories: {

@@ -280,6 +280,19 @@ against the packed tarball, releases run through
 [Changesets](https://github.com/changesets/changesets), and every commit gets an
 installable preview via [pkg.pr.new](https://pkg.pr.new).
 
+## Acknowledgements
+
+kahraman stands on prior art:
+
+- **[CodeceptJS](https://codecept.io)** (MIT) — the actor DSL is modelled on its
+  `I.see(...)` / `I.click(...)` / `hopeThat` / `retryTo` / `tryTo` style. The
+  concepts and API shape are borrowed; the implementation here is original (no
+  CodeceptJS code is used or redistributed).
+- **[Testing Library](https://testing-library.com)** — every locator resolves
+  through its accessibility-first queries.
+- **[Storybook](https://storybook.js.org)** — the actor runs against the
+  `storybook/test` runtime (portable stories, Vitest browser mode).
+
 ## License
 
 [MIT](./LICENSE) © Aleksei Gurianov
