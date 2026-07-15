@@ -182,6 +182,9 @@ const I = createActor().extend(withPageError({ title: 'Something went wrong' }))
 
 See [`examples/pageActor.ts`](./examples/pageActor.ts) for a fuller illustration.
 
+For a real-world app that exercises `kahraman` in its Storybook stories, see
+[`guria/modern-setup`](https://github.com/guria/modern-setup).
+
 ## Failure diagnostics
 
 When an actor call fails, `kahraman` augments the error to make the failure
