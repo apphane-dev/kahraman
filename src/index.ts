@@ -1,5 +1,5 @@
 export { createActor } from './actor'
-export type { Actor, BaseActor, HopeThat } from './actor'
+export type { Actor, ActorOptions, BaseActor, HopeThat } from './actor'
 
 export { button, heading, link, role, text } from './loc'
 export type {

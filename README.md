@@ -85,6 +85,18 @@ I.init(context) // context: the Storybook StoryContext (any renderer)
 `createActor()` returns a fresh actor with its own step trace. Call
 `I.init(context)` first — it wires up the canvas and resets the trace.
 
+To make clicks easier to follow when manually playing a story, configure an
+explicit delay. The default is `0`, so automated tests are not slowed down:
+
+```ts
+const I = createActor({
+	clickDelay: navigator.webdriver ? 0 : 500,
+})
+```
+
+Keeping the environment check in the consumer makes the pacing policy visible
+and lets each Storybook choose how it distinguishes manual and automated runs.
+
 ### Locators
 
 Build locators with `role`, `text`, and the `heading` / `button` / `link`

@@ -82,7 +82,7 @@ const attemptRetry = async <T>(
 
 // Inspired by codecept.js — see https://codecept.io/blog/codeceptjs-4/ for the
 // actor API this mirrors (selectOption, hopeThat soft assertions, retryTo, etc.)
-function createBase(ctx: () => StoryContext, steps: Step[]): BaseActor {
+function createBase(ctx: () => StoryContext, steps: Step[], actorOptions: ActorOptions): BaseActor {
 	const scopeStack: HTMLElement[] = []
 	const track =
 		(name: string, callback: (...args: unknown[]) => Promise<unknown>) =>
@@ -192,6 +192,9 @@ function createBase(ctx: () => StoryContext, steps: Step[]): BaseActor {
 	}
 
 	const click = async (locator: DefiniteLocator) => {
+		if (actorOptions.clickDelay && actorOptions.clickDelay > 0) {
+			await sleep(actorOptions.clickDelay)
+		}
 		await ctx().userEvent.click(await elementFrom(locator))
 	}
 
@@ -410,6 +413,14 @@ function makeActor<M extends {}>(methods: BaseActor & M, initFn: (context: Story
 	}) as Actor<M>
 }
 
+export interface ActorOptions {
+	/**
+	 * Milliseconds to wait before each click. Useful for making interactions
+	 * observable when stories are played manually. Defaults to no delay.
+	 */
+	clickDelay?: number
+}
+
 /**
  * Create a fresh actor. Call `I.init(storyContext)` inside a story `play` /
  * test before using any actor method, then drive the UI declaratively:
@@ -421,7 +432,7 @@ function makeActor<M extends {}>(methods: BaseActor & M, initFn: (context: Story
  * await I.click(button('Save'))
  * ```
  */
-export const createActor = (): Actor => {
+export const createActor = (options: ActorOptions = {}): Actor => {
 	let _ctx: StoryContext | null = null
 
 	function ctx() {
@@ -431,7 +442,7 @@ export const createActor = (): Actor => {
 
 	const steps: Step[] = []
 
-	return makeActor(createBase(ctx, steps), (context) => {
+	return makeActor(createBase(ctx, steps, options), (context) => {
 		_ctx = context
 		steps.length = 0
 	})
