@@ -13,14 +13,7 @@ Built and maintained by [apphane](https://apphane.dev/).
 
 ## See it in motion
 
-[![kahraman launch video — accessibility-first tests that read like a user's story](https://github.com/apphane-dev/kahraman/releases/download/v0.2.0/kahraman-launch-poster.png)](https://github.com/apphane-dev/kahraman/releases/download/v0.2.0/kahraman-launch-landscape.mp4)
-
-A 48-second tour of the actor flow, the accessibility-first locator DSL, and
-the step-trace diagnostics — click the poster to watch. Also available as
-[vertical](https://github.com/apphane-dev/kahraman/releases/download/v0.2.0/kahraman-launch-vertical.mp4)
-and
-[square](https://github.com/apphane-dev/kahraman/releases/download/v0.2.0/kahraman-launch-square.mp4)
-cuts for sharing.
+https://github.com/user-attachments/assets/ec192e14-64ab-4d11-b504-82d8d053a400
 
 ```ts
 import { createActor, button, heading, role } from 'kahraman'
