@@ -1,6 +1,6 @@
 {
 	"name": "kahraman",
-	"version": "0.2.1",
+	"version": "0.3.0",
 	"description": "Accessibility-first, codecept-style test actor and locator DSL for Storybook portable stories and Vitest browser mode.",
 	"keywords": [
 		"storybook-addon",
