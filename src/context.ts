@@ -25,4 +25,11 @@ export type UserEvent = Pick<StorybookUserEvent, 'clear' | 'click' | 'keyboard' 
 export interface StoryContext {
 	canvasElement: HTMLElement
 	userEvent: UserEvent
+	/**
+	 * Storybook's `context.step`. When present, every actor call is reported
+	 * through it, so the Interactions panel shows codecept-style step groups
+	 * (`I.see(heading "Dashboard")`) instead of raw Testing-Library calls.
+	 * Optional so portable-story / plain-Vitest contexts remain valid.
+	 */
+	step?: (label: string, play: () => Promise<void> | void) => Promise<void> | void
 }

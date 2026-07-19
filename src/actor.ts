@@ -19,10 +19,12 @@ const augmentActorError = createErrorAugmenter(import.meta.url)
 const liveStepLogging = (): boolean =>
 	(import.meta as { env?: Record<string, string | undefined> }).env?.['VITE_TEST_STEPS'] === 'true'
 
-const trackBaseMethods = <T extends object>(
-	methods: T,
-	track: (name: string, callback: (...args: unknown[]) => Promise<unknown>) => unknown,
-) =>
+type TrackedCallback = (...args: unknown[]) => Promise<unknown>
+
+/** Wraps an actor method so the call is recorded as a step (trace + Storybook). */
+type Track = (name: string, callback: TrackedCallback) => TrackedCallback
+
+const trackBaseMethods = <T extends object>(methods: T, track: Track) =>
 	Object.fromEntries(
 		Object.entries(methods).map(([name, method]) => [
 			name,
@@ -82,33 +84,8 @@ const attemptRetry = async <T>(
 
 // Inspired by codecept.js — see https://codecept.io/blog/codeceptjs-4/ for the
 // actor API this mirrors (selectOption, hopeThat soft assertions, retryTo, etc.)
-function createBase(ctx: () => StoryContext, steps: Step[], actorOptions: ActorOptions): BaseActor {
+function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOptions): BaseActor {
 	const scopeStack: HTMLElement[] = []
-	const track =
-		(name: string, callback: (...args: unknown[]) => Promise<unknown>) =>
-		async (...args: unknown[]) => {
-			const step = {
-				label: stepLabel(name, args),
-				status: 'pass' as Step['status'],
-			} satisfies Step
-			// Captured before any await so the stack still holds the caller frames.
-			const callSite = new Error('actor call site')
-			steps.push(step)
-			if (liveStepLogging()) {
-				console.info(step.label)
-			}
-			try {
-				const result = await callback(...args)
-				step.status = 'pass'
-				return result
-			} catch (error) {
-				step.status = 'fail'
-				if (error instanceof Error) {
-					augmentActorError(error, steps, callSite)
-				}
-				throw error
-			}
-		}
 	const softErrors: Error[] = []
 
 	function rootCanvas() {
@@ -393,22 +370,53 @@ export interface BaseActor {
 	hopeThat: HopeThat
 }
 
+/**
+ * Extension methods are wrapped in an async tracker at runtime, so every one
+ * returns a `Promise`. Mirror that in the types: each function's return type
+ * becomes `Promise<Awaited<R>>` (already-async methods are unchanged), while
+ * non-function properties pass through untouched.
+ */
+type Promisified<U> = {
+	[K in keyof U]: U[K] extends (...args: infer A) => infer R
+		? (...args: A) => Promise<Awaited<R>>
+		: U[K]
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export type Actor<T extends {} = {}> = BaseActor &
 	T & {
 		init(context: StoryContext): void
 		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
-		extend<U extends {}>(extension: (current: BaseActor & T) => U): Actor<T & U>
+		extend<U extends {}>(extension: (current: BaseActor & T) => U): Actor<T & Promisified<U>>
 	}
 
+// Extension (page-actor) methods are tracked like base methods, so
+// `I.seeDetailError()` shows up in the step trace and the Interactions panel
+// with its inner base calls nested one level deeper. Extra own properties on a
+// function (e.g. a `hopeThat`-style hybrid) are carried over onto the wrapper.
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
-function makeActor<M extends {}>(methods: BaseActor & M, initFn: (context: StoryContext) => void) {
+const trackExtensionMethods = <U extends {}>(extension: U, track: Track): Promisified<U> =>
+	Object.fromEntries(
+		Object.entries(extension).map(([name, value]) => [
+			name,
+			typeof value === 'function'
+				? Object.assign(track(name, value as TrackedCallback), value)
+				: value,
+		]),
+	) as Promisified<U>
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+function makeActor<M extends {}>(
+	methods: BaseActor & M,
+	initFn: (context: StoryContext) => void,
+	track: Track,
+) {
 	return Object.assign({}, methods, {
 		init: initFn,
 		// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 		extend<U extends {}>(ext: (current: BaseActor & M) => U) {
-			const extra = ext(methods)
-			return makeActor<M & U>({ ...methods, ...extra }, initFn)
+			const extra = trackExtensionMethods(ext(methods), track)
+			return makeActor<M & Promisified<U>>({ ...methods, ...extra }, initFn, track)
 		},
 	}) as Actor<M>
 }
@@ -441,9 +449,81 @@ export const createActor = (options: ActorOptions = {}): Actor => {
 	}
 
 	const steps: Step[] = []
+	// Shared nesting counter for step indentation. Correct for the normal
+	// sequential-await flow (page-actor methods and scope callbacks nest their
+	// inner base calls one level deeper). Interleaved concurrent chains — e.g.
+	// `await Promise.all([I.click(a), I.click(b)])` — can read each other's depth
+	// and mis-indent the trace; per-chain accuracy would need AsyncLocalStorage,
+	// which is not appropriate in the browser test runtime. Best-effort by design:
+	// it only affects trace indentation, never control flow or pass/fail.
+	let depth = 0
 
-	return makeActor(createBase(ctx, steps, options), (context) => {
-		_ctx = context
-		steps.length = 0
-	})
+	const track: Track =
+		(name, callback) =>
+		async (...args) => {
+			const step = {
+				label: stepLabel(name, args),
+				status: 'pass' as Step['status'],
+				// Clamp so a reset mid-flight (see `invoke`) never yields a negative
+				// indent, which would make `'  '.repeat` throw.
+				depth: Math.max(0, depth),
+			} satisfies Step
+			// Captured before any await so the stack still holds the caller frames.
+			const callSite = new Error('actor call site')
+			steps.push(step)
+			if (liveStepLogging()) {
+				console.info(`${'  '.repeat(step.depth)}${step.label}`)
+			}
+			// Nested actor calls (inside a page-actor method or a scope callback)
+			// indent one level deeper in the trace.
+			const invoke = async () => {
+				depth += 1
+				try {
+					return await callback(...args)
+				} finally {
+					depth = Math.max(0, depth - 1)
+				}
+			}
+			try {
+				// When Storybook provides `context.step` (it is on the story context
+				// the loader/play receives), report the call through it so the
+				// Interactions panel shows this label as a collapsible step group.
+				const storyContext = _ctx
+				let result: unknown
+				if (storyContext?.step) {
+					// Call `step` as a member so a `this`-dependent implementation keeps
+					// its receiver (real Storybook's `context.step` needs no `this`). The
+					// callback awaits `invoke()` so Storybook nests the inner calls inside
+					// this step group; we also capture the promise and await it afterwards
+					// so the result is still assigned — and the flow still waits — even if
+					// a `step` returns void without awaiting its callback.
+					let invocation: Promise<unknown> | undefined
+					await storyContext.step(step.label, async () => {
+						invocation = invoke()
+						await invocation
+					})
+					result = await invocation
+				} else {
+					result = await invoke()
+				}
+				step.status = 'pass'
+				return result
+			} catch (error) {
+				step.status = 'fail'
+				if (error instanceof Error) {
+					augmentActorError(error, steps, callSite)
+				}
+				throw error
+			}
+		}
+
+	return makeActor(
+		createBase(ctx, track, options),
+		(context) => {
+			_ctx = context
+			steps.length = 0
+			depth = 0
+		},
+		track,
+	)
 }

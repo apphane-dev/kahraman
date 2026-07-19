@@ -118,4 +118,15 @@ describe('createErrorAugmenter', () => {
 		augment(error, steps, new Error('cs'))
 		expect(error.message).toBe(after) // idempotent
 	})
+
+	test('indents nested steps by depth', () => {
+		const error = new Error('failed')
+		const steps = [
+			{ label: 'I.seeDetailError()', status: 'fail' as const, depth: 0 },
+			{ label: 'I.see(button "Try again")', status: 'fail' as const, depth: 1 },
+		]
+		augment(error, steps, new Error('cs'))
+		expect(error.message).toContain('\n  ✖ I.seeDetailError()')
+		expect(error.message).toContain('\n    ✖ I.see(button "Try again")')
+	})
 })
