@@ -235,6 +235,32 @@ See [`examples/pageActor.ts`](./examples/pageActor.ts) for a fuller illustration
 For a real-world app that exercises `kahraman` in its Storybook stories, see
 [`apphane-dev/karkas`](https://github.com/apphane-dev/karkas).
 
+## Storybook Interactions panel
+
+When the story context provides `context.step` (every Storybook story context
+does, including the one loaders receive), each actor call is automatically
+reported as a labeled step. The Interactions panel then reads exactly like your
+test source — collapsible, codecept-style groups instead of raw
+Testing-Library calls:
+
+```
+▶ I.seeDetailError()
+▶ I.retry()
+▶ I.waitExit(role "status")
+▼ I.see(heading "Quarterly report")
+    within(...).findByRole("heading", { name: "Quarterly report" })
+    expect(...).toBeInTheDocument()
+▶ I.seeArticleDetail("Quarterly report")
+```
+
+Page-actor methods created with `I.extend(...)` are steps too, with the base
+calls they make nested one level deeper — both in the panel and in the failure
+step trace. Because the tracker is async, extension methods always return a
+`Promise`; declare them `async` (page actors in practice already are).
+
+No setup is needed; outside Storybook (portable stories, plain Vitest) the
+actor detects the missing `step` and behaves as before.
+
 ## Failure diagnostics
 
 When an actor call fails, `kahraman` augments the error to make the failure

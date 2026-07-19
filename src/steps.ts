@@ -2,7 +2,12 @@
 // and call-site stack retargeting. Kept free of any runtime import so they can
 // be unit-tested directly.
 
-export type Step = { label: string; status: 'pass' | 'fail' }
+export type Step = {
+	label: string
+	status: 'pass' | 'fail'
+	/** Nesting level: 0 for top-level calls, +1 inside a page-actor method or scope callback. */
+	depth?: number
+}
 
 const actorStepsAppended = Symbol('actorStepsAppended')
 
@@ -96,6 +101,9 @@ export const createErrorAugmenter =
 		createStackRetargeter(moduleUrl)(error, callSite)
 		error.message += `\n\nActor steps (most recent last):\n${steps
 			.slice(-15)
-			.map((step) => `  ${step.status === 'pass' ? '✔' : '✖'} ${step.label}`)
+			.map(
+				(step) =>
+					`  ${'  '.repeat(step.depth ?? 0)}${step.status === 'pass' ? '✔' : '✖'} ${step.label}`,
+			)
 			.join('\n')}`
 	}
