@@ -24,7 +24,7 @@
   --mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
 
   /* Scale */
-  --maxw: 1120px;
+  --maxw: 1280px;
   --gutter: clamp(1.25rem, 4vw, 3rem);
   --radius: 14px;
 }
