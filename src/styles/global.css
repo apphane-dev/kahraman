@@ -14,7 +14,7 @@
   --ember: #d97e0a;        /* deep accent, gradients */
   --cream: #fcedd2;        /* primary text */
   --muted: #b3aa95;        /* secondary text */
-  --faint: #7a745f;        /* captions, struck code */
+  --faint: #8a8470;        /* captions, struck code */
   --pass: #8fbf6b;         /* step trace ✔ (warm green) */
   --fail: #f26d5b;         /* step trace ✖ (warm coral) */
 
@@ -325,7 +325,7 @@ h2.section-title {
   color: var(--muted);
   font-weight: 600;
 }
-.canvas h4 {
+.canvas p {
   font-family: var(--display);
   font-size: 1.15rem;
   margin: 0 0 0.2rem;
