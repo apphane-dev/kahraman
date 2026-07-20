@@ -1,0 +1,11 @@
+---
+import { Code } from 'astro:components';
+import { kahramanTheme } from '../kahraman-theme.ts';
+
+interface Props {
+  code: string;
+  lang?: string;
+}
+const { code, lang = 'ts' } = Astro.props;
+---
+<Code code={code.trim()} lang={lang} theme={kahramanTheme as any} class="code" />

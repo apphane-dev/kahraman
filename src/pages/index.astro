@@ -1,15 +1,425 @@
 ---
+import '../styles/global.css';
+import CodeBlock from '../components/CodeBlock.astro';
+
+const GITHUB = 'https://github.com/apphane-dev/kahraman';
+const NPM = 'https://www.npmjs.com/package/kahraman';
+const README = 'https://github.com/apphane-dev/kahraman#readme';
+
+const heroCode = `import { createActor, button, heading, role } from 'kahraman'
+
+const I = createActor()
+
+export const Default = meta.story()
+Default.test('signs the user in', async (context) => {
+  I.init(context)
+  await I.see(heading('Sign in'))
+  await I.fill(role('textbox', 'Email'), 'ada@example.com')
+  await I.click(button('Continue'))
+  await I.waitExit(role('status'))
+  await I.see(heading('Welcome, Ada'))
+})`;
+
+const semanticCode = `await I.see(heading('Sign in'))
+await I.fill(role('textbox', 'Email'), 'ada@example.com')
+await I.click(button('Continue'))`;
+
+const dslCode = `heading('Dashboard')                    // getBy
+button('Save').within(role('dialog'))   // getBy, scoped
+role('status', 'Loading').wait()        // findBy
+role('listitem').all()                  // getAllBy
+role('alert').maybe()                   // queryBy`;
+
+const previewCode = `// .storybook/preview.ts
+import kahraman from 'kahraman/preview'
+
+export default {
+  ...kahraman,
+  // ...other preview config
+}`;
+
+const extendCode = `const withPageError =
+  (error) => (I) => ({
+    seeError: async () => {
+      await I.see(heading(error.title))
+      await I.see(role('alert'))
+      await I.see(button('Try again'))
+    },
+  })
+
+const I = createActor().extend(
+  withPageError({ title: 'Something went wrong' }),
+)
+
+await I.seeError()`;
+
+const modes = [
+  ['default', 'getBy*', 'one element; throws when missing'],
+  ['.wait()', 'findBy*', 'Promise<element>'],
+  ['.all()', 'getAllBy*', 'element[]'],
+  ['.maybe()', 'queryBy*', 'element | null'],
+  ['.within(scope)', 'scoped query', 'same variant, scoped'],
+  ['.options(...)', 'query options', 'same variant'],
+];
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width" />
-    <title>Kahraman</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <title>kahraman — accessibility-first test actor & locator DSL for Storybook</title>
+    <meta
+      name="description"
+      content="kahraman gives Storybook and Vitest browser tests a small I.see / I.click actor and a fluent, accessibility-first locator DSL built on roles, accessible names, and visible text."
+    />
+    <meta property="og:title" content="kahraman — accessibility-first Storybook test actor & locator DSL" />
+    <meta property="og:description" content="Accessibility-first tests that read like a user's story. A fluent locator DSL — small on purpose." />
+    <meta property="og:type" content="website" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=IBM+Plex+Mono:ital,wght@0,400;0,500;1,400&family=IBM+Plex+Sans:wght@400;500;600&display=swap"
+      rel="stylesheet"
+    />
   </head>
   <body>
-    <h1>Kahraman</h1>
-    <p>Placeholder content. Coming soon.</p>
+    <!-- NAV -->
+    <header class="nav">
+      <div class="wrap">
+        <a class="brand" href="/">
+          <span class="glyph">⟩</span>kahraman
+          <span class="gloss">Turkish for “hero”</span>
+        </a>
+        <nav class="nav-links" aria-label="Primary">
+          <a href="#contrast">Why</a>
+          <a href="#dsl">The DSL</a>
+          <a href="#fit">Where it runs</a>
+          <a href={README}>Docs</a>
+          <a class="ghost-btn" href={GITHUB}>GitHub ↗</a>
+        </nav>
+      </div>
+    </header>
+
+    <!-- HERO -->
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="reveal">
+          <span class="eyebrow">Storybook interaction testing · accessibility first</span>
+          <h1>
+            Tests that read like a <span class="accent">user's story.</span>
+          </h1>
+          <p class="hero-lead">
+            kahraman gives Storybook and Vitest browser tests a small
+            <strong>I.see(…) / I.click(…)</strong> actor and a fluent locator DSL
+            built on roles, accessible names, and visible text. Write readable
+            journeys — and let inaccessible UI fail where it should.
+          </p>
+          <div class="cta-row">
+            <span class="install">
+              <span class="prompt">$</span>
+              <span class="cmd">npm install --save-dev kahraman</span>
+            </span>
+          </div>
+          <div class="cta-row">
+            <a class="btn btn-primary" href={README}>Read the guide</a>
+            <a class="btn btn-ghost" href={GITHUB}>View on GitHub ↗</a>
+          </div>
+          <div class="hero-meta">
+            <span>ESM only</span>
+            <span>Node ≥ 20.11</span>
+            <span>storybook ≥ 9</span>
+            <span>MIT</span>
+          </div>
+        </div>
+
+        <!-- Signature: the synchronized trio (code · canvas · step trace) -->
+        <div class="showcase reveal" style="animation-delay:.12s">
+          <div class="panel code-panel">
+            <div class="panel-bar">
+              <span class="dot live"></span><span class="dot"></span><span class="dot"></span>
+              <span class="title">sign-in.stories.ts</span>
+            </div>
+            <CodeBlock code={heroCode} lang="ts" />
+          </div>
+          <div class="trio-lower">
+            <div class="panel">
+              <div class="panel-bar"><span class="dot live"></span><span class="title">story canvas</span></div>
+              <div class="canvas">
+                <h4>Welcome, Ada</h4>
+                <span class="field-label">Email</span>
+                <span class="input focus">ada@example.com</span>
+                <span class="fake-btn">Continue</span>
+              </div>
+            </div>
+            <div class="panel">
+              <div class="panel-bar"><span class="dot live"></span><span class="title">step trace</span></div>
+              <div class="trace">
+                <div class="row ok"><span class="mark">✔</span><span class="step">I.see(<span class="call">heading</span> <span class="arg">"Sign in"</span>)</span></div>
+                <div class="row ok"><span class="mark">✔</span><span class="step">I.fill(<span class="call">role</span> · textbox <span class="arg">"Email"</span>)</span></div>
+                <div class="row ok"><span class="mark">✔</span><span class="step">I.click(<span class="call">button</span> <span class="arg">"Continue"</span>)</span></div>
+                <div class="row ok"><span class="mark">✔</span><span class="step">I.waitExit(<span class="call">role</span> <span class="arg">"status"</span>)</span></div>
+                <div class="row ok"><span class="mark">✔</span><span class="step">I.see(<span class="call">heading</span> <span class="arg">"Welcome, Ada"</span>)</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- CONTRAST -->
+    <section class="section" id="contrast">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">Selectors describe markup · kahraman describes intent</span>
+          <h2 class="section-title">Address the UI as a user would.</h2>
+          <p class="section-lead">
+            CSS selectors and test IDs describe implementation. kahraman locators
+            describe what a person can perceive: a button named “Continue,” a
+            textbox named “Email,” a heading named “Welcome, Ada.”
+          </p>
+        </div>
+        <div class="contrast-grid">
+          <div class="panel">
+            <div class="panel-bar"><span class="dot"></span><span class="title">implementation-coupled</span></div>
+            <div class="brittle">
+              <span class="strike">page.click('[data-testid="btn-4f2a"]')</span>
+              <span class="strike">page.waitForSelector('.MuiBox-root &gt; div:nth-child(3)')</span>
+              <span class="strike">wrapper.find('.btn--primary').exists()</span>
+              <span class="cap">Breaks on refactor. A screen reader can't read any of it.</span>
+            </div>
+          </div>
+          <div class="panel good">
+            <div class="panel-bar"><span class="dot live"></span><span class="title">perceivable, resilient</span></div>
+            <CodeBlock code={semanticCode} lang="ts" />
+          </div>
+        </div>
+        <p class="rationale">
+          If you can't target an element by its role or name, neither can assistive tech.
+        </p>
+      </div>
+    </section>
+
+    <!-- DSL -->
+    <section class="section" id="dsl">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">The locator DSL</span>
+          <h2 class="section-title">A fluent locator DSL. Small on purpose.</h2>
+          <p class="section-lead">
+            The public locator surface stays deliberately narrow. Refine a semantic
+            query without abandoning its intent: wait for it, collect all matches,
+            make a lookup nullable, scope it to a region, or pass Testing Library options.
+          </p>
+        </div>
+        <div class="dsl-grid">
+          <div class="panel">
+            <div class="panel-bar"><span class="dot"></span><span class="dot"></span><span class="dot"></span><span class="title">locators.ts</span></div>
+            <CodeBlock code={dslCode} lang="ts" />
+          </div>
+          <table class="mode-table">
+            <caption>Fluent form → Testing Library mode</caption>
+            <thead>
+              <tr><th>kahraman</th><th>mode</th><th>result</th></tr>
+            </thead>
+            <tbody>
+              {modes.map(([form, mode, result]) => (
+                <tr>
+                  <td><code>{form}</code></td>
+                  <td><code>{mode}</code></td>
+                  <td class="result">{result}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- CAPABILITIES -->
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <span class="eyebrow">The actor</span>
+          <h2 class="section-title">Intent-level actions for real interaction tests.</h2>
+          <p class="section-lead">
+            One actor, initialized from a story context, expresses the whole journey —
+            assertions, interactions, stabilization, and extraction — in causal order.
+          </p>
+        </div>
+        <div class="cards">
+          <div class="card">
+            <h3>Assert</h3>
+            <div class="tokens">
+              <span class="tok">see</span><span class="tok">dontSee</span><span class="tok">seeInField</span><span class="tok">seeChecked</span><span class="tok">seeDisabled</span><span class="tok">seeAttribute</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Interact</h3>
+            <div class="tokens">
+              <span class="tok">click</span><span class="tok">fill</span><span class="tok">clear</span><span class="tok">selectOption</span><span class="tok">press</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Stabilize</h3>
+            <div class="tokens">
+              <span class="tok">waitExit</span><span class="tok">.wait()</span><span class="tok">retryTo</span><span class="tok">tryTo</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Scope &amp; extract</h3>
+            <div class="tokens">
+              <span class="tok">within</span><span class="tok">grabTextFrom</span><span class="tok">grabTextFromAll</span>
+            </div>
+          </div>
+          <div class="card">
+            <h3>Report together</h3>
+            <div class="tokens">
+              <span class="tok">hopeThat</span><span class="tok">hopeThat.noErrors()</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FAILURES -->
+    <section class="section">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Diagnostics</span>
+          <h2 class="section-title">Readable failures, not a wall of internals.</h2>
+          <p class="section-lead">
+            When a step fails, kahraman appends the complete ✔ / ✖ step trace and
+            retargets the stack to your story or page actor. Add the optional
+            <code>kahraman/preview</code> annotation to trim enormous Testing Library
+            role listings down to the relevant near-misses and a capped DOM excerpt.
+          </p>
+          <div class="panel" style="margin-top:1.6rem">
+            <div class="panel-bar"><span class="dot live"></span><span class="title">preview.ts</span></div>
+            <CodeBlock code={previewCode} lang="ts" />
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-bar"><span class="dot"></span><span class="title">actor error · step trace</span></div>
+          <div class="trace" style="font-size:.85rem">
+            <div class="row ok"><span class="mark">✔</span><span class="step">I.see(<span class="call">heading</span> <span class="arg">"Sign in"</span>)</span></div>
+            <div class="row ok"><span class="mark">✔</span><span class="step">I.fill(<span class="call">role</span> · textbox <span class="arg">"Email"</span>)</span></div>
+            <div class="row ok"><span class="mark">✔</span><span class="step">I.click(<span class="call">button</span> <span class="arg">"Continue"</span>)</span></div>
+            <div class="row ok"><span class="mark">✔</span><span class="step">I.waitExit(<span class="call">role</span> <span class="arg">"status"</span>)</span></div>
+            <div class="row bad"><span class="mark">✖</span><span class="step">I.see(<span class="call">heading</span> <span class="arg">"Welcome, Ada"</span>)</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FIT -->
+    <section class="section" id="fit">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Where it runs</span>
+          <h2 class="section-title">Built for the Storybook browser-testing loop.</h2>
+          <p class="section-lead">
+            kahraman is a small intent-level layer over the <code>storybook/test</code>
+            runtime — it reads only <code>canvasElement</code> and <code>userEvent</code>
+            from story context, so it stays renderer-agnostic.
+          </p>
+          <div class="chips" aria-label="Supported renderers">
+            <span class="chip">React</span><span class="chip">Vue</span><span class="chip">Svelte</span>
+            <span class="chip">Preact</span><span class="chip">Web Components</span><span class="chip">HTML</span>
+          </div>
+        </div>
+        <ul class="fit-list">
+          <li><span>Storybook story <strong>play</strong> functions and story tests.</span></li>
+          <li><span>Portable stories with <strong>Vitest browser mode</strong>.</span></li>
+          <li><span><strong>ESM-only</strong>, with Storybook 9+ as the peer dependency.</span></li>
+          <li><span>Installs from <strong>npm</strong> or vendors through <strong>jsrepo</strong>.</span></li>
+          <li><span>Doesn't supply Storybook, MSW, routing, or a browser provider — it uses yours.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- EXTEND + AGENTS + REFS -->
+    <section class="section">
+      <div class="wrap split">
+        <div>
+          <span class="eyebrow">Extend it in your app's language</span>
+          <h2 class="section-title">Keep mechanics reusable. Keep journeys readable.</h2>
+          <p class="section-lead">
+            kahraman ships the generic actor and locator DSL. Add narrowly scoped
+            page vocabulary with <code>I.extend(…)</code> — <code>seeError()</code>,
+            <code>selectCountry()</code> — built from the same accessible primitives.
+          </p>
+          <p class="section-lead" style="margin-top:1.2rem">
+            <strong style="color:var(--cream)">Readable for humans. Writable for agents.</strong>
+            Declarative steps are a format coding agents can follow, and the repo
+            ships the <code>kahraman-storybook-testing</code> skill.
+          </p>
+          <div class="cta-row">
+            <span class="install"><span class="prompt">$</span><span class="cmd">npx skills add apphane-dev/kahraman --skill kahraman-storybook-testing</span></span>
+          </div>
+        </div>
+        <div class="panel">
+          <div class="panel-bar"><span class="dot"></span><span class="title">pageActor.ts</span></div>
+          <CodeBlock code={extendCode} lang="ts" />
+        </div>
+      </div>
+
+      <div class="wrap" style="margin-top:3.5rem">
+        <div class="section-head" style="margin-bottom:1.6rem">
+          <span class="eyebrow">Seen in production stories</span>
+          <h2 class="section-title">See the style in working setups.</h2>
+        </div>
+        <div class="refs">
+          <a class="ref" href="https://github.com/apphane-dev/karkas">
+            <span class="name">karkas</span>
+            <span class="path">apphane-dev/karkas/.storybook</span>
+            <span class="desc">Application integration stories with MSW, routing, and viewport-aware browser tests.</span>
+          </a>
+          <a class="ref" href="https://github.com/artalar/reatom/tree/v3/packages/admin/.storybook">
+            <span class="name">Reatom admin</span>
+            <span class="path">reatom/packages/admin/.storybook</span>
+            <span class="desc">Adapter, preview factory, browser-test setup, viewports, and a local testing guide.</span>
+          </a>
+        </div>
+        <p class="section-lead" style="margin-top:1.2rem">
+          Examples, not mandatory templates — adopt only the parts your own Storybook setup supports.
+        </p>
+      </div>
+    </section>
+
+    <!-- FINAL CTA -->
+    <section class="final">
+      <div class="wrap">
+        <span class="eyebrow">Get started</span>
+        <h2>Make the accessible path the easy path.</h2>
+        <p class="section-lead">
+          Install kahraman, initialize one actor in a story, and write the next test
+          in the language of roles, names, actions, and visible outcomes.
+        </p>
+        <div class="cta-row">
+          <span class="install"><span class="prompt">$</span><span class="cmd">npm install --save-dev kahraman</span></span>
+        </div>
+        <div class="cta-row">
+          <a class="btn btn-primary" href={NPM}>View on npm ↗</a>
+          <a class="btn btn-ghost" href={GITHUB}>GitHub ↗</a>
+        </div>
+      </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="footer">
+      <div class="wrap">
+        <span class="lic">
+          <b>kahraman</b> · a house tool from <a href="https://apphane.dev/">apphane</a> — small, sharp tools · MIT
+        </span>
+        <nav class="foot-links" aria-label="Footer">
+          <a href={GITHUB}>GitHub</a>
+          <a href={NPM}>npm</a>
+          <a href={README}>Docs &amp; API</a>
+          <a href="https://github.com/apphane-dev/kahraman/blob/main/LICENSE">License</a>
+        </nav>
+      </div>
+    </footer>
   </body>
 </html>
