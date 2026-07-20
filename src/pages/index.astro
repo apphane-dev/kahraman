@@ -113,8 +113,10 @@ const modes = [
           <p class="hero-lead">
             kahraman gives Storybook and Vitest browser tests a small
             <strong>I.see(…) / I.click(…)</strong> actor and a fluent locator DSL
-            built on roles, accessible names, and visible text. Write readable
-            journeys — and let inaccessible UI fail where it should.
+            built on roles, accessible names, and visible text. Every step runs
+            against your story rendered in a <strong>real browser</strong> — not a
+            jsdom stand-in — so the test sees what the user sees, and inaccessible
+            UI fails where it should.
           </p>
           <div class="cta-row">
             <span class="install">
@@ -336,6 +338,20 @@ const modes = [
           <li><span>Installs from <strong>npm</strong> or vendors through <strong>jsrepo</strong>.</span></li>
           <li><span>Doesn't supply Storybook, MSW, routing, or a browser provider — it uses yours.</span></li>
         </ul>
+      </div>
+
+      <div class="wrap" style="margin-top:3rem">
+        <p class="section-lead" style="max-width:46rem">
+          jsdom made sense when real browsers were slow and flaky in CI. That
+          bill came down. Vitest browser mode runs your stories in an actual
+          browser cheaply enough to do it by default. jsdom still fits pure
+          logic — but for UI, there's little reason left to assert against a DOM
+          that never lays out, focuses, or paints.
+        </p>
+        <p class="rationale">
+          A fake DOM can't catch what a fake DOM can't render. kahraman tests
+          where rendering, focus, and accessibility actually happen.
+        </p>
       </div>
     </section>
 
