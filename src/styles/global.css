@@ -285,7 +285,7 @@ h2.section-title {
 .panel-bar .title { margin-left: auto; }
 
 /* astro <Code> renders a <pre>; normalise it inside panels */
-:global(.code) {
+.code {
   margin: 0;
   padding: 1.1rem 1.15rem;
   font-family: var(--mono) !important;
@@ -294,7 +294,7 @@ h2.section-title {
   overflow-x: auto;
   tab-size: 2;
 }
-:global(.code code) { font-family: var(--mono) !important; }
+.code code { font-family: var(--mono) !important; }
 
 /* ---------- Hero showcase (the signature trio) ---------- */
 
