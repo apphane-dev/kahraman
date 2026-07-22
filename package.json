@@ -3,6 +3,7 @@
   "type": "module",
   "version": "0.0.1",
   "private": true,
+  "packageManager": "nub@0.4.12",
   "scripts": {
     "dev": "astro dev",
     "start": "astro dev",

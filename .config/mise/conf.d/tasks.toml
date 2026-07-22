@@ -1,0 +1,34 @@
+[tasks.prepare]
+description = "Sync Astro generated types"
+run = "astro sync"
+sources = ["package.json", "astro.config.mjs", "src/**/*"]
+outputs = [".astro/**/*"]
+
+[tasks.dev]
+description = "Start the Astro development server"
+usage = '''
+arg "[rest]" help="Additional arguments to pass to Astro"
+'''
+run = "astro dev ${usage_rest}"
+
+[tasks.build]
+description = "Build the site"
+depends = ["prepare"]
+run = "astro build"
+
+[tasks.check]
+description = "Report that Astro diagnostics are not configured"
+run = "echo 'Astro diagnostics are not configured for this site; check is not supported.'"
+
+[tasks.ci]
+description = "Run CI checks and build the site"
+depends = ["prepare"]
+run = ["mise run check", "mise run build"]
+
+[tasks.clean]
+description = "Clean build artifacts and Astro caches"
+run = "rm -rf dist .astro"
+
+[tasks."clean:deps"]
+description = "Clean installed dependencies"
+run = "rm -rf node_modules"
