@@ -329,7 +329,10 @@ only in the browser.
 
 ## Development
 
-This repo uses the [Vite+](https://viteplus.dev/) / Oxc toolchain:
+This repo uses the [Vite+](https://viteplus.dev/) / Oxc toolchain. The plain
+`pnpm` commands below remain the contributor path. If you use [mise](https://mise.jdx.dev/),
+the common workflows are also available as `mise run prepare`, `mise run dev`,
+`mise run check`, and `mise run ci`.
 
 | Task       | Command            | Tool                                   |
 | ---------- | ------------------ | -------------------------------------- |

@@ -1,0 +1,16 @@
+min_version = "2026.4.18"
+
+[tools]
+node = "24"
+pnpm = "11"
+hk = "1.50.0"
+pkl = "0.32.0"
+
+[task_config]
+dir = "{{ config_root }}"
+
+[env]
+_.path = ["./node_modules/.bin"]
+
+[deps.pnpm]
+auto = true

@@ -1,0 +1,46 @@
+[tasks.prepare]
+description = "Install dependencies and git hooks"
+run = "hk install --mise"
+
+[tasks.dev]
+description = "Run Vitest in watch mode"
+run = "pnpm run test:watch"
+
+[tasks.build]
+description = "Build the package"
+run = "pnpm run build"
+
+[tasks.test]
+description = "Run the Vitest suite"
+run = "pnpm run test"
+
+[tasks.check]
+description = "Run non-mutating quality checks"
+run = "hk check"
+
+[tasks.fix]
+description = "Apply quality fixes"
+run = "hk fix"
+
+[tasks.ci]
+description = "Run the same checks as CI"
+run = [
+	"pnpm run typecheck",
+	"pnpm run lint",
+	"pnpm run lint:fallow",
+	"pnpm run format",
+	"pnpm run test",
+	"pnpm run build",
+	"pnpm run publint",
+	"pnpm run attw",
+	"pnpm run registry:build",
+	"git diff --exit-code registry.json",
+]
+
+[tasks.clean]
+description = "Clean build artifacts"
+run = "rm -rf dist coverage"
+
+[tasks."clean:deps"]
+description = "Clean installed dependencies"
+run = "rm -rf node_modules"
