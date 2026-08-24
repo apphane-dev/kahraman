@@ -78,14 +78,14 @@
 	},
 	"devDependencies": {
 		"@arethetypeswrong/cli": "^0.18.5",
-		"@changesets/cli": "^2.31.1",
-		"fallow": "^3.17.0",
+		"@changesets/cli": "^3.0.1",
+		"fallow": "^3.5.1",
 		"jsrepo": "^3.8.1",
-		"publint": "^0.3.24",
-		"storybook": "^10.5.10",
-		"tsdown": "^0.22.14",
+		"publint": "^0.3.21",
+		"storybook": "^10.5.0",
+		"tsdown": "^0.22.7",
 		"typescript": "^7.0.2",
-		"vite-plus": "^0.2.9",
+		"vite-plus": "^0.2.4",
 		"vitest": "4.1.10"
 	},
 	"peerDependencies": {
