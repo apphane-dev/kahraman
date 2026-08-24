@@ -42,9 +42,9 @@ jobs:
         run: pnpm run build
 
       - name: Create release PR or publish to npm
-        uses: changesets/action@v1
+        uses: changesets/action@v2
         with:
-          version: pnpm changeset version
-          publish: pnpm run release
+          version-script: pnpm changeset version
+          publish-script: pnpm run release
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
