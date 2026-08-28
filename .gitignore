@@ -14,3 +14,7 @@ coverage
 # Fallow local artifacts
 .fallow
 .var
+
+# vitest browser-mode artifacts
+test/browser/__screenshots__/
+.vitest-attachments/

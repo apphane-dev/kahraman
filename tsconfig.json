@@ -18,6 +18,7 @@
 		"declarationMap": true,
 		"sourceMap": true,
 		"noEmit": true,
+		"jsx": "react-jsx",
 		"types": []
 	},
 	"include": ["src", "test", "examples", "tsdown.config.ts", "vite.config.ts", "jsrepo.config.ts"]
