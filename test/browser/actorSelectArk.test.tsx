@@ -3,6 +3,9 @@
 // clicking the trigger, the option list is not in the DOM yet, so a plain
 // getByRole click misses; findByRole waits for it. Also validates the actor's
 // global-scope resolution: options portal to body, outside canvasElement.
+// Branch name "ark539" refers to ark issue chakra-ui/ark#539, not Ark UI
+// v5.39: the pinned @ark-ui/react 5.38.1 reproduces the async-portal
+// behaviour, so no version bump is needed for this fixture.
 // Fixture shape mirrors the karkas demo's CollectionSelect usage.
 import { Select, createListCollection, type SelectValueChangeDetails } from '@ark-ui/react/select'
 import { useState } from 'react'
