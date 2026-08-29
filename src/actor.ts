@@ -306,7 +306,7 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		selectOption: async (locator: DefiniteLocator, value: string | RegExp) => {
 			const global = withinElement(ctx().canvasElement.ownerDocument.body)
 			await click(locator)
-			await click(() => global.getByRole('option', { name: value }))
+			await click(() => global.findByRole('option', { name: value }))
 		},
 		clear: async (locator: DefiniteLocator) => {
 			await editInput(locator, '', async (el, userEvent) => {
