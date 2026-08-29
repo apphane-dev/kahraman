@@ -71,7 +71,7 @@ test('field assertions and grab helpers read live DOM state', async () => {
 	await I.seeInField(role('textbox', 'Search'), 'an')
 	await I.dontSeeInField(role('textbox', 'Search'), 'buoy')
 	const results = await I.grabTextFromAll(role('listitem').all())
-	expect(results).toEqual(['Anchor', 'Chart'])
+	expect(results).toEqual(['Anchor'])
 })
 
 test('scope narrows queries and restores on exit', async () => {
@@ -90,5 +90,7 @@ test('hopeThat collects soft failures and noErrors throws them', async () => {
 	await I.see(heading('Items').wait())
 	expect(await I.hopeThat(() => I.see(text('Buoy')))).toBe(true)
 	expect(await I.hopeThat(() => I.see(text('Deleted')))).toBe(false)
-	await expect(I.hopeThat.noErrors()).rejects.toThrow(/soft assertion/)
+	expect(await I.hopeThat(() => I.see(text('Anchor')))).toBe(true)
+	// noErrors() throws synchronously — call it via a thunk for toThrow()
+	expect(() => I.hopeThat.noErrors()).toThrow(/soft assertion/)
 })

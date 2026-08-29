@@ -61,7 +61,7 @@ test('selectOption picks an asynchronously rendered option', async () => {
 	const I = createActor()
 	I.init(renderPage(<HarbourPicker />))
 	await I.see(heading('Harbour picker').wait())
-	await I.see(text('nothing yet'))
+	await I.see(text('You picked: nothing yet'))
 	await I.selectOption(role('combobox', 'Harbour'), 'Çeşme')
 	await I.see(text('You picked: Çeşme'))
 })
