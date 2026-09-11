@@ -150,7 +150,7 @@ const faqSchema = {
       </div>
     </header>
 
-    <main id="main">
+    <main id="main" tabindex="-1">
       <!-- HERO -->
       <section class="hero">
         <div class="wrap hero-grid">
@@ -515,6 +515,11 @@ const faqSchema = {
     </footer>
 
     <script>
+      (() => {
+      // Feature-detect before enabling any JS-gated CSS state: without the
+      // API the no-JS fallback keeps every element visible.
+      if (!('IntersectionObserver' in window)) return;
+
       document.documentElement.classList.add('js');
 
       const revealObserver = new IntersectionObserver(
@@ -542,10 +547,17 @@ const faqSchema = {
         },
         { rootMargin: '0px 0px -35% 0px' }
       );
+      const triggerLine = () => window.innerHeight * 0.65; // rootMargin -35%
       document.querySelectorAll('.tagline .w').forEach((word, i) => {
+        if (word.getBoundingClientRect().top < triggerLine()) {
+          // Already above the reveal trigger on load: accessible immediately.
+          word.classList.add('on');
+          return;
+        }
         word.style.transitionDelay = `${Math.min(i * 70, 700)}ms`;
         wordObserver.observe(word);
       });
+      })();
     </script>
   </body>
 </html>

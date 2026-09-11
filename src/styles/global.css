@@ -92,7 +92,7 @@ section { position: relative; z-index: 1; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 12px;          /* text-xs */
   line-height: 16px;
   letter-spacing: 0.16em;
@@ -168,7 +168,7 @@ h2.section-title {
 .brand:hover { text-decoration: none; }
 .brand .glyph { color: var(--amber); }
 .brand .gloss {
-  font-family: var(--mono);
+  font-family: var(--sans);
   font-size: 12px;
   line-height: 16px;
   font-weight: 400;
@@ -212,11 +212,25 @@ h2.section-title {
   font-size: 48px;          /* text-5xl */
   line-height: 1;
   letter-spacing: -0.01em;
-  /* The one allowed gradient: hero heading text, dark theme */
-  background: linear-gradient(90deg, #ffffff, #9b9b9b);
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
+  /* Solid fallback keeps the heading visible without background-clip support */
+  color: #ffffff;
+}
+/* The one allowed gradient: hero heading text, dark theme */
+@supports ((background-clip: text) or (-webkit-background-clip: text)) {
+  .hero h1 {
+    background: linear-gradient(90deg, #ffffff, #9b9b9b);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    -webkit-text-fill-color: transparent;
+  }
+}
+@media (forced-colors: active) {
+  .hero h1 {
+    background: none;
+    color: CanvasText;
+    -webkit-text-fill-color: currentColor;
+  }
 }
 @media (max-width: 768px) {
   .hero h1 { font-size: 36px; line-height: 40px; }
@@ -242,6 +256,7 @@ h2.section-title {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  max-width: 100%;
   font-family: var(--mono);
   font-size: 14px;
   line-height: 20px;
@@ -252,7 +267,7 @@ h2.section-title {
   color: var(--cream);
 }
 .install .prompt { color: var(--amber); user-select: none; }
-.install .cmd { color: var(--cream); }
+.install .cmd { color: var(--cream); white-space: normal; overflow-wrap: anywhere; }
 
 .btn {
   display: inline-flex;
@@ -436,7 +451,9 @@ h2.section-title {
   .tagline { font-size: 30px; line-height: 36px; }
 }
 .tagline .w { transition: color 0.5s var(--ease); }
-.js .tagline .w { color: rgba(252, 237, 210, 0.28); }
+/* 0.4 composites to ~3.3:1 over --ink (WCAG large-text AA); the skill's
+   25-35% band only reaches 2.75:1 */
+.js .tagline .w { color: rgba(252, 237, 210, 0.4); }
 .js .tagline .w.on { color: var(--cream); }
 @media (prefers-reduced-motion: reduce) {
   .js .tagline .w { color: var(--cream); }
@@ -711,6 +728,11 @@ h2.section-title {
 }
 @media (prefers-reduced-motion: reduce) {
   .js [data-reveal] { opacity: 1; transform: none; filter: none; transition: none; }
+  .js .tagline .w,
+  .js .tagline .w.on { color: var(--cream); transition: none; }
+  .tagline .w { transition-delay: 0ms !important; }
+  .btn, .card, .chip, .ref, .nav-links .ghost-btn { transition: none; }
+  .trace .row { animation: none; }
   html { scroll-behavior: auto; }
 }
 
