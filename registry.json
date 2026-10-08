@@ -20,7 +20,9 @@
 			"description": "createActor() and the role/text/heading/button/link locator DSL, with step-trace diagnostics and call-site stack retargeting.",
 			"type": "lib",
 			"add": "when-added",
-			"registryDependencies": [],
+			"registryDependencies": [
+				"preview"
+			],
 			"dependencies": [],
 			"devDependencies": [],
 			"files": [
@@ -30,6 +32,15 @@
 					"path": "index.ts",
 					"relativePath": "src/index.ts",
 					"_imports_": [
+						{
+							"import": "./preview",
+							"item": "preview",
+							"file": {
+								"type": "lib",
+								"path": "preview.ts"
+							},
+							"meta": {}
+						},
 						{
 							"import": "./actor",
 							"item": "actor",
@@ -167,6 +178,43 @@
 					"registryDependencies": [],
 					"dependencies": [],
 					"devDependencies": []
+				},
+				{
+					"type": "lib",
+					"role": "test",
+					"path": "addon.test.ts",
+					"relativePath": "test/addon.test.ts",
+					"_imports_": [
+						{
+							"import": "../src/index",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "index.ts"
+							},
+							"meta": {}
+						},
+						{
+							"import": "../src/preview",
+							"item": "preview",
+							"file": {
+								"type": "lib",
+								"path": "preview.ts"
+							},
+							"meta": {}
+						}
+					],
+					"registryDependencies": [
+						"preview"
+					],
+					"dependencies": [],
+					"devDependencies": [
+						{
+							"ecosystem": "js",
+							"name": "vitest",
+							"version": "4.1.10"
+						}
+					]
 				},
 				{
 					"type": "lib",
