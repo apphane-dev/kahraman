@@ -34,6 +34,7 @@ export default defineConfig({
 					{ path: './src/steps.ts' },
 					{ path: './src/invariant.ts' },
 					{ path: './src/context.ts' },
+					{ path: './test/addon.test.ts', role: 'test' },
 					{ path: './test/loc.test.ts', role: 'test' },
 					{ path: './test/steps.test.ts', role: 'test' },
 					{ path: './examples/pageActor.ts', role: 'example' },

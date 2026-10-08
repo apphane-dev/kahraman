@@ -54,6 +54,9 @@ ESM only and is renderer-agnostic: it reads only `canvasElement` and `userEvent`
 from the story context, so it works with the React, Vue, and Svelte renderers
 alike.
 
+Supports Storybook 9, 10, and 11, including the Storybook 11 prerelease. Node.js
+22.12 or newer is required.
+
 ### Or vendor the source with jsrepo
 
 Prefer to own the code? `kahraman` is also published as a
@@ -278,7 +281,24 @@ readable:
 Testing Library's `getByRole` misses dump a listing of _every_ accessible role
 on the page — hundreds of lines on a full app mount. The `kahraman/preview`
 annotation filters that to just the queried role's near-misses and caps the DOM
-dump. Add it to your Storybook preview:
+dump. For CSF Next, register the addon factory in your Storybook preview:
+
+```ts
+// .storybook/preview.ts
+import { definePreview } from '@storybook/react-vite' // use your framework
+import kahraman from 'kahraman'
+
+export default definePreview({
+	addons: [kahraman()],
+	// ...your other preview config
+})
+```
+
+Calling `kahraman()` opts into diagnostics and types `parameters.kahraman`.
+The named actor and locator exports work without registering the addon.
+
+For an object-style preview, the existing `kahraman/preview` annotation still
+works:
 
 ```ts
 // .storybook/preview.ts
@@ -320,14 +340,21 @@ package:
 
 ## Testing the pure helpers
 
-`kahraman`'s own test suite unit-tests only the **Storybook-free** logic:
+`kahraman`'s own test suite unit-tests the **Storybook-free** logic:
 locator label construction, step-label formatting, role-listing filtering,
-message capping, and stack-frame retargeting. The full actor behavior requires a
-real Storybook browser context and is exercised by consumers' stories — that
-boundary is intentional. The DOM-touching modules (`actor.ts`, `preview.ts`) run
-only in the browser.
+message capping, and stack-frame retargeting. It also checks CSF Next addon
+composition and diagnostics configuration against the real Storybook APIs. CI
+checks compatibility with Storybook 9, 10, and 11. The full actor behavior
+requires a real Storybook browser context and is exercised by consumers'
+stories. That boundary is intentional. The DOM-touching code in `actor.ts` and
+`preview.ts` runs in the browser; the configuration tests do not render a story
+or query the DOM.
 
 ## Development
+
+Development uses Storybook 11 alpha, pinned in `pnpm-lock.yaml`. There is no
+local Storybook instance in this repository. Use Node.js 22.18+ or 24.11+ to run
+the development toolchain, which has a higher minimum than the published package.
 
 This repo uses the [Vite+](https://viteplus.dev/) / Oxc toolchain. The plain
 `pnpm` commands below remain the contributor path. If you use [mise](https://mise.jdx.dev/),

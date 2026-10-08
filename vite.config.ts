@@ -5,9 +5,8 @@ import { defineConfig } from 'vite-plus'
 // `lint` block — Vite+ keeps all of this in vite.config.ts rather than in
 // separate .oxfmtrc.json / .oxlintrc.json files.
 //
-// The unit tests cover the PURE, Storybook-free logic only: locator label
-// construction, step-label formatting, role-listing filtering, message capping,
-// and stack-frame retargeting. Full actor behaviour needs a Storybook browser
+// The unit tests cover pure helpers plus CSF Next addon composition and
+// diagnostics configuration. Full actor behaviour needs a Storybook browser
 // context and is out of scope here — see README (Testing the pure helpers).
 export default defineConfig({
 	fmt: {

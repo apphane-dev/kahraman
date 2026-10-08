@@ -24,8 +24,8 @@ importers:
         specifier: ^0.3.21
         version: 0.3.24
       storybook:
-        specifier: ^10.5.0
-        version: 10.5.10(prettier@2.8.8)(react@19.2.7)(vite-plus@0.2.9(@arethetypeswrong/core@0.18.5)(esbuild@0.28.2)(jiti@2.7.0)(publint@0.3.24)(typescript@7.0.2)(vite@8.1.4(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(yaml@2.9.0))
+        specifier: ^11.0.0-alpha.4
+        version: 11.0.0-alpha.4(prettier@2.8.8)(react@19.2.7)(vite-plus@0.2.9(@arethetypeswrong/core@0.18.5)(esbuild@0.28.2)(jiti@2.7.0)(publint@0.3.24)(typescript@7.0.2)(vite@8.1.4(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(yaml@2.9.0))
       tsdown:
         specifier: ^0.22.7
         version: 0.22.14(@arethetypeswrong/core@0.18.5)(oxc-resolver@11.24.2)(publint@0.3.24)(typescript@7.0.2)
@@ -2581,13 +2581,13 @@ packages:
   std-env@4.2.0:
     resolution: {integrity: sha512-oCUKSupKTHX53EyjDtuZQ64pjLJ6yYCtpmEw0goYxtjG9KpbRe8KAsl2tBUGU9DyMcJ0RwJ8GqJAFzMXcXW1Rw==}
 
-  storybook@10.5.10:
-    resolution: {integrity: sha512-Rz8k9ejFHsi7lbtJTaxZlhCUz4GkbJIKEoKDjXeLfr/ZhXip73E6keKxW0KH8iGeKiCqHAbJCV4YIQrxTOLiig==}
+  storybook@11.0.0-alpha.4:
+    resolution: {integrity: sha512-8xlNpZgfqHs22zb0B37PQVSy0iB0B9InuXLKRlR2zPIb8LeykxE2mY8ias8kcZ9sMMu9N0zvgosM+uDzYOLZHQ==}
     hasBin: true
     peerDependencies:
-      '@types/react': ^16.8.0 || ^17.0.0 || ^18.0.0 || ^19.0.0
+      '@types/react': ^18.0.0 || ^19.0.0
       prettier: ^2 || ^3
-      vite-plus: ^0.1.15 || ^0.2.0
+      vite-plus: ^0.1.15 || ^0.2.0 || ^0.3.0
     peerDependenciesMeta:
       '@types/react':
         optional: true
@@ -4823,13 +4823,14 @@ snapshots:
 
   std-env@4.2.0: {}
 
-  storybook@10.5.10(prettier@2.8.8)(react@19.2.7)(vite-plus@0.2.9(@arethetypeswrong/core@0.18.5)(esbuild@0.28.2)(jiti@2.7.0)(publint@0.3.24)(typescript@7.0.2)(vite@8.1.4(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(yaml@2.9.0)):
+  storybook@11.0.0-alpha.4(prettier@2.8.8)(react@19.2.7)(vite-plus@0.2.9(@arethetypeswrong/core@0.18.5)(esbuild@0.28.2)(jiti@2.7.0)(publint@0.3.24)(typescript@7.0.2)(vite@8.1.4(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(yaml@2.9.0)):
     dependencies:
       '@storybook/global': 5.0.0
       '@storybook/icons': 2.1.0(react@19.2.7)
       '@testing-library/dom': 10.4.1
       '@testing-library/jest-dom': 6.9.1
       '@testing-library/user-event': 14.6.6(@testing-library/dom@10.4.1)
+      '@types/chai': 5.2.3
       '@vitest/expect': 3.2.4
       '@vitest/spy': 3.2.4
       '@webcontainer/env': 1.1.1
