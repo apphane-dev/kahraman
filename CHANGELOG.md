@@ -1,5 +1,16 @@
 # kahraman
 
+## 0.4.0
+
+### Minor Changes
+
+- 86e3c77: `I.init(context)` accepts a Storybook `StoryContext`, whose `userEvent` is a `userEvent.setup()` instance, as well as a context carrying the direct `userEvent` API.
+  
+  **Breaking (types):** the exported `UserEvent` types only the methods the actor calls (`clear`, `click`, `keyboard`, `tab`, `type`) and each returns `Promise<unknown>`. Code that used the resolved value of `UserEvent['keyboard']` as `System` must narrow or cast it.
+- 41dc85e: Support Storybook 11 and its prereleases while retaining Storybook 9 and 10 compatibility. Add an opt-in default addon factory for CSF Next (`addons: [kahraman()]`) with typed diagnostics parameters. Existing named exports and the `kahraman/preview` annotation remain available.
+  
+  Raise the minimum Node.js version to 22.12 to match Storybook 11.
+
 ## 0.3.1
 
 ### Patch Changes
