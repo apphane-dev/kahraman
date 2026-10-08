@@ -13,10 +13,18 @@
  */
 export type Canvas = ReturnType<typeof import('storybook/test').within>
 
-type StorybookUserEvent = typeof import('storybook/test').userEvent
+type UserEventInstance = ReturnType<typeof import('storybook/test').userEvent.setup>
 
-/** The subset of Storybook's `userEvent` instance used by the actor. */
-export type UserEvent = Pick<StorybookUserEvent, 'clear' | 'click' | 'keyboard' | 'tab' | 'type'>
+/**
+ * The `userEvent` methods the actor calls. Returns are `Promise<unknown>` so both
+ * the `userEvent.setup()` instance on `StoryContext` (`keyboard(): Promise<void>`)
+ * and the direct `userEvent` API (`keyboard(): Promise<System>`) are accepted.
+ */
+export type UserEvent = {
+	[K in 'clear' | 'click' | 'keyboard' | 'tab' | 'type']: (
+		...args: Parameters<UserEventInstance[K]>
+	) => Promise<unknown>
+}
 
 /**
  * The minimal, renderer-agnostic slice of a Storybook `StoryContext` the actor
