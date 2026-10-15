@@ -41,6 +41,9 @@
 		"dist",
 		"src",
 		"skills",
+		"brand/*.svg",
+		"brand/*.png",
+		"brand/*.jpg",
 		"README.md",
 		"LICENSE"
 	],

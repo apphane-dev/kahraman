@@ -17,7 +17,8 @@ entry = [
 # graph dependency to police here.
 ignoreDependencies = ["storybook"]
 
-ignorePatterns = ["dist/**", "coverage/**"]
+# Generated brand CSS is a standalone export, not part of the package module graph.
+ignorePatterns = ["dist/**", "coverage/**", "brand/tokens.css"]
 
 [duplicates]
 ignoreImports = true

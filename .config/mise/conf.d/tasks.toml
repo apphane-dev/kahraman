@@ -24,6 +24,7 @@ run = "hk fix"
 
 [tasks.ci]
 description = "Run the same checks as CI"
+depends = ["brand:check"]
 run = [
 	"pnpm run typecheck",
 	"pnpm run lint",
@@ -44,3 +45,42 @@ run = "rm -rf dist coverage"
 [tasks."clean:deps"]
 description = "Clean installed dependencies"
 run = "rm -rf node_modules"
+
+[tasks."brand:generate"]
+description = "Regenerate the I. identity vectors, colors, and PNG assets"
+run = [
+	"uv run --with fonttools==4.60.1 python brand/scripts/generate.py",
+	"resvg --width 512 brand/avatar.svg brand/avatar.png",
+	"resvg brand/social.svg brand/social.png",
+]
+
+[tasks."brand:check"]
+description = "Check exact brand geometry, generated assets, and color contrast"
+run = [
+	"uv run --with fonttools==4.60.1 python brand/scripts/generate.py --check",
+	"python3 -m unittest discover -s brand/scripts -p 'test_*.py' -v",
+]
+
+[tasks."film:setup"]
+description = "Build the silent fframes film with a local Linux x264 runtime"
+dir = "{{ config_root }}/fframes"
+run = "mise exec -- bash scripts/bootstrap.sh"
+
+[tasks."film:review"]
+description = "Inspect every frame and generate the film's review sheets"
+dir = "{{ config_root }}/fframes"
+run = "mise exec -- bash scripts/review.sh"
+
+[tasks."film:render"]
+description = "Render and verify the silent 32-second film and update its README poster"
+dir = "{{ config_root }}/fframes"
+run = "mise exec -- bash scripts/render.sh"
+
+[tasks."film:test"]
+description = "Check film pacing, silence, all frames, and approved snapshots"
+dir = "{{ config_root }}/fframes"
+run = [
+	"mise exec -- cargo fmt --check",
+	"mise exec -- cargo clippy --release --locked --all-targets -- -D warnings",
+	"mise exec -- cargo test --release --locked",
+]

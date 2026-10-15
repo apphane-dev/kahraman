@@ -1,5 +1,7 @@
 # kahraman
 
+![kahraman. Test what users perceive.](./brand/banner.svg)
+
 **Accessibility-first, codecept-style test actor and locator DSL for Storybook
 portable stories and Vitest browser mode.**
 
@@ -13,7 +15,11 @@ Built and maintained by [apphane](https://apphane.dev/).
 
 ## See it in motion
 
-https://github.com/user-attachments/assets/ec192e14-64ab-4d11-b504-82d8d053a400
+[![Watch the silent kahraman film](./brand/video-poster.jpg)](https://github.com/apphane-dev/kahraman/releases/download/media-2026-10-15/kahraman-silent.mp4)
+
+[Watch or download the film](https://github.com/apphane-dev/kahraman/releases/download/media-2026-10-15/kahraman-silent.mp4),
+32 seconds, full HD, silent. Made with [fframes](./fframes/README.md).
+The reusable `I.` logo, colors, and typography are in [brand/](./brand/README.md).
 
 ```ts
 import { createActor, button, heading, role } from 'kahraman'

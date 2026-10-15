@@ -1,0 +1,24 @@
+[package]
+name = "kahraman-film"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+fframes = { version = "=1.2.0", features = ["compile-time-svgtree", "cli"] }
+fframes_skia_renderer = { version = "=1.2.0", features = ["vulkan"] }
+fframes_native_player = { version = "=1.2.0", default-features = false, features = ["vulkan"] }
+
+[target.'cfg(not(windows))'.dependencies]
+fframes = { version = "=1.2.0", features = ["h264", "libav-agree-gpl"] }
+
+[build-dependencies]
+serde_json = "1.0"
+
+[workspace]
+
+[profile.dev]
+opt-level = 1
+
+[profile.dev.package."*"]
+opt-level = 3
