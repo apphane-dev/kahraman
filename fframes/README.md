@@ -3,7 +3,9 @@
 A 32-second, 1920 x 1080, 30 fps film made with fframes 1.2.0. No soundtrack,
 narration, or audio stream. The published MP4 is H.264, yuv420p, with faststart.
 
-[Watch or download the film](https://github.com/apphane-dev/kahraman/releases/download/media-2026-10-15/kahraman-silent.mp4)
+https://github.com/user-attachments/assets/a7e5ee02-7ded-4aea-a8a7-1ff3ad713914
+
+[Download the film](https://github.com/apphane-dev/kahraman/releases/download/media-2026-10-15/kahraman-silent.mp4)
 
 ## What changed
 
@@ -93,3 +95,15 @@ After review, commit and push the source. Create a media release targeting that
 commit and attach `kahraman-silent.mp4`, the review strip, verification report,
 and a ZIP of the exported brand assets. Update the README's release links
 when publishing a later film. Keep the rendered MP4 outside Git.
+
+For the README player, upload the MP4 as a GitHub user attachment and place the
+returned `https://github.com/user-attachments/assets/...` URL in its own paragraph.
+A release download link or a linked poster does not create GitHub's inline
+player. Keep the release link as a separate download fallback.
+
+The installed GitHub CLI's attachment uploader uses
+`POST https://uploads.github.com/user-attachments/assets` with `name`,
+`content_type`, and `repository_id` query parameters, a binary request body, and
+GitHub authentication. Its JSON response contains the attachment `url`. Record
+that URL and the video's checksum in `published.json`. The brand CI test rejects
+a README that loses the bare attachment URL.

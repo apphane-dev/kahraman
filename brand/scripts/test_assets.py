@@ -9,6 +9,14 @@ NS = {'s': 'http://www.w3.org/2000/svg'}
 
 
 class BrandAssets(unittest.TestCase):
+    def test_readme_keeps_an_inline_video_player(self):
+        manifest = json.loads((ROOT.parent / 'fframes/published.json').read_text())
+        url = manifest['inline_video_url']
+        self.assertTrue(url.startswith('https://github.com/user-attachments/assets/'))
+        readme = (ROOT.parent / 'README.md').read_text()
+        self.assertIn('\n\n' + url + '\n\n', readme,
+                      'GitHub needs a bare attachment URL in its own paragraph for inline video')
+
     def test_vectors_are_self_contained_and_accessible(self):
         for file in ROOT.glob('*.svg'):
             with self.subTest(file=file.name):
