@@ -1,0 +1,19 @@
+/* Generated from tokens.json by scripts/generate.py. */
+:root {
+  --kahraman-paper: #f3f0e8;
+  --kahraman-card: #fcfbf7;
+  --kahraman-ink: #111111;
+  --kahraman-mute: #5b574f;
+  --kahraman-rule: #d6d0c3;
+  --kahraman-cobalt: #2438f5;
+  --kahraman-cobalt-soft: #dde1fd;
+  --kahraman-red: #d93a2b;
+  --kahraman-dark: #16171b;
+  --kahraman-dark-text: #ecebe6;
+  --kahraman-dark-mute: #9b9a94;
+  --kahraman-fail-text: #ff8f82;
+  --kahraman-white: #ffffff;
+  --kahraman-cobalt-light: #8f9bff;
+  --kahraman-font-sans: "Space Grotesk", sans-serif;
+  --kahraman-font-mono: "IBM Plex Mono", monospace;
+}

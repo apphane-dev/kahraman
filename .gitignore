@@ -21,3 +21,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# Checksum-verified video fetched from the published release at build time
+public/media/

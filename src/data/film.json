@@ -1,0 +1,15 @@
+{
+  "title": "Test what users perceive.",
+  "src": "/media/kahraman-silent.mp4",
+  "poster": "/brand/video-poster.jpg",
+  "releaseUrl": "https://github.com/apphane-dev/kahraman/releases/tag/media-2026-10-15",
+  "downloadUrl": "https://github.com/apphane-dev/kahraman/releases/download/media-2026-10-15/kahraman-silent.mp4",
+  "sha256": "86928443d0588685c94a8790b5b6a0cfba622dd04a93b29b800b95edf5a52904",
+  "sizeBytes": 3184538,
+  "seconds": 32,
+  "width": 1920,
+  "height": 1080,
+  "fps": 30,
+  "audioTracks": 0,
+  "brandSourceCommit": "8f58cdd"
+}

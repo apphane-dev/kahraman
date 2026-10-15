@@ -1,6 +1,7 @@
 ---
 import '../styles/global.css';
 import CodeBlock from '../components/CodeBlock.astro';
+import film from '../data/film.json';
 
 const GITHUB = 'https://github.com/apphane-dev/kahraman';
 const NPM = 'https://www.npmjs.com/package/kahraman';
@@ -87,7 +88,7 @@ const faqs = [
   },
   {
     q: 'How do I install it?',
-    a: 'Run npm install --save-dev kahraman. It is ESM only and needs Node 20.11 or newer.',
+    a: 'Run npm install --save-dev kahraman. It is ESM only and needs Node 22.12 or newer.',
   },
   {
     q: 'Can I add my own steps?',
@@ -121,13 +122,13 @@ const faqSchema = {
     <meta property="og:description" content="Accessibility first tests that read like a user's story. A fluent locator DSL, small on purpose." />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://kahraman.apphane.dev/" />
-    <meta name="theme-color" content="#000000" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700&family=Geist+Mono:wght@400;500&display=swap"
-      rel="stylesheet"
-    />
+    <meta property="og:image" content="https://kahraman.apphane.dev/brand/social.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:image:alt" content="kahraman. Test what users perceive. The cobalt I. actor mark on paper." />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="theme-color" content="#f3f0e8" />
+    <link rel="stylesheet" href="/brand/tokens.css" />
     <script type="application/ld+json" set:html={JSON.stringify(faqSchema)} />
   </head>
   <body>
@@ -137,10 +138,11 @@ const faqSchema = {
     <header class="nav">
       <div class="wrap">
         <a class="brand" href="/">
-          <span class="glyph">⟩</span>kahraman
+          <img class="brand-mark" src="/brand/mark.svg" width="36" height="36" alt="" />kahraman
           <span class="gloss">Turkish for “hero”</span>
         </a>
         <nav class="nav-links" aria-label="Primary">
+          <a href="#film">Film</a>
           <a href="#contrast">Why</a>
           <a href="#dsl">The DSL</a>
           <a href="#fit">Where it runs</a>
@@ -175,11 +177,11 @@ const faqSchema = {
             </div>
             <div class="cta-row">
               <a class="btn btn-primary" href={README}>Read the guide</a>
-              <a class="btn btn-ghost" href={GITHUB}>View on GitHub ↗</a>
+              <a class="btn btn-ghost" href="#film">Watch the film</a>
             </div>
             <div class="hero-meta">
               <span>ESM only</span>
-              <span>Node ≥ 20.11</span>
+              <span>Node ≥ 22.12</span>
               <span>storybook ≥ 9</span>
               <span>MIT</span>
             </div>
@@ -216,6 +218,54 @@ const faqSchema = {
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <!-- The film is first-party media, not a release-download redirect. -->
+      <section class="section film-section" id="film" aria-labelledby="film-title">
+        <div class="wrap">
+          <div class="film-heading">
+            <div class="section-head">
+              <span class="eyebrow">See it in motion</span>
+              <h2 class="section-title" id="film-title">{film.title}</h2>
+              <p class="section-lead" id="film-description">
+                Follow the actor from a named button to a sign-in test and its step trace.
+                {film.seconds} seconds. Silent, with no autoplay.
+              </p>
+            </div>
+            <img class="film-mark" src="/brand/mark-cobalt.svg" width="88" height="88" alt="" loading="lazy" />
+          </div>
+          <figure class="film-player">
+            <video
+              controls
+              playsinline
+              muted
+              preload="metadata"
+              poster={film.poster}
+              width={film.width}
+              height={film.height}
+              aria-labelledby="film-title"
+              aria-describedby="film-description"
+            >
+              <source src={film.src} type="video/mp4" />
+              Your browser does not support inline video. <a href={film.src}>Download the silent film</a>.
+            </video>
+            <figcaption>
+              <span>{film.seconds}s · Full HD · No audio</span>
+              <a href={film.src} download>Download MP4</a>
+            </figcaption>
+          </figure>
+          <details class="film-summary">
+            <summary>Read the film summary</summary>
+            <ol>
+              <li>Create one actor with <code>const I = createActor()</code>. Use <code>I.see</code>, <code>I.fill</code>, <code>I.click</code>, and <code>I.waitExit</code>.</li>
+              <li>Find a button by its role and accessible name, <code>button('Continue')</code>.</li>
+              <li>Run the sign-in journey from the example above, then check <code>heading('Welcome, Ada')</code>.</li>
+              <li>If a step fails, the trace identifies the call and points to the line in your story.</li>
+              <li>The same actor reads <code>canvasElement</code> and <code>userEvent</code> across React, Vue, and Svelte.</li>
+              <li>Install with <code>npm install --save-dev kahraman</code>.</li>
+            </ol>
+          </details>
         </div>
       </section>
 
@@ -503,6 +553,7 @@ const faqSchema = {
     <footer class="footer">
       <div class="wrap">
         <span class="lic">
+          <img class="footer-mark" src="/brand/mark.svg" width="28" height="28" alt="" loading="lazy" />
           <b>kahraman</b> · a house tool from <a href="https://apphane.dev/">apphane</a> — small, sharp tools · MIT
         </span>
         <nav class="foot-links" aria-label="Footer">
