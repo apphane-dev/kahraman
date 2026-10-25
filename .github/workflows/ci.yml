@@ -75,6 +75,11 @@ jobs:
           pnpm run registry:build
           git diff --exit-code registry.json
 
+      - name: Conformance matrix is up to date
+        run: |
+          pnpm run conformance:matrix
+          git diff --exit-code conformance/MATRIX.md
+
   storybook-compatibility:
     runs-on: ubuntu-latest
     strategy:

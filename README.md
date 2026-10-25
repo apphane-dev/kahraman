@@ -58,7 +58,8 @@ npm install --save-dev kahraman
 `userEvent`) is a **peer dependency** — you already have it. `kahraman` ships
 ESM only and is renderer-agnostic: it reads only `canvasElement` and `userEvent`
 from the story context, so it works with the React, Vue, and Svelte renderers
-alike.
+alike. The [conformance matrix](./conformance/MATRIX.md) shows which widgets of
+popular UI kits the actor can drive.
 
 Supports Storybook 9, 10, and 11, including the Storybook 11 prerelease. Node.js
 22.12 or newer is required.
