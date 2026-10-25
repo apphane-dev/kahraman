@@ -27,7 +27,8 @@ An actor extension, built with `I.extend`, covering one UI kit's quirks.
 _Avoid_: plugin, adapter
 
 **Known gap**:
-A conformance scenario expected to fail against a UI kit, linked to an issue.
+A conformance scenario expected to fail against a UI kit, linked to the ticket
+that would fix it.
 _Avoid_: skip, unsupported
 
 **Conformance matrix**:

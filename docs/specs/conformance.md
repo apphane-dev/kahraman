@@ -66,23 +66,34 @@ Rules:
 ## Kit manifest
 
 Each kit exports a manifest: the scenarios it implements, and for each one
-either pass or a known gap with its issue URL. The kit's stories apply
-`knownGap` from the manifest, and the matrix generator reads the same data.
+either pass or a known gap: the number of the ticket that would fix it, and a
+substring of the error the scenario fails with today. The kit's stories apply `knownGap` from the manifest, and the matrix generator reads
+the same data.
 
 - A scenario missing from the manifest is n/a: the kit has no such widget.
-- A manifest that omits a baseline scenario fails the generator.
+- Story titles and test names must be string literals, because Storybook
+  indexes them statically. Each kit therefore declares one `Story.test` per
+  scenario, named after the scenario ID.
+- Each story test body is `run('<id>')` for its own scenario ID.
+- The generator fails when a manifest omits a baseline scenario, when declared
+  scenarios and story test names differ, when a test body runs another
+  scenario, or when a known gap names a ticket that exists in neither
+  `tickets/` nor `backlog/`.
 
-## `knownGap(issueUrl, run)`
+## `knownGap({ ticket, failsWith }, run)`
 
 CSF Next's `story.test` has no `.fails`, so a wrapper does the job.
 
-- `run` throws: the test passes.
-- `run` resolves: the test fails with `known gap fixed, remove marker: <issueUrl>`.
+- `run` throws an error containing `failsWith`: the test passes.
+- `run` throws anything else: the test fails, so a broken fixture cannot pass
+  as a known gap.
+- `run` resolves: the test fails with `known gap fixed, remove marker: ticket <NN>`.
 
 ## Matrix
 
 A script renders scenarios against kits into `conformance/MATRIX.md`, each cell
-pass, known gap (linked), or n/a. It reads manifests only and needs no browser.
+pass, known gap (linked to its ticket), or n/a. It reads manifests and story
+files and needs no browser.
 CI regenerates it and runs `git diff --exit-code`. The README links it next to
 the supported-frameworks list.
 
@@ -95,15 +106,16 @@ A `conformance` job, matrix over kits, Chromium only, on every PR with no
 
 | PR  | Kit                   | Risk it probes                            |
 | --- | --------------------- | ----------------------------------------- |
-| 1   | React Aria Components | reference; expected all green             |
+| 1   | React Aria Components | reference; strictest ARIA                 |
 | 2   | Radix / shadcn        | portals, ARIA-only widgets                |
 | 3   | MUI                   | portals, listbox Select over hidden input |
 | 4   | PrimeVue              | Vue renderer                              |
 | 5   | Web Awesome           | shadow DOM                                |
 
 PR 1 also carries the scenarios package, contract, `knownGap`, matrix
-generator, and CI job. A red cell in PR 1 means the suite is broken, not
-kahraman. Web Awesome lands with every scenario as a known gap. Shadow DOM
+generator, and CI job. React Aria Components portals its overlays and renders
+`Select` as a button, so even the reference kit starts with known gaps. Web
+Awesome lands with every scenario as a known gap. Shadow DOM
 support in core is separate work.
 
 ## Kit extensions

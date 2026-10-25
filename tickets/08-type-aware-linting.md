@@ -4,9 +4,9 @@
 and the actor awaits its `storybook/test` DOM matchers, with the conformance run
 proving the actor still behaves.
 
-**Blocked by:** 03 (full catalog).
+**Blocked by:** None (can start immediately).
 
-**Status:** blocked
+**Status:** ready-for-agent
 
 - [ ] `typeAware` and `typeCheck` are enabled in the lint config.
 - [ ] Every floating-promise finding on a DOM matcher is resolved with `await`,
