@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest'
 
-import { knownGap } from '../src/known-gap.ts'
+import { expectFailure } from '../src/expect-failure.ts'
 
 const gap = {
-	ticket: 'ticket 09',
+	marker: 'known gap 09',
 	failsWith: 'Unable to find an accessible element with the role "dialog"',
 }
 
-describe('knownGap', () => {
+describe('expectFailure', () => {
 	it('passes while the scenario fails for the stated reason', async () => {
 		await expect(
-			knownGap(gap, async () => {
+			expectFailure(gap, async () => {
 				throw new Error('Unable to find an accessible element with the role "dialog"')
 			}),
 		).resolves.toBeUndefined()
@@ -18,7 +18,7 @@ describe('knownGap', () => {
 
 	it('allows leading whitespace and context after the primary diagnostic', async () => {
 		await expect(
-			knownGap(gap, async () => {
+			expectFailure(gap, async () => {
 				throw new Error(`\n  ${gap.failsWith}\n\nActor steps: I.see(dialog)`)
 			}),
 		).resolves.toBeUndefined()
@@ -26,50 +26,50 @@ describe('knownGap', () => {
 
 	it('fails when the scenario fails for another reason', async () => {
 		await expect(
-			knownGap(gap, async () => {
+			expectFailure(gap, async () => {
 				throw new Error('Unable to find an accessible element with the role "button"')
 			}),
-		).rejects.toThrow('ticket 09: expected a failure starting with')
+		).rejects.toThrow('known gap 09: expected a failure starting with')
 	})
 
 	it('rejects an unrelated error that only quotes the expected diagnostic', async () => {
 		await expect(
-			knownGap(gap, async () => {
+			expectFailure(gap, async () => {
 				throw new Error(`Fixture failed while quoting: ${gap.failsWith}`)
 			}),
-		).rejects.toThrow('ticket 09: expected a failure starting with')
+		).rejects.toThrow('known gap 09: expected a failure starting with')
 	})
 
 	it('rejects the diagnostic when it appears only in appended context', async () => {
 		await expect(
-			knownGap(gap, async () => {
+			expectFailure(gap, async () => {
 				throw new Error(`Fixture failed\n\nPrevious error: ${gap.failsWith}`)
 			}),
-		).rejects.toThrow('ticket 09: expected a failure starting with')
+		).rejects.toThrow('known gap 09: expected a failure starting with')
 	})
 
 	it('rejects a thrown string even when it matches the diagnostic', async () => {
 		await expect(
-			knownGap(gap, async () => {
+			expectFailure(gap, async () => {
 				throw 'Unable to find an accessible element with the role "dialog"'
 			}),
-		).rejects.toThrow('ticket 09: expected a failure starting with')
+		).rejects.toThrow('known gap 09: expected a failure starting with')
 	})
 
 	it('rejects an empty failsWith, which would accept any error', async () => {
 		let ran = false
 		await expect(
-			knownGap({ ticket: 'ticket 09', failsWith: ' ' }, async () => {
+			expectFailure({ marker: 'known gap 09', failsWith: ' ' }, async () => {
 				ran = true
 				throw new Error('anything')
 			}),
-		).rejects.toThrow('ticket 09: failsWith must not be empty')
+		).rejects.toThrow('known gap 09: failsWith must not be empty')
 		expect(ran).toBe(false)
 	})
 
 	it('fails with a removal hint once the scenario passes', async () => {
-		await expect(knownGap(gap, async () => {})).rejects.toThrow(
-			'known gap fixed, remove marker: ticket 09',
+		await expect(expectFailure(gap, async () => {})).rejects.toThrow(
+			'scenario passes, remove marker: known gap 09',
 		)
 	})
 })
