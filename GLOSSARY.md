@@ -13,6 +13,10 @@ _Avoid_: UI lib, design system, framework
 A UI-kit-agnostic user journey that runs unchanged against every UI kit.
 _Avoid_: demo, probe, smoke test
 
+**Baseline**:
+The conformance scenarios every kit fixture must implement.
+_Avoid_: core scenarios, required set
+
 **Kit fixture**:
 The stories of one UI kit that render the widgets the conformance scenarios
 need.
