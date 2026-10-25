@@ -6,10 +6,16 @@ export interface Kit {
 	dir: string
 	manifest: KitManifest
 	/**
-	 * The kit's story tests, as Storybook indexes them, with the scenario ID
-	 * each passes to `run(...)` (undefined when the body is not `run('<id>')`).
+	 * The kit's story tests, as Storybook indexes them: the stories file relative
+	 * to the kit's `src/`, the scenario ID each passes to `run(...)` (undefined
+	 * when the body is not `run('<id>')`), and whether it passes a workaround.
 	 */
-	storyTests: readonly { name: string; scenario: string | undefined }[]
+	storyTests: readonly {
+		name: string
+		file: string
+		scenario: string | undefined
+		workaround: boolean
+	}[]
 }
 
 const row = (cells: readonly string[]) => `| ${cells.join(' | ')} |`
@@ -40,9 +46,22 @@ const checks: readonly Check[] = [
 				(test) =>
 					`story test ${test.name} must run run('${test.name}'), found ${test.scenario === undefined ? 'another body' : `run('${test.scenario}')`}`,
 			),
+	(kit) =>
+		kit.storyTests.flatMap((test) => {
+			const status = kit.manifest.scenarios[test.name as ScenarioId]
+			const differs = typeof status === 'object' && 'differs' in status
+			if (differs === test.workaround) {
+				return []
+			}
+			return [
+				differs
+					? `story test ${test.name} must pass a workaround for its different pattern`
+					: `story test ${test.name} passes a workaround, but the manifest does not say differs`,
+			]
+		}),
 	(kit, tickets) =>
 		Object.entries(kit.manifest.scenarios).flatMap(([id, status]) =>
-			typeof status === 'object' && !tickets.has(status.knownGap)
+			typeof status === 'object' && 'knownGap' in status && !tickets.has(status.knownGap)
 				? [`${id} known gap points at missing ticket ${status.knownGap}`]
 				: [],
 		),
@@ -55,14 +74,20 @@ const validate = (kit: Kit, tickets: ReadonlyMap<string, string>) => {
 	}
 }
 
-const cell = (status: ScenarioStatus | undefined, tickets: ReadonlyMap<string, string>) => {
+const cell = (kit: Kit, id: ScenarioId, tickets: ReadonlyMap<string, string>) => {
+	const status: ScenarioStatus | undefined = kit.manifest.scenarios[id]
 	if (status === undefined) {
 		return 'n/a'
 	}
 	if (status === 'pass') {
 		return 'pass'
 	}
-	return `[known gap ${status.knownGap}](../${tickets.get(status.knownGap)})`
+	if ('knownGap' in status) {
+		return `[known gap ${status.knownGap}](../${tickets.get(status.knownGap)})`
+	}
+	// Links the story test that holds the workaround.
+	const file = kit.storyTests.find((test) => test.name === id)?.file
+	return `[differs: ${status.differs}](kits/${kit.dir}/src/${file})`
 }
 
 const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`
@@ -93,7 +118,7 @@ export const renderMatrix = (kits: readonly Kit[], tickets: ReadonlyMap<string, 
 		...scenarioIds.map((id) =>
 			row([
 				`\`${id}\`${isBaseline(id) ? ' (baseline)' : ''}`,
-				...kits.map((kit) => cell(kit.manifest.scenarios[id], tickets)),
+				...kits.map((kit) => cell(kit, id, tickets)),
 			]),
 		),
 		row(['**Total**', ...kits.map(totals)]),

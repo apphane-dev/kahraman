@@ -1,5 +1,6 @@
-export interface Gap {
-	ticket: string
+export interface Marker {
+	/** Names the marker in failure messages, e.g. `known gap 09`. */
+	marker: string
 	/** A substring of the error the scenario must fail with. */
 	failsWith: string
 }
@@ -9,16 +10,16 @@ const messageOf = (error: unknown) => (error instanceof Error ? error.message : 
 /**
  * Runs a scenario expected to fail for a stated reason. Passes while `run`
  * throws an error containing `failsWith`; fails on any other error, and once
- * `run` resolves, so a fixed gap cannot linger as a stale marker.
+ * `run` resolves, so a stale marker cannot linger.
  */
-export const knownGap = async ({ ticket, failsWith }: Gap, run: () => Promise<void>) => {
+export const expectFailure = async ({ marker, failsWith }: Marker, run: () => Promise<void>) => {
 	try {
 		await run()
 	} catch (error) {
 		if (messageOf(error).includes(failsWith)) {
 			return
 		}
-		throw new Error(`${ticket}: expected a failure containing '${failsWith}'`, { cause: error })
+		throw new Error(`${marker}: expected a failure containing '${failsWith}'`, { cause: error })
 	}
-	throw new Error(`known gap fixed, remove marker: ${ticket}`)
+	throw new Error(`scenario passes, remove marker: ${marker}`)
 }
