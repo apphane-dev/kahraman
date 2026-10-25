@@ -2,6 +2,7 @@
 	"extends": "../../../tsconfig.json",
 	"compilerOptions": {
 		"jsx": "react-jsx",
+		"allowImportingTsExtensions": true,
 		"types": []
 	},
 	"include": ["src", ".storybook", "vitest.config.ts"]

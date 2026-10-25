@@ -1,3 +1,5 @@
-export { contract } from './contract'
-export { runnerFor, type KitManifest } from './manifest'
-export { scenarios, type ScenarioId } from './scenarios'
+export { baseline, scenarioIds, type ScenarioId } from './catalog.ts'
+export { contract } from './contract.ts'
+export { knownGap } from './known-gap.ts'
+export { runnerFor, type KitManifest, type ScenarioStatus } from './manifest.ts'
+export { scenarios } from './scenarios.ts'
