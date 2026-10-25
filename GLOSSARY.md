@@ -25,3 +25,8 @@ _Avoid_: plugin, adapter
 **Known gap**:
 A conformance scenario expected to fail against a UI kit, linked to an issue.
 _Avoid_: skip, unsupported
+
+**Conformance matrix**:
+The table of conformance scenarios against UI kits, each cell passing or a
+known gap.
+_Avoid_: support table, compatibility chart
