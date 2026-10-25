@@ -88,15 +88,14 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 	const scopeStack: HTMLElement[] = []
 	const softErrors: Error[] = []
 
+	// The story document's body, so overlays portalled out of the canvas are found.
 	function rootCanvas() {
 		return withinElement(ctx().canvasElement.ownerDocument.body)
 	}
 
 	function activeCanvas() {
-		if (scopeStack.length > 0) {
-			return withinElement(scopeStack.at(-1)!)
-		}
-		return withinElement(ctx().canvasElement)
+		const scope = scopeStack.at(-1)
+		return scope ? withinElement(scope) : rootCanvas()
 	}
 
 	async function resolveScopeLocator(
@@ -127,9 +126,6 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		const explicitScope = locator.__within
 		if (!explicitScope) {
 			return activeCanvas()
-		}
-		if (explicitScope === 'global') {
-			return rootCanvas()
 		}
 		if (explicitScope instanceof HTMLElement) {
 			return withinElement(explicitScope)
@@ -304,9 +300,9 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			await userEvent.tab()
 		},
 		selectOption: async (locator: DefiniteLocator, value: string | RegExp) => {
-			const global = withinElement(ctx().canvasElement.ownerDocument.body)
 			await click(locator)
-			await click(() => global.getByRole('option', { name: value }))
+			// Options sit in a portalled listbox even inside I.within(...).
+			await click(() => rootCanvas().getByRole('option', { name: value }))
 		},
 		clear: async (locator: DefiniteLocator) => {
 			await editInput(locator, '', async (el, userEvent) => {

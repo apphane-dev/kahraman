@@ -30,10 +30,6 @@ describe('locator __label construction', () => {
 })
 
 describe('fluent transitions extend the label', () => {
-	test('.within(global)', () => {
-		expect(button('Save').within('global').__label).toBe('button "Save" .within(global)')
-	})
-
 	test('.within(locator) uses the scope label', () => {
 		const scoped = button('Save').within(role('dialog'))
 		expect(scoped.__label).toBe('button "Save" .within(dialog)')
@@ -56,8 +52,9 @@ describe('__within scope metadata', () => {
 		expect(button('Save').__within).toBeUndefined()
 	})
 
-	test('is set by .within(global)', () => {
-		expect(button('Save').within('global').__within).toBe('global')
+	test('is set by .within(locator)', () => {
+		const dialog = role('dialog')
+		expect(button('Save').within(dialog).__within).toBe(dialog)
 	})
 })
 
