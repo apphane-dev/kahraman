@@ -94,7 +94,7 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Use Storybook ${{ matrix.storybook-version }}
-        run: pnpm add --save-dev storybook@${{ matrix.storybook-version }}
+        run: pnpm add -w --save-dev storybook@${{ matrix.storybook-version }}
 
       - name: Typecheck
         run: pnpm run typecheck
