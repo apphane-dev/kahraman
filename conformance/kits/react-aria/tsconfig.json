@@ -5,5 +5,5 @@
 		"allowImportingTsExtensions": true,
 		"types": []
 	},
-	"include": ["src", ".storybook", "vitest.config.ts"]
+	"include": ["src", "regressions", ".storybook", "vitest.config.ts"]
 }

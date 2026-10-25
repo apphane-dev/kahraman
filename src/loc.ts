@@ -81,7 +81,7 @@ export type DefiniteLocator = LocatorFn<HTMLElement>
 export type ArrayLocator = LocatorFn<Array<HTMLElement>>
 export type AnyLocator = Locator | DefiniteLocator | ArrayLocator
 
-type WithinScope = HTMLElement | DefiniteLocator | 'global'
+type WithinScope = HTMLElement | DefiniteLocator
 
 type NameOption = string | RegExp
 
@@ -170,6 +170,17 @@ export interface FluentLocator<T extends QueryType = QueryType> extends BaseFlue
 const mergedOptions = <T extends QueryType>(config: LocatorConfig<T>) =>
 	config.options ? { ...config.initialOptions, ...config.options } : config.initialOptions
 
+// Storybook keeps hidden wrappers with text ("No Preview", a placeholder args
+// table) in the story document's body, where locators search. Role queries skip
+// them as inaccessible; text queries match hidden nodes, so ignore them. A
+// user `ignore` replaces this default.
+const storybookChrome = 'script, style, .sb-wrapper, .sb-wrapper *'
+
+const textOptions = (config: LocatorConfig<'text'>) => ({
+	ignore: storybookChrome,
+	...mergedOptions(config),
+})
+
 function invokeRoleSingle(canvas: Canvas, config: LocatorConfig<'role'>, mode: 'get'): HTMLElement
 function invokeRoleSingle(
 	canvas: Canvas,
@@ -214,7 +225,7 @@ function invokeTextSingle(
 	mode: QueryMode,
 ): HTMLElement | Promise<HTMLElement> | null
 function invokeTextSingle(canvas: Canvas, config: LocatorConfig<'text'>, mode: QueryMode) {
-	const opts = mergedOptions(config)
+	const opts = textOptions(config)
 	if (mode === 'get') {
 		return canvas.getByText(config.arg, opts)
 	}
@@ -239,17 +250,13 @@ function invokeAll(canvas: Canvas, config: LocatorConfig, mode: 'get'): HTMLElem
 function invokeAll(canvas: Canvas, config: LocatorConfig, mode: 'find'): Promise<HTMLElement[]>
 function invokeAll(canvas: Canvas, config: LocatorConfig, mode: 'get' | 'find') {
 	if (config.type === 'role') {
-		const opts = config.options
-			? { ...config.initialOptions, ...config.options }
-			: config.initialOptions
+		const opts = mergedOptions(config)
 		if (mode === 'get') {
 			return canvas.getAllByRole(config.arg, opts)
 		}
 		return canvas.findAllByRole(config.arg, opts)
 	}
-	const opts = config.options
-		? { ...config.initialOptions, ...config.options }
-		: config.initialOptions
+	const opts = textOptions(config)
 	if (mode === 'get') {
 		return canvas.getAllByText(config.arg, opts)
 	}
@@ -276,9 +283,6 @@ const isElement = (value: unknown): value is HTMLElement =>
 	typeof HTMLElement !== 'undefined' && value instanceof HTMLElement
 
 const scopeLabel = (scope: WithinScope) => {
-	if (scope === 'global') {
-		return 'global'
-	}
 	if (isElement(scope)) {
 		return '<element>'
 	}
@@ -364,7 +368,7 @@ export const role = (roleName: AriaRole, name?: NameOption): FluentLocator<'role
 		label: `${roleName}${name === undefined ? '' : ` ${formatLabelValue(name)}`}`,
 	})
 
-/** Query by visible text content. */
+/** Query by text content, hidden elements included. */
 export const text = (value: NameOption): FluentLocator<'text'> =>
 	createLocator({
 		type: 'text',

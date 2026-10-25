@@ -173,8 +173,14 @@ role('alert').maybe() // queryBy* (nullable)
 | `.within(s)` | scope to `s`        | same variant, scoped |
 | `.options()` | merge query options | same variant         |
 
-`.within(scope)` accepts a locator, an `HTMLElement`, or `'global'` (the whole
-document body).
+Locators search the story document's body, so they find dialogs, menus, and
+toasts a UI kit portals out of the canvas. `.within(scope)` narrows that to a
+locator or an `HTMLElement` (for example `context.canvasElement`). Stories that
+share a document, as on a docs page, share that scope, so run play tests in
+story mode.
+
+`text()` matches hidden elements too, except Storybook's own hidden wrappers.
+Passing `ignore` in `.options()` replaces that exclusion.
 
 ### Actor methods
 
