@@ -17,6 +17,7 @@ gap stays, so report support from the matrix totals, not from green test counts.
 conformance/
   scenarios/        private package: scenarios, contract, runner
   kits/<kit>/       private package: one Storybook project per UI kit
+  kits/react-aria/regressions/  actor browser regressions, not scenarios
   MATRIX.md         generated, checked in
 ```
 
@@ -53,9 +54,9 @@ A scenario is a function of the actor. It runs unchanged against every kit.
 
 Rules:
 
-- Scenarios use no escape hatches. `I.see(role('dialog'))`, never
-  `role('dialog').within('global')`. A kit that portals its dialog shows up as a
-  known gap, which is the point.
+- Scenarios use no escape hatches such as `.within(document.body)` or
+  extra query options. A kit that needs one shows up as a known gap, which is
+  the point.
 - A contract module exports every accessible name and expected value
   (the "Email" textbox, the "Country" combobox with option "Portugal"). The
   scenario asserts them, the fixture renders them. The compiler checks both
@@ -129,9 +130,7 @@ A `conformance` job, matrix over kits, Chromium only, on every PR with no
 | 5   | Web Awesome           | shadow DOM                                |
 
 PR 1 also carries the scenarios package, contract, runner, matrix
-generator, and CI job. React Aria Components portals its overlays, so even the
-reference kit starts with known gaps. Web
-Awesome lands with every scenario as a known gap. Shadow DOM
+generator, and CI job. Web Awesome lands with every scenario as a known gap. Shadow DOM
 support in core is separate work.
 
 ## Kit extensions

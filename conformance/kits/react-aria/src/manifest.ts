@@ -16,18 +16,9 @@ export const manifest = {
 			differs: 'button + listbox',
 			failsWith: 'Unable to find an accessible element with the role "combobox"',
 		},
-		dialog: {
-			knownGap: '09',
-			failsWith: 'Unable to find an accessible element with the role "dialog"',
-		},
-		menu: {
-			knownGap: '09',
-			failsWith: 'Unable to find an accessible element with the role "menuitem"',
-		},
+		dialog: 'pass',
+		menu: 'pass',
 		tabs: 'pass',
-		status: {
-			knownGap: '09',
-			failsWith: 'Unable to find an element with the text: Syncing',
-		},
+		status: 'pass',
 	},
 } as const satisfies KitManifest
