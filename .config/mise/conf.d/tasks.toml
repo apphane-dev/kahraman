@@ -14,6 +14,10 @@ run = "pnpm run build"
 description = "Run the Vitest suite"
 run = "pnpm run test"
 
+[tasks.conformance]
+description = "Build the package and run the conformance suite against every UI kit"
+run = "pnpm run test:conformance"
+
 [tasks.check]
 description = "Run non-mutating quality checks"
 run = "hk check"

@@ -72,6 +72,7 @@
 		"format:fix": "vp fmt",
 		"test": "vp test run",
 		"test:watch": "vp test",
+		"test:conformance": "tsdown && pnpm --filter \"./conformance/kits/*\" run typecheck && pnpm --filter \"./conformance/kits/*\" run test",
 		"check": "pnpm run typecheck && pnpm run lint && pnpm run lint:fallow && pnpm run format && pnpm run test",
 		"attw": "attw --pack . --profile esm-only",
 		"registry:build": "jsrepo build",
