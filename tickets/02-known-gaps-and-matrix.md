@@ -5,7 +5,7 @@ carries a generated conformance matrix that CI keeps current.
 
 **Blocked by:** 01 (tracer bullet).
 
-**Status:** blocked
+**Status:** ready-for-agent
 
 - [ ] `knownGap(issueUrl, run)` passes when `run` throws and fails with
       `known gap fixed, remove marker: <issueUrl>` when `run` resolves; both
@@ -15,5 +15,8 @@ carries a generated conformance matrix that CI keeps current.
 - [ ] A generator renders scenarios against kits from manifests alone (no
       browser), each cell pass, linked known gap, or n/a.
 - [ ] The generator fails when a manifest omits a baseline scenario.
+- [ ] The generator fails when a manifest declares a scenario the kit's stories
+      file has no story test for (read statically, the way Storybook indexes
+      `Story.test` calls).
 - [ ] CI regenerates the matrix and fails on any diff.
 - [ ] The README links the matrix next to the supported-frameworks text.

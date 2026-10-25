@@ -5,7 +5,7 @@ reference kit fixture and passes.
 
 **Blocked by:** 01 (tracer bullet).
 
-**Status:** blocked
+**Status:** ready-for-agent
 
 - [ ] Scenarios and contract entries exist for `button-disabled`, `textbox`,
       `textarea`, `checkbox`, `switch`, `native-select`, `combobox`, `dialog`,

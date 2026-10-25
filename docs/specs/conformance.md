@@ -1,5 +1,8 @@
 # Conformance suite
 
+Status: in progress. [tickets/](../../tickets) and [backlog/](../../backlog)
+track what is not built yet.
+
 Checks how well the actor and locator DSL fit popular UI kits. Terms follow
 [GLOSSARY.md](../../GLOSSARY.md). Gap fixes follow
 [ADR 0003](../decisions/0003-core-before-kit-extensions.md).

@@ -6,8 +6,8 @@ import { defineConfig } from 'vite-plus'
 // separate .oxfmtrc.json / .oxlintrc.json files.
 //
 // The unit tests cover pure helpers plus CSF Next addon composition and
-// diagnostics configuration. Full actor behaviour needs a Storybook browser
-// context and is out of scope here — see README (Testing the pure helpers).
+// diagnostics configuration. Actor behaviour in a browser is covered by the
+// conformance suite (conformance/), which runs its own Vitest per kit.
 export default defineConfig({
 	fmt: {
 		useTabs: true,
