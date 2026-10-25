@@ -3,7 +3,7 @@
 	"private": true,
 	"type": "module",
 	"scripts": {
-		"storybook": "storybook dev -p 6006",
+		"storybook": "pnpm --dir ../../.. run build && storybook dev -p 6006",
 		"test": "vitest run",
 		"typecheck": "tsc --noEmit"
 	},
