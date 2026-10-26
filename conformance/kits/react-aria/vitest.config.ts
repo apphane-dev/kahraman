@@ -1,16 +1,3 @@
-import { storybookTest } from '@storybook/addon-vitest/vitest-plugin'
-import { playwright } from '@vitest/browser-playwright'
-import { defineConfig } from 'vitest/config'
+import { kitTestConfig } from 'kahraman-conformance-storybook/vitest'
 
-export default defineConfig({
-	plugins: [storybookTest({ configDir: '.storybook' })],
-	test: {
-		name: 'react-aria',
-		browser: {
-			enabled: true,
-			headless: true,
-			provider: playwright(),
-			instances: [{ browser: 'chromium' }],
-		},
-	},
-})
+export default kitTestConfig({ name: 'react-aria', port: 6006 })
