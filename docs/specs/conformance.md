@@ -62,6 +62,10 @@ Rules:
   scenario asserts them, the fixture renders them. The compiler checks both
   sides.
 - Each scenario is its own story test and one matrix row.
+- Each kit also renders all its fixtures on one page. Its `page` story test,
+  `run.page(workarounds)`, runs every declared scenario in catalog order with
+  one actor, as an end-to-end journey would. Names must stay unique, overlays
+  must close, and portals must not collide with the rest of the page.
 - Interactions-panel step reporting is out of scope. It does not depend on the
   kit, and `test/steps.test.ts` covers step labels.
 
@@ -90,7 +94,7 @@ generator reads the same data.
 - The generator fails when a manifest omits a baseline scenario, when declared
   scenarios and story test names differ, when a test body runs another
   scenario, when a workaround is missing for `differs` or present without
-  it, or when a known gap names a ticket that exists in neither
+  it, when the `page` story test is missing or lacks the workarounds, or when a known gap names a ticket that exists in neither
   `tickets/` nor `backlog/`.
 
 ## `expectFailure({ marker, failsWith }, run)`

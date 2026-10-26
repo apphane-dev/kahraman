@@ -12,15 +12,18 @@ Switch.test('switch', run('checkbox'))
 Switch.test('switch-by-hand', async () => {})
 export const Combobox = meta.story({ render: () => null })
 Combobox.test('combobox', run('combobox', async () => {}))
+export const Page = meta.story({ render: () => null })
+Page.test('page', run.page({ combobox: async () => {} }))
 `
 
 describe('storyTestsOf', () => {
-	it('lists each story test with the scenario its run(...) body names and whether it passes a workaround', () => {
+	it('lists each story test with the scenario its run(...) body names and whether it passes a workaround, including run.page(...)', () => {
 		expect(storyTestsOf(source, 'acme.stories.tsx')).toEqual([
 			{ name: 'button', file: 'acme.stories.tsx', scenario: 'button', workaround: false },
 			{ name: 'switch', file: 'acme.stories.tsx', scenario: 'checkbox', workaround: false },
 			{ name: 'switch-by-hand', file: 'acme.stories.tsx', scenario: undefined, workaround: false },
 			{ name: 'combobox', file: 'acme.stories.tsx', scenario: 'combobox', workaround: true },
+			{ name: 'page', file: 'acme.stories.tsx', scenario: 'page', workaround: true },
 		])
 	})
 })

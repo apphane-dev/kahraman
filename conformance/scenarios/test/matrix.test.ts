@@ -14,13 +14,23 @@ const baselinePass = {
 const tests = (...names: string[]) =>
 	names.map((name) => ({ name, file: 'acme.stories.tsx', scenario: name, workaround: false }))
 
+const pageTest = (workaround: boolean, scenario: string | undefined = 'page') => ({
+	name: 'page',
+	file: 'acme.stories.tsx',
+	scenario,
+	workaround,
+})
+
 const kit = (
 	scenarios: KitManifest['scenarios'],
 	storyTests = tests(...Object.keys(scenarios)),
+	page: Kit['storyTests'][number] | null = pageTest(
+		Object.values(scenarios).some((status) => typeof status === 'object' && 'differs' in status),
+	),
 ): Kit => ({
 	dir: 'acme',
 	manifest: { kit: 'Acme UI', scenarios },
-	storyTests,
+	storyTests: page === null ? storyTests : [...storyTests, page],
 })
 
 const gap09 = { knownGap: '09', failsWith: 'role "dialog"' } as const
@@ -63,6 +73,8 @@ describe('renderMatrix', () => {
 				'| **Total** | 5 pass, 1 differs, 1 known gap |',
 				'',
 				"A known gap's story test passes while the scenario still fails as recorded. A differs story test passes through the workaround for the kit's pattern.",
+				'',
+				'Each kit also runs every scenario in order on one page, in its `page` story test.',
 				'',
 			].join('\n'),
 		)
@@ -112,6 +124,26 @@ describe('renderMatrix', () => {
 		]
 		expect(() => renderMatrix([kit(baselinePass, storyTests)], tickets)).toThrow(
 			'acme: story test status passes a workaround, but the manifest does not say differs',
+		)
+	})
+
+	it('rejects a kit with no page story test', () => {
+		expect(() => renderMatrix([kit(baselinePass, undefined, null)], tickets)).toThrow(
+			'acme: no story test named page runs every scenario on one page',
+		)
+	})
+
+	it('rejects a page story test with another body', () => {
+		expect(() =>
+			renderMatrix([kit(baselinePass, undefined, pageTest(false, 'button'))], tickets),
+		).toThrow("acme: story test page must run run.page(...), found run('button')")
+	})
+
+	it('rejects a page story test without the workarounds for different patterns', () => {
+		const scenarios = { ...baselinePass, combobox: differs }
+		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
+		expect(() => renderMatrix([kit(scenarios, storyTests, pageTest(false))], tickets)).toThrow(
+			'acme: story test page must pass the workarounds for different patterns',
 		)
 	})
 
