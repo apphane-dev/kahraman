@@ -246,8 +246,11 @@ with a Testing Library canvas, outside an actor, use that canvas's query default
 `selectOption` picks a native `<select>`'s option directly, since the browser
 draws those options outside the page. For any other trigger it clicks, then
 waits for the option, so listboxes
-that mount late or load options on open work. The wait follows Testing
-Library's `asyncUtilTimeout` (1 s by default). Set it for one actor:
+that mount late or load options on open work. When the trigger's
+`aria-controls` names its popup, the option is looked up there only, so another
+open listbox with the same option name does not match; otherwise the option must
+be unique in the document. The wait follows Testing Library's
+`asyncUtilTimeout` (1 s by default). Set it for one actor:
 
 ```ts
 const I = createActor({ optionTimeout: 3000 })

@@ -1,6 +1,6 @@
 // selectOption against a Select whose options load only after the trigger
 // opens it, as with a remote source.
-import { button, createActor, text, type ActorOptions, type StoryContext } from 'kahraman'
+import { button, createActor, role, text, type ActorOptions, type StoryContext } from 'kahraman'
 import { contract } from 'kahraman-conformance-scenarios'
 import { useEffect, useState } from 'react'
 import {
@@ -15,6 +15,7 @@ import {
 import { configure, expect, getConfig } from 'storybook/test'
 
 import preview from '../.storybook/preview'
+import { ComboboxFixture } from '../src/fixtures'
 
 const meta = preview.meta({ title: 'Regressions/Select option' })
 
@@ -84,4 +85,25 @@ Remote.test('optionTimeout outlasts a shorter global wait', async (context) => {
 	} finally {
 		configure({ asyncUtilTimeout })
 	}
+})
+
+// A second listbox exposes an option with the same name as the Select's.
+const TwoListboxes = () => (
+	<>
+		<ComboboxFixture />
+		<ListBox aria-label="Favorites">
+			<ListBoxItem id="favorite">{contract.combobox.choice}</ListBoxItem>
+		</ListBox>
+	</>
+)
+
+export const Ambiguous = meta.story({ render: () => <TwoListboxes /> })
+
+Ambiguous.test('selectOption picks from the popup its trigger controls', async (context) => {
+	const I = actor(context)
+	await I.click(trigger)
+	await I.seeNumberOfElements(role('option', choice).all(), 2)
+	await I.press('{Escape}')
+	await I.selectOption(trigger, choice)
+	await I.see(text(choice).within(trigger))
 })

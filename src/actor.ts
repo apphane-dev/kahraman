@@ -151,6 +151,15 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		return withinElement(ctx().canvasElement.ownerDocument.body)
 	}
 
+	function popupCanvas(trigger: HTMLElement) {
+		const popup = trigger
+			.getAttribute('aria-controls')
+			?.split(/\s+/)
+			.map((id) => trigger.ownerDocument.getElementById(id))
+			.find((el) => el !== null)
+		return popup ? withinElement(popup) : rootCanvas()
+	}
+
 	function activeCanvas() {
 		const scope = scopeStack.at(-1)
 		return scope ? withinElement(scope) : rootCanvas()
@@ -424,11 +433,14 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			await clickElement(() => clickTarget(locator, deadline))
 			// Options sit in a portalled listbox even inside I.within(...), and may
 			// render after the open: lazy mounting, a transition, or remote data.
+			// The trigger's aria-controls names the popup it opened, so an option
+			// in another open listbox is never chosen. Without it, the option must
+			// be unique in the document.
 			await clickElement(() =>
 				reachable(
 					() =>
 						elementFrom(() =>
-							rootCanvas().findByRole(
+							popupCanvas(trigger).findByRole(
 								'option',
 								{ name: value },
 								{ timeout: actorOptions.optionTimeout },
