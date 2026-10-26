@@ -7,13 +7,15 @@ import { scenarios } from './scenarios.ts'
 /** A ticket number; the ticket lives in `tickets/` or `backlog/`. */
 type Ticket = `${number}`
 
+interface KnownGap {
+	knownGap: Ticket
+	/** The prefix of the primary error diagnostic the scenario fails with today. */
+	failsWith: string
+}
+
 export type ScenarioStatus =
 	| 'pass'
-	| {
-			knownGap: Ticket
-			/** The prefix of the primary error diagnostic the scenario fails with today. */
-			failsWith: string
-	  }
+	| KnownGap
 	| {
 			/** The valid ARIA pattern the kit renders instead, e.g. `button + listbox`. */
 			differs: string
@@ -28,6 +30,11 @@ export type ScenarioStatus =
 export interface KitManifest {
 	kit: string
 	scenarios: Partial<Record<ScenarioId, ScenarioStatus>>
+	/**
+	 * The full-page journey, when it fails although each scenario meets its own
+	 * status: widgets that work alone but not side by side. Absent means it passes.
+	 */
+	page?: KnownGap
 }
 
 /** The same user journey, written for the kit's pattern. */
@@ -98,22 +105,31 @@ export const runnerFor = <M extends KitManifest>(manifest: M) => {
 		async (context: StoryContext) => {
 			await runScenario(actorFor(context), id, statusOf(id), workaround)
 		}
+	const journey = async (I: BaseActor, workarounds: Partial<Record<ScenarioId, Workaround>>) => {
+		const declared = scenarioIds.filter((id) => Object.hasOwn(manifest.scenarios, id))
+		for (const id of declared) {
+			try {
+				// Scenarios share the page, so they run one after another.
+				// oxlint-disable-next-line no-await-in-loop
+				await runScenario(I, id, statusOf(id), workarounds[id])
+			} catch (error) {
+				throw new Error(`${id} on the full page: ${messageOf(error)}`, { cause: error })
+			}
+		}
+	}
 	const page =
 		(...[workarounds]: PageArgs<M>) =>
 		async (context: StoryContext) => {
-			const I = actorFor(context)
-			const byId: Partial<Record<ScenarioId, Workaround>> = workarounds ?? {}
-			for (const id of scenarioIds.filter((declared) =>
-				Object.hasOwn(manifest.scenarios, declared),
-			)) {
-				try {
-					// Scenarios share the page, so they run one after another.
-					// oxlint-disable-next-line no-await-in-loop
-					await runScenario(I, id, statusOf(id), byId[id])
-				} catch (error) {
-					throw new Error(`${id} on the full page: ${messageOf(error)}`, { cause: error })
-				}
+			const run = () => journey(actorFor(context), workarounds ?? {})
+			const gap = manifest.page
+			if (gap === undefined) {
+				await run()
+				return
 			}
+			await expectFailure(
+				{ marker: `page known gap ${gap.knownGap}`, failsWith: gap.failsWith },
+				run,
+			)
 		}
 	return Object.assign(run, { page })
 }
