@@ -171,7 +171,7 @@ export const StatusFixture = () => {
 	const [toaster] = useState(() => createToaster({ placement: 'bottom-end' }))
 	return (
 		<>
-			<ark.button onClick={() => toaster.create({ title: c.message, duration: 500 })}>
+			<ark.button onClick={() => toaster.create({ title: c.message, duration: 2000 })}>
 				{c.trigger}
 			</ark.button>
 			<Toaster toaster={toaster}>
@@ -184,3 +184,21 @@ export const StatusFixture = () => {
 		</>
 	)
 }
+
+// Every fixture at once, as one page of an app.
+export const PageFixture = () => (
+	<main className="stack">
+		<ButtonFixture />
+		<ButtonDisabledFixture />
+		<TextboxFixture />
+		<TextareaFixture />
+		<CheckboxFixture />
+		<SwitchFixture />
+		<NativeSelectFixture />
+		<ComboboxFixture />
+		<DialogFixture />
+		<MenuFixture />
+		<TabsFixture />
+		<StatusFixture />
+	</main>
+)

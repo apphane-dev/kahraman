@@ -1,4 +1,4 @@
-import { role } from 'kahraman'
+import { role, type BaseActor } from 'kahraman'
 import { contract, runnerFor } from 'kahraman-conformance-scenarios'
 
 import preview from '../.storybook/preview'
@@ -9,6 +9,7 @@ import {
 	ComboboxFixture,
 	DialogFixture,
 	MenuFixture,
+	PageFixture,
 	NativeSelectFixture,
 	StatusFixture,
 	SwitchFixture,
@@ -21,6 +22,14 @@ import { manifest } from './manifest'
 const run = runnerFor(manifest)
 
 const meta = preview.meta({ title: 'Conformance/Ark UI' })
+
+// Ark's Switch hidden input has no role="switch", so it is exposed as a checkbox.
+const switchAsCheckbox = async (I: BaseActor) => {
+	const toggle = role('checkbox', contract.switch.label)
+	await I.dontSeeChecked(toggle)
+	await I.click(toggle)
+	await I.seeChecked(toggle)
+}
 
 export const Button = meta.story({ render: () => <ButtonFixture /> })
 Button.test('button', run('button'))
@@ -38,16 +47,7 @@ export const Checkbox = meta.story({ render: () => <CheckboxFixture /> })
 Checkbox.test('checkbox', run('checkbox'))
 
 export const Switch = meta.story({ render: () => <SwitchFixture /> })
-// Ark's Switch hidden input has no role="switch", so it is exposed as a checkbox.
-Switch.test(
-	'switch',
-	run('switch', async (I) => {
-		const toggle = role('checkbox', contract.switch.label)
-		await I.dontSeeChecked(toggle)
-		await I.click(toggle)
-		await I.seeChecked(toggle)
-	}),
-)
+Switch.test('switch', run('switch', switchAsCheckbox))
 
 export const Combobox = meta.story({ render: () => <ComboboxFixture /> })
 Combobox.test('combobox', run('combobox'))
@@ -66,3 +66,6 @@ Tabs.test('tabs', run('tabs'))
 
 export const Status = meta.story({ render: () => <StatusFixture /> })
 Status.test('status', run('status'))
+
+export const Page = meta.story({ render: () => <PageFixture /> })
+Page.test('page', run.page({ switch: switchAsCheckbox }))
