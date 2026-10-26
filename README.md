@@ -264,6 +264,12 @@ now, without waiting. Set the wait for one actor, or turn it off with `0`:
 const I = createActor({ actionTimeout: 3000 })
 ```
 
+`click` and `selectOption` click where a user's click lands. A target that turns
+off its own `pointer-events`, like an input inside a field that handles the
+click, passes the click to its parent. A target inside a container that turned
+pointer events off, like an overlay during its open transition, cannot be
+clicked yet, so the action waits for it within the same timeout.
+
 ### Actor methods
 
 ```ts

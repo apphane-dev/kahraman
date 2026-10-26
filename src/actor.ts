@@ -51,6 +51,19 @@ const isMissingElementError = (error: unknown) =>
 // Testing Library's waitFor polls at the same interval.
 const targetPollInterval = 50
 
+const blocksPointer = (el: Element) => getComputedStyle(el).pointerEvents === 'none'
+
+// pointer-events is inherited. An element that turns it off itself passes a
+// user's click to its container; one inside a container that turned it off
+// cannot be clicked until the container turns it back on.
+const pointerTarget = (el: HTMLElement) => {
+	if (!blocksPointer(el)) {
+		return el
+	}
+	const parent = el.parentElement
+	return parent && !blocksPointer(parent) ? parent : null
+}
+
 const assertValidMaxTries = (maxTries: number) => {
 	invariant(
 		Number.isInteger(maxTries) && maxTries > 0,
@@ -216,12 +229,30 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		}
 	}
 
+	const actionDeadline = () =>
+		Date.now() + (actorOptions.actionTimeout ?? getConfig().asyncUtilTimeout)
+
 	const actionTarget = (locator: DefiniteLocator, message?: string) =>
-		waitForTarget(
-			locator,
-			message,
-			Date.now() + (actorOptions.actionTimeout ?? getConfig().asyncUtilTimeout),
-		)
+		waitForTarget(locator, message, actionDeadline())
+
+	// Waits while the target cannot take a click yet, as during an overlay's
+	// open transition. At the deadline it returns the target, so user-event
+	// reports why it cannot click it.
+	const reachable = async (
+		resolve: () => Promise<HTMLElement>,
+		deadline: number,
+	): Promise<HTMLElement> => {
+		const el = await resolve()
+		const target = pointerTarget(el)
+		if (target || Date.now() >= deadline) {
+			return target ?? el
+		}
+		await sleep(targetPollInterval)
+		return reachable(resolve, deadline)
+	}
+
+	const clickTarget = (locator: DefiniteLocator, deadline: number) =>
+		reachable(() => waitForTarget(locator, undefined, deadline), deadline)
 
 	const clickElement = async (resolve: () => Promise<HTMLElement>) => {
 		if (actorOptions.clickDelay && actorOptions.clickDelay > 0) {
@@ -230,7 +261,8 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		await ctx().userEvent.click(await resolve())
 	}
 
-	const click = (locator: DefiniteLocator) => clickElement(() => actionTarget(locator))
+	const click = (locator: DefiniteLocator) =>
+		clickElement(() => clickTarget(locator, actionDeadline()))
 
 	const editInput = async (
 		locator: DefiniteLocator,
@@ -362,7 +394,8 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			await userEvent.tab()
 		},
 		selectOption: async (locator: DefiniteLocator, value: string | RegExp) => {
-			const trigger = await actionTarget(locator)
+			const deadline = actionDeadline()
+			const trigger = await waitForTarget(locator, undefined, deadline)
 			// The browser draws a native select's options outside the page, so pick
 			// one the way its picker does. selectOptions clicks the select itself.
 			if (trigger instanceof HTMLSelectElement) {
@@ -372,16 +405,20 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 				)
 				return
 			}
-			await clickElement(async () => trigger)
+			await clickElement(() => clickTarget(locator, deadline))
 			// Options sit in a portalled listbox even inside I.within(...), and may
 			// render after the open: lazy mounting, a transition, or remote data.
 			await clickElement(() =>
-				elementFrom(() =>
-					rootCanvas().findByRole(
-						'option',
-						{ name: value },
-						{ timeout: actorOptions.optionTimeout },
-					),
+				reachable(
+					() =>
+						elementFrom(() =>
+							rootCanvas().findByRole(
+								'option',
+								{ name: value },
+								{ timeout: actorOptions.optionTimeout },
+							),
+						),
+					actionDeadline(),
 				),
 			)
 		},
