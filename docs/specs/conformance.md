@@ -147,6 +147,7 @@ A `conformance` job, matrix over kits, Chromium only, on every PR with no
 | 3   | MUI                   | portals, listbox Select over hidden input |
 | 4   | PrimeVue              | Vue renderer                              |
 | 5   | Web Awesome           | shadow DOM                                |
+| 6   | Ark UI                | options mounted after open, headless      |
 
 PR 1 also carries the scenarios package, contract, runner, matrix
 generator, and CI job. Web Awesome lands with every scenario as a known gap. Shadow DOM
