@@ -19,8 +19,4 @@ export const manifest = {
 		tabs: 'pass',
 		status: 'pass',
 	},
-	page: {
-		knownGap: '14',
-		failsWith: 'tabs on the full page: Unable to find an accessible element with the role "tab"',
-	},
 } as const satisfies KitManifest
