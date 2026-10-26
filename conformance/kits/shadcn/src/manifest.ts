@@ -9,10 +9,7 @@ export const manifest = {
 		textarea: 'pass',
 		checkbox: 'pass',
 		switch: 'pass',
-		'native-select': {
-			knownGap: '13',
-			failsWith: 'expect(element).toHaveValue(Large)',
-		},
+		'native-select': 'pass',
 		combobox: 'pass',
 		dialog: 'pass',
 		menu: 'pass',
