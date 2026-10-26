@@ -205,11 +205,12 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 	const editInput = async (
 		locator: DefiniteLocator,
 		expectedValue: string,
-		action: (el: HTMLInputElement, userEvent: UserEvent) => Promise<void>,
+		action: (el: HTMLInputElement | HTMLTextAreaElement, userEvent: UserEvent) => Promise<void>,
 	) => {
 		const { userEvent } = ctx()
-		const el = await elementFrom(locator, 'Expected locator to resolve to an HTMLInputElement')
-		invariant(el instanceof HTMLInputElement, 'Expected locator to resolve to an HTMLInputElement')
+		const message = 'Expected locator to resolve to an <input> or <textarea>'
+		const el = await elementFrom(locator, message)
+		invariant(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement, message)
 		await userEvent.click(el)
 		await action(el, userEvent)
 		await waitFor(() => expect(el.value).toBe(expectedValue))

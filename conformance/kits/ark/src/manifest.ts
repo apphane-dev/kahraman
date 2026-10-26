@@ -6,10 +6,7 @@ export const manifest = {
 		button: 'pass',
 		'button-disabled': 'pass',
 		textbox: 'pass',
-		textarea: {
-			knownGap: '10',
-			failsWith: 'Expected locator to resolve to an HTMLInputElement',
-		},
+		textarea: 'pass',
 		checkbox: 'pass',
 		switch: {
 			differs: 'checkbox',
