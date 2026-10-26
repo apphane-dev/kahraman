@@ -1,0 +1,31 @@
+{
+	"name": "kahraman-conformance-ark",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"storybook": "pnpm --dir ../../.. run build && storybook dev -p 6009 --disable-telemetry",
+		"test": "vitest run",
+		"typecheck": "tsc --noEmit"
+	},
+	"dependencies": {
+		"@ark-ui/react": "5.39.3",
+		"kahraman": "workspace:*",
+		"kahraman-conformance-scenarios": "workspace:*",
+		"react": "19.2.7",
+		"react-dom": "19.2.7"
+	},
+	"devDependencies": {
+		"@storybook/addon-vitest": "11.0.0-alpha.4",
+		"@storybook/react-vite": "11.0.0-alpha.4",
+		"@types/react": "19.3.0",
+		"@types/react-dom": "19.3.0",
+		"@vitest/browser-playwright": "4.1.10",
+		"kahraman-conformance-storybook": "workspace:*",
+		"playwright": "1.64.1",
+		"storybook": "11.0.0-alpha.4",
+		"typescript": "7.0.2",
+		"vite": "8.3.5",
+		"vitest": "4.1.10",
+		"@types/node": "24.19.2"
+	}
+}
