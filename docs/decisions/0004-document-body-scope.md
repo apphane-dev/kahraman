@@ -2,13 +2,16 @@
 
 - **Status:** Accepted
 - **Date:** 2026-10-25
-- **Scope:** default locator scope in `src/actor.ts`, text queries in `src/loc.ts`
+- **Scope:** default query scope and text-query defaults in `src/actor.ts`
 
 UI kits portal dialogs, menus, popovers, and toasts to `document.body`, outside
 `canvasElement`. A user sees the whole page, so locators search
 `canvasElement.ownerDocument.body` unless `.within()` or `I.within()` narrows
 them. There is no `'global'` scope keyword because the default already is the
-whole body.
+whole body. Inside an active `I.within(...)`, locators still use that scope
+unless they specify their own. Replace `.within('global')` there with
+`.within(context.canvasElement.ownerDocument.body)` to escape it. Passing
+`context.canvasElement` instead excludes content portalled outside the canvas.
 
 The body also holds Storybook's hidden `.sb-wrapper` elements with placeholder
 text. Role queries skip them as inaccessible; text queries would match them, so
