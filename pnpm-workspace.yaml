@@ -1,6 +1,7 @@
 packages:
   - .
   - conformance/scenarios
+  - conformance/storybook
   - conformance/kits/*
 
 # Allow these dependencies to run their install/build scripts on a fresh install
