@@ -86,9 +86,9 @@ Each kit exports a manifest: the scenarios it implements, each with one status.
   the error the scenario fails with. Its story test passes a workaround, the
   same journey written for that pattern, which must pass.
 
-The manifest's optional `page: { knownGap, failsWith }` records a full-page
-journey that fails although each scenario meets its own status: widgets that
-work alone but not side by side.
+The manifest's optional `page: { knownGap, failsWith }` records a page
+integration journey that fails although each scenario meets its own status:
+widgets that work alone but not side by side.
 
 The kit's stories run scenarios through `runnerFor(manifest)`, and the matrix
 generator reads the same data.
