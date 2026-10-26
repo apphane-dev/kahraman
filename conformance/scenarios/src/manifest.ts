@@ -31,7 +31,7 @@ export interface KitManifest {
 	kit: string
 	scenarios: Partial<Record<ScenarioId, ScenarioStatus>>
 	/**
-	 * The full-page journey, when it fails although each scenario meets its own
+	 * The page integration journey, when it fails although each scenario meets its own
 	 * status: widgets that work alone but not side by side. Absent means it passes.
 	 */
 	page?: KnownGap
