@@ -70,11 +70,12 @@ describe('renderMatrix', () => {
 				'| `menu` | n/a |',
 				'| `tabs` | pass |',
 				'| `status` (baseline) | pass |',
+				'| `page` (every scenario on one page) | pass |',
 				'| **Total** | 5 pass, 1 differs, 1 known gap |',
 				'',
 				"A known gap's story test passes while the scenario still fails as recorded. A differs story test passes through the workaround for the kit's pattern.",
 				'',
-				"Each kit's `page` story test runs every scenario in order on one page, as an integration journey. A known gap there stops at its recorded failure and the journey continues without that action's effect.",
+				"The `page` row runs every declared scenario in order on one page, as an integration journey, in the kit's `page` story test. A known gap there stops at its recorded failure and the journey continues without that action's effect. Totals count scenarios.",
 				'',
 			].join('\n'),
 		)
@@ -144,6 +145,19 @@ describe('renderMatrix', () => {
 		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
 		expect(() => renderMatrix([kit(scenarios, storyTests, pageTest(false))], tickets)).toThrow(
 			'acme: story test page must pass the workarounds for different patterns',
+		)
+	})
+
+	it('renders a page known gap and rejects one pointing at a missing ticket', () => {
+		const withPageGap = (ticket: `${number}`): Kit => ({
+			...kit(baselinePass),
+			manifest: { kit: 'Acme UI', scenarios: baselinePass, page: { ...gap09, knownGap: ticket } },
+		})
+		expect(renderMatrix([withPageGap('09')], tickets)).toContain(
+			'| `page` (every scenario on one page) | [known gap 09](../tickets/09-portalled-overlays.md) |',
+		)
+		expect(() => renderMatrix([withPageGap('42')], tickets)).toThrow(
+			'acme: page known gap points at missing ticket 42',
 		)
 	})
 
