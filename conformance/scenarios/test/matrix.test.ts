@@ -60,9 +60,9 @@ describe('renderMatrix', () => {
 				'| `menu` | n/a |',
 				'| `tabs` | pass |',
 				'| `status` (baseline) | pass |',
-				'| **Total** | 5 pass, 1 known gap |',
+				'| **Total** | 5 pass, 1 differs, 1 known gap |',
 				'',
-				"A known gap's story test passes while the scenario still fails as recorded.",
+				"A known gap's story test passes while the scenario still fails as recorded. A differs story test passes through the workaround for the kit's pattern.",
 				'',
 			].join('\n'),
 		)
