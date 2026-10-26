@@ -3,9 +3,10 @@
 import { button, createActor, role, text, type StoryContext } from 'kahraman'
 import { contract } from 'kahraman-conformance-scenarios'
 import { useEffect, useState } from 'react'
+import { expect } from 'storybook/test'
 
 import preview from '../.storybook/preview'
-import { ComboboxFixture } from '../src/fixtures'
+import { ComboboxFixture, DialogFixture } from '../src/fixtures'
 
 const meta = preview.meta({ title: 'Regressions/Scope' })
 
@@ -86,3 +87,34 @@ ScopedSelect.test('within restores the scope after its callback throws', async (
 	)
 	await I.see(button('Outside'))
 })
+
+export const ScopedDialog = meta.story({
+	render: () => (
+		<div role="group" aria-label="Form">
+			<DialogFixture />
+		</div>
+	),
+})
+
+ScopedDialog.test(
+	'explicit body scope escapes within to find a portalled dialog',
+	async (context) => {
+		const I = actor(context)
+		const c = contract.dialog
+		const body = context.canvasElement.ownerDocument.body
+		await I.within(role('group', 'Form'), async () => {
+			await I.click(button(c.trigger))
+			// Dropping the old .within('global') keeps this lookup in Form.
+			await I.dontSee(role('dialog'))
+			// The canvas also excludes the portalled dialog.
+			await I.dontSee(role('dialog').within(context.canvasElement))
+			const dialog = await I.see(role('dialog').within(body))
+			await expect(context.canvasElement).not.toContainElement(dialog)
+			// An explicit scope on one locator must not replace the actor scope.
+			await I.dontSee(role('dialog'))
+			await I.click(button(c.close).within(dialog))
+			await I.waitExit(role('dialog').within(body))
+			await I.see(button(c.trigger))
+		})
+	},
+)

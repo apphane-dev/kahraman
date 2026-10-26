@@ -180,6 +180,21 @@ share a document, as on a docs page, share that scope, so run play tests in
 story mode. This is document-level querying, not a guarantee that each story
 has an isolated set of matches.
 
+The `'global'` scope keyword is removed. When migrating `.within('global')`,
+omit it only when no actor scope is active. Inside `I.within(...)`, omitting it
+keeps the locator in the active scope. Pass the story document's body to escape
+that scope and find a portalled dialog:
+
+```ts
+await I.within(role('group', 'Form'), async () => {
+	await I.click(button('Open dialog'))
+	await I.see(role('dialog').within(context.canvasElement.ownerDocument.body))
+})
+```
+
+Passing `context.canvasElement` instead keeps the query inside the canvas,
+so it does not replace `'global'` for content portalled outside the canvas.
+
 Text queries match hidden elements too. The actor excludes elements matching
 `script, style, .sb-wrapper, .sb-wrapper *` by default to skip Storybook's
 placeholder text. This selector also excludes user content with the same
