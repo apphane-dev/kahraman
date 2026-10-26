@@ -7,7 +7,7 @@ import { scenarios } from './scenarios.ts'
 /** A ticket number; the ticket lives in `tickets/` or `backlog/`. */
 type Ticket = `${number}`
 
-interface KnownGap {
+export interface KnownGap {
 	knownGap: Ticket
 	/** The prefix of the primary error diagnostic the scenario fails with today. */
 	failsWith: string

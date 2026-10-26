@@ -78,7 +78,7 @@ jobs:
       - name: Conformance matrix is up to date
         run: |
           pnpm run conformance:matrix
-          git diff --exit-code conformance/MATRIX.md
+          git diff --exit-code conformance/MATRIX.md conformance/matrix.json
 
   storybook-compatibility:
     runs-on: ubuntu-latest

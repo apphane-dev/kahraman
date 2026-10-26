@@ -1,0 +1,395 @@
+{
+  "kits": [
+    {
+      "dir": "ark",
+      "name": "Ark UI",
+      "pass": 11,
+      "differs": 1,
+      "knownGaps": 0
+    },
+    {
+      "dir": "mui",
+      "name": "MUI",
+      "pass": 12,
+      "differs": 0,
+      "knownGaps": 0
+    },
+    {
+      "dir": "react-aria",
+      "name": "React Aria Components",
+      "pass": 10,
+      "differs": 1,
+      "knownGaps": 0
+    },
+    {
+      "dir": "shadcn",
+      "name": "shadcn/ui (Radix, Nova)",
+      "pass": 12,
+      "differs": 0,
+      "knownGaps": 0
+    },
+    {
+      "dir": "vuetify",
+      "name": "Vuetify",
+      "pass": 10,
+      "differs": 1,
+      "knownGaps": 0
+    },
+    {
+      "dir": "web-awesome",
+      "name": "Web Awesome",
+      "pass": 2,
+      "differs": 0,
+      "knownGaps": 10
+    }
+  ],
+  "scenarios": [
+    {
+      "id": "button",
+      "baseline": true,
+      "cells": [
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "known gap",
+          "ticket": "17",
+          "path": "tickets/17-shadow-dom-queries.md",
+          "failsWith": "Unable to find an accessible element with the role \"button\" and name \"Save\""
+        }
+      ]
+    },
+    {
+      "id": "button-disabled",
+      "baseline": false,
+      "cells": [
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "known gap",
+          "ticket": "17",
+          "path": "tickets/17-shadow-dom-queries.md",
+          "failsWith": "Unable to find an accessible element with the role \"button\" and name \"Delete\""
+        }
+      ]
+    },
+    {
+      "id": "textbox",
+      "baseline": true,
+      "cells": [
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "known gap",
+          "ticket": "17",
+          "path": "tickets/17-shadow-dom-queries.md",
+          "failsWith": "Unable to find an accessible element with the role \"textbox\" and name \"Email\""
+        }
+      ]
+    },
+    {
+      "id": "textarea",
+      "baseline": false,
+      "cells": [
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "known gap",
+          "ticket": "17",
+          "path": "tickets/17-shadow-dom-queries.md",
+          "failsWith": "Unable to find an accessible element with the role \"textbox\" and name \"Comment\""
+        }
+      ]
+    },
+    {
+      "id": "checkbox",
+      "baseline": true,
+      "cells": [
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "known gap",
+          "ticket": "17",
+          "path": "tickets/17-shadow-dom-queries.md",
+          "failsWith": "Unable to find an accessible element with the role \"checkbox\" and name \"Remember me\""
+        }
+      ]
+    },
+    {
+      "id": "switch",
+      "baseline": false,
+      "cells": [
+        {
+          "status": "differs",
+          "pattern": "checkbox",
+          "path": "conformance/kits/ark/src/conformance.stories.tsx",
+          "failsWith": "Unable to find an accessible element with the role \"switch\""
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "differs",
+          "pattern": "checkbox",
+          "path": "conformance/kits/vuetify/src/conformance.stories.ts",
+          "failsWith": "Unable to find an accessible element with the role \"switch\""
+        },
+        {
+          "status": "known gap",
+          "ticket": "17",
+          "path": "tickets/17-shadow-dom-queries.md",
+          "failsWith": "Unable to find an accessible element with the role \"switch\" and name \"Notifications\""
+        }
+      ]
+    },
+    {
+      "id": "native-select",
+      "baseline": false,
+      "cells": [
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "n/a"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "n/a"
+        },
+        {
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "combobox",
+      "baseline": false,
+      "cells": [
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "differs",
+          "pattern": "button + listbox",
+          "path": "conformance/kits/react-aria/src/conformance.stories.tsx",
+          "failsWith": "Unable to find an accessible element with the role \"combobox\""
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "known gap",
+          "ticket": "17",
+          "path": "tickets/17-shadow-dom-queries.md",
+          "failsWith": "Unable to find an accessible element with the role \"combobox\" and name \"Country\""
+        }
+      ]
+    },
+    {
+      "id": "dialog",
+      "baseline": true,
+      "cells": [
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "known gap",
+          "ticket": "17",
+          "path": "tickets/17-shadow-dom-queries.md",
+          "failsWith": "Unable to find an accessible element with the role \"button\" and name \"Delete account\""
+        }
+      ]
+    },
+    {
+      "id": "menu",
+      "baseline": false,
+      "cells": [
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "known gap",
+          "ticket": "17",
+          "path": "tickets/17-shadow-dom-queries.md",
+          "failsWith": "Unable to find an accessible element with the role \"button\" and name \"Actions\""
+        }
+      ]
+    },
+    {
+      "id": "tabs",
+      "baseline": false,
+      "cells": [
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        }
+      ]
+    },
+    {
+      "id": "status",
+      "baseline": true,
+      "cells": [
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "pass"
+        },
+        {
+          "status": "known gap",
+          "ticket": "17",
+          "path": "tickets/17-shadow-dom-queries.md",
+          "failsWith": "Unable to find an accessible element with the role \"button\" and name \"Sync\""
+        }
+      ]
+    }
+  ],
+  "page": [
+    {
+      "status": "pass"
+    },
+    {
+      "status": "pass"
+    },
+    {
+      "status": "pass"
+    },
+    {
+      "status": "pass"
+    },
+    {
+      "status": "pass"
+    },
+    {
+      "status": "pass"
+    }
+  ]
+}
