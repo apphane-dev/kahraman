@@ -8,6 +8,7 @@ import {
 	ComboboxFixture,
 	DialogFixture,
 	MenuFixture,
+	PageFixture,
 	NativeSelectFixture,
 	StatusFixture,
 	SwitchFixture,
@@ -56,3 +57,6 @@ Tabs.test('tabs', run('tabs'))
 
 export const Status = meta.story({ render: () => <StatusFixture /> })
 Status.test('status', run('status'))
+
+export const Page = meta.story({ render: () => <PageFixture /> })
+Page.test('page', run.page())

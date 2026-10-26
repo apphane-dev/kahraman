@@ -181,7 +181,25 @@ export const StatusFixture = () => {
 	return (
 		<>
 			<Toaster theme="light" />
-			<Button onClick={() => toast(c.message, { id, duration: 500 })}>{c.trigger}</Button>
+			<Button onClick={() => toast(c.message, { id, duration: 2000 })}>{c.trigger}</Button>
 		</>
 	)
 }
+
+// Every fixture at once, as one page of an app.
+export const PageFixture = () => (
+	<main className="grid justify-items-start gap-6">
+		<ButtonFixture />
+		<ButtonDisabledFixture />
+		<TextboxFixture />
+		<TextareaFixture />
+		<CheckboxFixture />
+		<SwitchFixture />
+		<NativeSelectFixture />
+		<ComboboxFixture />
+		<DialogFixture />
+		<MenuFixture />
+		<TabsFixture />
+		<StatusFixture />
+	</main>
+)
