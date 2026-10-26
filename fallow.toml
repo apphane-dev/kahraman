@@ -19,13 +19,24 @@ entry = [
 # Conformance packages import the workspace `kahraman` through its exports map,
 # which points at dist/; before a build fallow cannot resolve it and would report
 # the dependency unused.
-ignoreDependencies = ["storybook", "kahraman"]
+#
+# Kits list `@storybook/addon-vitest` although only the shared conformance preset
+# names it: Storybook resolves the addon's setup file from the kit directory.
+ignoreDependencies = ["storybook", "kahraman", "@storybook/addon-vitest"]
 
 # Generated brand CSS is a standalone export, not part of the package module graph.
 ignorePatterns = ["dist/**", "coverage/**", "brand/tokens.css"]
 
+# shadcn CLI output stays as generated; fixtures use a subset of each component.
+[[ignoreExports]]
+file = "conformance/kits/shadcn/src/components/ui/*.tsx"
+exports = ["*"]
+
 [duplicates]
 ignoreImports = true
+# Storybook indexes story tests only as literal top-level `Story.test` calls, so
+# each kit's conformance stories repeat the same declarations.
+ignore = ["conformance/kits/*/src/conformance.stories.tsx"]
 
 # actor.ts and preview.ts run only inside a Storybook browser context, so the
 # unit tests do not cover them; the conformance suite exercises them in a

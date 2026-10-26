@@ -16,6 +16,7 @@ gap stays, so report support from the matrix totals, not from green test counts.
 ```text
 conformance/
   scenarios/        private package: scenarios, contract, runner
+  storybook/        private preset and Chromium test configuration
   kits/<kit>/       private package: one Storybook project per UI kit
   kits/react-aria/regressions/  actor browser regressions, not scenarios
   MATRIX.md         generated, checked in
@@ -138,7 +139,7 @@ A `conformance` job, matrix over kits, Chromium only, on every PR with no
 | PR  | Kit                   | Risk it probes                            |
 | --- | --------------------- | ----------------------------------------- |
 | 1   | React Aria Components | reference; strictest ARIA                 |
-| 2   | Radix / shadcn        | portals, ARIA-only widgets                |
+| 2   | shadcn/ui, Radix/Nova | portals, ARIA-only widgets, native select |
 | 3   | MUI                   | portals, listbox Select over hidden input |
 | 4   | PrimeVue              | Vue renderer                              |
 | 5   | Web Awesome           | shadow DOM                                |
@@ -146,6 +147,10 @@ A `conformance` job, matrix over kits, Chromium only, on every PR with no
 PR 1 also carries the scenarios package, contract, runner, matrix
 generator, and CI job. Web Awesome lands with every scenario as a known gap. Shadow DOM
 support in core is separate work.
+
+The shadcn fixture targets the official CLI's `radix-nova` components and neutral
+theme. It does not claim coverage of raw Radix Primitives or Base UI. Generated
+component sources, upstream license, and generation details live in the kit.
 
 ## Kit extensions
 
