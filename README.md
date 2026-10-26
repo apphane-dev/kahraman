@@ -219,6 +219,14 @@ The setting stays local to each actor, applies inside `.within()` and to custom
 locator callbacks, and does not change role queries. Locators called directly
 with a Testing Library canvas, outside an actor, use that canvas's query defaults.
 
+`selectOption` waits for the option after opening the trigger, so listboxes
+that mount late or load options on open work. The wait follows Testing
+Library's `asyncUtilTimeout` (1 s by default). Set it for one actor:
+
+```ts
+const I = createActor({ optionTimeout: 3000 })
+```
+
 ### Actor methods
 
 ```ts
