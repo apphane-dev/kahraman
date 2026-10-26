@@ -2,6 +2,7 @@ import { Box, CssBaseline } from '@mui/material'
 import { createTheme, ThemeProvider } from '@mui/material/styles'
 import { definePreview } from '@storybook/react-vite'
 import kahraman from 'kahraman'
+import 'kahraman-conformance-storybook/waits'
 
 import '@fontsource/roboto/400.css'
 import '@fontsource/roboto/500.css'

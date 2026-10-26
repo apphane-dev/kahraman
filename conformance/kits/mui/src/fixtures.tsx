@@ -204,9 +204,27 @@ export const StatusFixture = () => {
 			<Snackbar
 				open={open}
 				message={contract.status.message}
-				autoHideDuration={500}
+				autoHideDuration={2000}
 				onClose={() => setOpen(false)}
 			/>
 		</>
 	)
 }
+
+// Every fixture at once, as one page of an app.
+export const PageFixture = () => (
+	<Stack component="main" spacing={3} sx={{ alignItems: 'flex-start' }}>
+		<ButtonFixture />
+		<ButtonDisabledFixture />
+		<TextboxFixture />
+		<TextareaFixture />
+		<CheckboxFixture />
+		<SwitchFixture />
+		<NativeSelectFixture />
+		<ComboboxFixture />
+		<DialogFixture />
+		<MenuFixture />
+		<TabsFixture />
+		<StatusFixture />
+	</Stack>
+)
