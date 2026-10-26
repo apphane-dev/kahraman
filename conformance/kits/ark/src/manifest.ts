@@ -12,10 +12,7 @@ export const manifest = {
 			differs: 'checkbox',
 			failsWith: 'Unable to find an accessible element with the role "switch"',
 		},
-		'native-select': {
-			knownGap: '13',
-			failsWith: 'toHaveValue(Large)',
-		},
+		'native-select': 'pass',
 		combobox: 'pass',
 		dialog: 'pass',
 		menu: 'pass',

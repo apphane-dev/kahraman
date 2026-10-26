@@ -25,7 +25,7 @@ type UserEventInstance = ReturnType<typeof import('storybook/test').userEvent.se
  * and the direct `userEvent` API (`keyboard(): Promise<System>`) are accepted.
  */
 export type UserEvent = {
-	[K in 'clear' | 'click' | 'keyboard' | 'tab' | 'type']: (
+	[K in 'clear' | 'click' | 'keyboard' | 'selectOptions' | 'tab' | 'type']: (
 		...args: Parameters<UserEventInstance[K]>
 	) => Promise<unknown>
 }

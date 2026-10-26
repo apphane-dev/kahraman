@@ -21,8 +21,7 @@ The twelve scenarios run through the shared contract and `runnerFor(manifest)`
 with no kit-specific actor methods. The
 [conformance matrix](../../../MATRIX.md) lists which pass and which are known
 gaps. A known-gap test is green only while the scenario still fails for the
-recorded reason, so native select works by hand even though the actor cannot
-drive it yet.
+recorded reason.
 
 `../src/components/ui/` contains the official CLI-generated sources and upstream
 license. Read its provenance guide before regenerating. The original component

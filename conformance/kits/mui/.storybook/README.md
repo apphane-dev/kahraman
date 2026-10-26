@@ -22,9 +22,8 @@ The twelve scenarios run unchanged through the shared contract and
 current passes and known gaps. A checked known-gap test is green only while the
 scenario fails for the recorded reason; it does not mean the interaction works.
 
-`../regressions/native-select.stories.tsx` separately confirms that Testing
-Library's native `selectOptions` interaction changes this fixture's value.
-The failing actor journey is not a disabled or incorrectly wired select.
+`../regressions/native-select.stories.tsx` changes this fixture's preselected
+option with `I.selectOption` inside an actor scope and checks the change event.
 
 Fixtures live in `../src/fixtures.tsx`. They use Material UI components:
 `TextField` for single-line, multiline, and custom Select fields, `NativeSelect`

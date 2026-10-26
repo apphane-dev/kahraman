@@ -362,7 +362,17 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			await userEvent.tab()
 		},
 		selectOption: async (locator: DefiniteLocator, value: string | RegExp) => {
-			await click(locator)
+			const trigger = await actionTarget(locator)
+			// The browser draws a native select's options outside the page, so pick
+			// one the way its picker does. selectOptions clicks the select itself.
+			if (trigger instanceof HTMLSelectElement) {
+				await ctx().userEvent.selectOptions(
+					trigger,
+					withinElement(trigger).getByRole('option', { name: value }),
+				)
+				return
+			}
+			await clickElement(async () => trigger)
 			// Options sit in a portalled listbox even inside I.within(...), and may
 			// render after the open: lazy mounting, a transition, or remote data.
 			await clickElement(() =>
