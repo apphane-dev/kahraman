@@ -63,9 +63,11 @@ Rules:
   sides.
 - Each scenario is its own story test and one matrix row.
 - Each kit also renders all its fixtures on one page. Its `page` story test,
-  `run.page(workarounds)`, runs every declared scenario in catalog order with
-  one actor, as an end-to-end journey would. Names must stay unique, overlays
-  must close, and portals must not collide with the rest of the page.
+  `run.page(workarounds)`, is an integration journey: every declared scenario
+  in catalog order with one actor. Names must stay unique, overlays must close,
+  and portals must not collide with the rest of the page. A known-gap scenario
+  stops at its recorded failure and the journey continues without that
+  action's effect, so the page does not show every action succeeding.
 - Interactions-panel step reporting is out of scope. It does not depend on the
   kit, and `test/steps.test.ts` covers step labels.
 
