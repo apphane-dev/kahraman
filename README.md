@@ -251,6 +251,17 @@ Library's `asyncUtilTimeout` (1 s by default). Set it for one actor:
 const I = createActor({ optionTimeout: 3000 })
 ```
 
+`click`, `fill`, `clear`, and `selectOption`'s trigger wait for their locator
+to match, so an action right after an overlay opens or closes finds a target
+the overlay hid for a moment. Only the lookup repeats, and only while nothing
+matches: an ambiguous locator fails at once, and the action runs once. The wait
+also follows `asyncUtilTimeout`. `see` and `dontSee` check the page as it is
+now, without waiting. Set the wait for one actor, or turn it off with `0`:
+
+```ts
+const I = createActor({ actionTimeout: 3000 })
+```
+
 ### Actor methods
 
 ```ts

@@ -17,8 +17,8 @@ export const manifest = {
 			failsWith: 'Unable to perform pointer interaction as the element has `pointer-events: none`',
 		},
 		dialog: {
-			knownGap: '14',
-			failsWith: 'Unable to find an accessible element with the role "button" and name "Cancel"',
+			knownGap: '15',
+			failsWith: 'Unable to perform pointer interaction as the element has `pointer-events: none`',
 		},
 		menu: {
 			knownGap: '16',

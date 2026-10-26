@@ -1,7 +1,7 @@
 import type { AnyLocator, ArrayLocator, Canvas, DefiniteLocator, FluentLocator } from './loc'
 import type { StoryContext, UserEvent } from './context'
 
-import { expect, waitFor, within as withinElement } from 'storybook/test'
+import { expect, getConfig, waitFor, within as withinElement } from 'storybook/test'
 
 import { invariant } from './invariant'
 import { createErrorAugmenter, stepLabel, type Step } from './steps'
@@ -47,6 +47,9 @@ const isMissingElementError = (error: unknown) =>
 	error instanceof Error &&
 	error.name === 'TestingLibraryElementError' &&
 	error.message.startsWith('Unable to find')
+
+// Testing Library's waitFor polls at the same interval.
+const targetPollInterval = 50
 
 const assertValidMaxTries = (maxTries: number) => {
 	invariant(
@@ -195,12 +198,39 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		}
 	}
 
-	const click = async (locator: DefiniteLocator) => {
+	// Repeats only the lookup, and only while nothing matches: an overlay can
+	// hide the target for a moment. An ambiguous or invalid locator fails at once.
+	const waitForTarget = async (
+		locator: DefiniteLocator,
+		message: string | undefined,
+		deadline: number,
+	): Promise<HTMLElement> => {
+		try {
+			return await elementFrom(locator, message)
+		} catch (error) {
+			if (!isMissingElementError(error) || Date.now() >= deadline) {
+				throw error
+			}
+			await sleep(targetPollInterval)
+			return waitForTarget(locator, message, deadline)
+		}
+	}
+
+	const actionTarget = (locator: DefiniteLocator, message?: string) =>
+		waitForTarget(
+			locator,
+			message,
+			Date.now() + (actorOptions.actionTimeout ?? getConfig().asyncUtilTimeout),
+		)
+
+	const clickElement = async (resolve: () => Promise<HTMLElement>) => {
 		if (actorOptions.clickDelay && actorOptions.clickDelay > 0) {
 			await sleep(actorOptions.clickDelay)
 		}
-		await ctx().userEvent.click(await elementFrom(locator))
+		await ctx().userEvent.click(await resolve())
 	}
+
+	const click = (locator: DefiniteLocator) => clickElement(() => actionTarget(locator))
 
 	const editInput = async (
 		locator: DefiniteLocator,
@@ -209,7 +239,7 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 	) => {
 		const { userEvent } = ctx()
 		const message = 'Expected locator to resolve to an <input> or <textarea>'
-		const el = await elementFrom(locator, message)
+		const el = await actionTarget(locator, message)
 		invariant(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement, message)
 		await userEvent.click(el)
 		await action(el, userEvent)
@@ -335,8 +365,14 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			await click(locator)
 			// Options sit in a portalled listbox even inside I.within(...), and may
 			// render after the open: lazy mounting, a transition, or remote data.
-			await click(() =>
-				rootCanvas().findByRole('option', { name: value }, { timeout: actorOptions.optionTimeout }),
+			await clickElement(() =>
+				elementFrom(() =>
+					rootCanvas().findByRole(
+						'option',
+						{ name: value },
+						{ timeout: actorOptions.optionTimeout },
+					),
+				),
 			)
 		},
 		clear: async (locator: DefiniteLocator) => {
@@ -464,6 +500,12 @@ export interface ActorOptions {
 	 * Defaults to Testing Library's asyncUtilTimeout (1000 unless configured).
 	 */
 	optionTimeout?: number
+	/**
+	 * Milliseconds click, fill, clear, and selectOption's trigger wait for their
+	 * locator to match. Only a missing element is retried, and the action runs
+	 * once. 0 disables the wait. Defaults to Testing Library's asyncUtilTimeout.
+	 */
+	actionTimeout?: number
 	/**
 	 * Milliseconds to wait before each click. Useful for making interactions
 	 * observable when stories are played manually. Defaults to no delay.
