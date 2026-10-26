@@ -92,12 +92,19 @@ const cell = (kit: Kit, id: ScenarioId, tickets: ReadonlyMap<string, string>) =>
 
 const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`
 
+const kindOf = (status: ScenarioStatus) =>
+	status === 'pass' ? 'pass' : 'knownGap' in status ? 'known gap' : 'differs'
+
 // A known-gap story test is green while the gap stays, so count support apart
 // from gaps instead of reading green tests as support.
 const totals = (kit: Kit) => {
-	const statuses = Object.values(kit.manifest.scenarios)
-	const passing = statuses.filter((status) => status === 'pass').length
-	return `${passing} pass, ${plural(statuses.length - passing, 'known gap')}`
+	const kinds = Object.values(kit.manifest.scenarios).map(kindOf)
+	const count = (kind: ReturnType<typeof kindOf>) => kinds.filter((k) => k === kind).length
+	return [
+		`${count('pass')} pass`,
+		...(count('differs') > 0 ? [`${count('differs')} differs`] : []),
+		...(count('known gap') > 0 ? [plural(count('known gap'), 'known gap')] : []),
+	].join(', ')
 }
 
 /**
@@ -123,7 +130,7 @@ export const renderMatrix = (kits: readonly Kit[], tickets: ReadonlyMap<string, 
 		),
 		row(['**Total**', ...kits.map(totals)]),
 		'',
-		"A known gap's story test passes while the scenario still fails as recorded.",
+		"A known gap's story test passes while the scenario still fails as recorded. A differs story test passes through the workaround for the kit's pattern.",
 		'',
 	].join('\n')
 }
