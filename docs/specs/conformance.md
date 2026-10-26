@@ -136,6 +136,17 @@ that render the matrix themselves.
 CI regenerates both and runs `git diff --exit-code`. The README links it next to
 the supported-frameworks list.
 
+## Demo bundle
+
+`pnpm conformance:demo` packs `conformance-demo.tar.gz`: each kit's static
+Storybook under `kits/<kit>/` and `matrix.json`. The website shows the matrix
+and embeds each kit's `page` story test, which runs the journey in the visitor's
+browser.
+
+The `Conformance demo` workflow, run by hand, attaches the bundle to a
+prerelease tagged `conformance-<date>` and prints its SHA-256 and size. The
+website pins that URL, checksum, and size, the same way it pins its film.
+
 ## CI
 
 A `conformance` job, matrix over kits, Chromium only, on every PR with no

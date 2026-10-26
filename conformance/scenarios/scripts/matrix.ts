@@ -1,14 +1,12 @@
 // Writes conformance/MATRIX.md and matrix.json from kit manifests and their story tests.
 import { existsSync, readdirSync, readFileSync, writeFileSync } from 'node:fs'
 import { join } from 'node:path'
-import { fileURLToPath, pathToFileURL } from 'node:url'
+import { pathToFileURL } from 'node:url'
 
 import type { KitManifest } from '../src/manifest.ts'
 import { matrixOf, renderMatrix, type Kit } from '../src/matrix.ts'
 import { storyTestsOf } from '../src/story-tests.ts'
-
-const root = fileURLToPath(new URL('../../../', import.meta.url))
-const kitsDir = join(root, 'conformance/kits')
+import { kitDirs, kitsDir, root } from './kits.ts'
 
 const storyTests = (srcDir: string) =>
 	readdirSync(srcDir, { recursive: true, encoding: 'utf8' })
@@ -34,10 +32,6 @@ const tickets = new Map(
 	}),
 )
 
-// A kit is a directory with a manifest; shared presets and stray files are not.
-const kitDirs = readdirSync(kitsDir)
-	.filter((dir) => existsSync(join(kitsDir, dir, 'src/manifest.ts')))
-	.toSorted()
 const kits = await Promise.all(kitDirs.map(loadKit))
 const matrix = matrixOf(kits, tickets)
 writeFileSync(join(root, 'conformance/MATRIX.md'), renderMatrix(matrix))
