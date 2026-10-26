@@ -24,3 +24,8 @@ pnpm-debug.log*
 
 # Checksum-verified video fetched from the published release at build time
 public/media/
+
+# Conformance demo unpacked from the pinned release bundle at build time
+public/conformance/
+# Verified downloads
+.cache/

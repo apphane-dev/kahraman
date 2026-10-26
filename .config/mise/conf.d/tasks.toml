@@ -5,7 +5,7 @@ sources = ["package.json", "astro.config.mjs", "src/**/*"]
 outputs = [".astro/**/*"]
 
 [tasks.dev]
-depends = ["media"]
+depends = ["media", "conformance"]
 description = "Start the Astro development server"
 usage = '''
 arg "[rest]" help="Additional arguments to pass to Astro"
@@ -14,11 +14,11 @@ run = "astro dev ${usage_rest}"
 
 [tasks.build]
 description = "Build the site"
-depends = ["prepare", "media"]
+depends = ["prepare", "media", "conformance"]
 run = ["astro build", "node --test tests/site.test.mjs"]
 
 [tasks.check]
-description = "Build and check inline media, branding, and static-site output"
+description = "Build and check inline media, the conformance demo, branding, and static-site output"
 depends = ["build"]
 
 [tasks.ci]
@@ -36,3 +36,7 @@ run = "rm -rf node_modules"
 [tasks.media]
 description = "Fetch the reviewed silent film and verify its SHA-256"
 run = "node scripts/prepare-media.mjs"
+
+[tasks.conformance]
+description = "Fetch the pinned conformance demo bundle, verify its SHA-256, and unpack it"
+run = "node scripts/prepare-conformance.mjs"
