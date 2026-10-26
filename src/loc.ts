@@ -170,17 +170,6 @@ export interface FluentLocator<T extends QueryType = QueryType> extends BaseFlue
 const mergedOptions = <T extends QueryType>(config: LocatorConfig<T>) =>
 	config.options ? { ...config.initialOptions, ...config.options } : config.initialOptions
 
-// Storybook keeps hidden wrappers with text ("No Preview", a placeholder args
-// table) in the story document's body, where locators search. Role queries skip
-// them as inaccessible; text queries match hidden nodes, so ignore them. A
-// user `ignore` replaces this default.
-const storybookChrome = 'script, style, .sb-wrapper, .sb-wrapper *'
-
-const textOptions = (config: LocatorConfig<'text'>) => ({
-	ignore: storybookChrome,
-	...mergedOptions(config),
-})
-
 function invokeRoleSingle(canvas: Canvas, config: LocatorConfig<'role'>, mode: 'get'): HTMLElement
 function invokeRoleSingle(
 	canvas: Canvas,
@@ -225,7 +214,7 @@ function invokeTextSingle(
 	mode: QueryMode,
 ): HTMLElement | Promise<HTMLElement> | null
 function invokeTextSingle(canvas: Canvas, config: LocatorConfig<'text'>, mode: QueryMode) {
-	const opts = textOptions(config)
+	const opts = mergedOptions(config)
 	if (mode === 'get') {
 		return canvas.getByText(config.arg, opts)
 	}
@@ -256,7 +245,7 @@ function invokeAll(canvas: Canvas, config: LocatorConfig, mode: 'get' | 'find') 
 		}
 		return canvas.findAllByRole(config.arg, opts)
 	}
-	const opts = textOptions(config)
+	const opts = mergedOptions(config)
 	if (mode === 'get') {
 		return canvas.getAllByText(config.arg, opts)
 	}

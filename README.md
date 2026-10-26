@@ -155,7 +155,7 @@ import { role, text, heading, button, link } from 'kahraman'
 
 role('textbox', 'Email') // by role + accessible name
 heading('Dashboard') // role('heading', 'Dashboard')
-text(/items? found/) // by visible text (string or RegExp)
+text(/items? found/) // by text content (string or RegExp)
 
 link('Storage').options({ current: 'page' }) // extra Testing Library options
 button('Save').within(role('dialog')) // scope to a container
@@ -177,10 +177,32 @@ Locators search the story document's body, so they find dialogs, menus, and
 toasts a UI kit portals out of the canvas. `.within(scope)` narrows that to a
 locator or an `HTMLElement` (for example `context.canvasElement`). Stories that
 share a document, as on a docs page, share that scope, so run play tests in
-story mode.
+story mode. This is document-level querying, not a guarantee that each story
+has an isolated set of matches.
 
-`text()` matches hidden elements too, except Storybook's own hidden wrappers.
-Passing `ignore` in `.options()` replaces that exclusion.
+Text queries match hidden elements too. The actor excludes elements matching
+`script, style, .sb-wrapper, .sb-wrapper *` by default to skip Storybook's
+placeholder text. This selector also excludes user content with the same
+`.sb-wrapper` class. Replace it in the actor factory when your Storybook version
+uses different markup or your component uses that class:
+
+```ts
+const I = createActor({
+	textIgnore: 'script, style, .my-preview-chrome, .my-preview-chrome *',
+})
+// Or disable text filtering for this actor:
+const unfiltered = createActor({ textIgnore: false })
+
+// A query-specific ignore replaces the actor's setting:
+await I.see(text('Preview details').options({ ignore: false }))
+```
+
+A custom selector replaces the whole default, so include `script, style` if you
+still want to exclude those elements. A query's `ignore` option takes precedence
+over factory `textIgnore`, which takes precedence over the default above.
+The setting stays local to each actor, applies inside `.within()` and to custom
+locator callbacks, and does not change role queries. Locators called directly
+with a Testing Library canvas, outside an actor, use that canvas's query defaults.
 
 ### Actor methods
 

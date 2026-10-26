@@ -3,7 +3,8 @@ import type {
 	StoryContext as StorybookStoryContext,
 	StoryContextForLoaders,
 } from 'storybook/internal/types'
-import type { StoryContext } from '../src/context'
+import type { Canvas, StoryContext } from '../src/context'
+import type { ActorOptions } from '../src/actor'
 import { expect, expectTypeOf, test } from 'vitest'
 
 type StorybookUserEvent = typeof import('storybook/test').userEvent
@@ -49,4 +50,11 @@ test('accepts a context built with the direct userEvent API', () => {
 		canvasElement: HTMLElement
 		userEvent: StorybookUserEvent
 	}>().toExtend<StoryContext>()
+})
+
+test('canvas text options retain the Testing Library query types', () => {
+	type TextOptions = NonNullable<Parameters<Canvas['getByText']>[1]>
+	expectTypeOf<TextOptions['ignore']>().toEqualTypeOf<boolean | string | undefined>()
+	expectTypeOf<ActorOptions['textIgnore']>().toEqualTypeOf<TextOptions['ignore']>()
+	expectTypeOf<ReturnType<Canvas['queryByText']>>().toEqualTypeOf<HTMLElement | null>()
 })
