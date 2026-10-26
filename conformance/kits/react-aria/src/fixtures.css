@@ -34,6 +34,12 @@ body {
 	padding: clamp(1.5rem, 4vw, 3rem);
 }
 
+.fixture-page {
+	display: grid;
+	gap: 1.25rem;
+	justify-items: start;
+}
+
 .react-aria-Button,
 .react-aria-Input,
 .react-aria-TextArea,

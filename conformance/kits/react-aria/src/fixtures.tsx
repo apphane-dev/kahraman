@@ -181,7 +181,7 @@ export const StatusFixture = () => {
 
 // Every fixture at once, as one page of an app.
 export const PageFixture = () => (
-	<main>
+	<main className="fixture-page">
 		<ButtonFixture />
 		<ButtonDisabledFixture />
 		<TextboxFixture />
