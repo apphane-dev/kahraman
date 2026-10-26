@@ -29,5 +29,18 @@ all text query modes, scoped queries, and custom locator callbacks. Role
 queries and global Testing Library configuration do not change. Calling a
 locator directly with a canvas uses that canvas's defaults.
 
-Stories that share a document, as on a docs page, share the scope. Play tests
-run in story mode for isolation; no docs-mode detection.
+## Trade-off
+
+The default gives up isolation between stories rendered into one document.
+On a docs page, a name repeated in a sibling story makes a query ambiguous,
+and `dontSee` can fail on the sibling's element. `Regressions/Scope › Docs Page`
+in the React Aria kit reproduces this. Play tests run in story mode, where the
+document holds one story; there is no docs-mode detection.
+
+A `canvasElement` default keeps that isolation but misses every overlay a kit
+portals. Kits portal dialogs, menus, popovers, and toasts by default, so most
+interactive stories would need an escape on each overlay step. The common case
+wins the default. A test that needs isolation narrows itself:
+`.within(context.canvasElement)` per locator, or
+`I.within(() => context.canvasElement, ...)` for a block. Inside that block,
+portalled overlays need `.within(context.canvasElement.ownerDocument.body)`.

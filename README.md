@@ -176,9 +176,9 @@ role('alert').maybe() // queryBy* (nullable)
 Locators search the story document's body, so they find dialogs, menus, and
 toasts a UI kit portals out of the canvas. `.within(scope)` narrows that to a
 locator or an `HTMLElement` (for example `context.canvasElement`). Stories that
-share a document, as on a docs page, share that scope, so run play tests in
-story mode. This is document-level querying, not a guarantee that each story
-has an isolated set of matches.
+share a document, as on a docs page, share that scope: a name repeated in a
+sibling story makes the query ambiguous. Run play tests in story mode, or
+narrow a test to its own story with `.within(context.canvasElement)`.
 
 The `'global'` scope keyword is removed. When migrating `.within('global')`,
 omit it only when no actor scope is active. Inside `I.within(...)`, omitting it
