@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react'
 import { expect } from 'storybook/test'
 
 import preview from '../.storybook/preview'
-import { ComboboxFixture, DialogFixture } from '../src/fixtures'
+import { ButtonFixture, ComboboxFixture, DialogFixture } from '../src/fixtures'
 
 const meta = preview.meta({ title: 'Regressions/Scope' })
 
@@ -118,3 +118,36 @@ ScopedDialog.test(
 		})
 	},
 )
+
+// A docs page renders every story into one document. A sibling story's root
+// outside this canvas stands in for that.
+const withSiblingStory = async (context: StoryContext, test: () => Promise<void>) => {
+	const doc = context.canvasElement.ownerDocument
+	const sibling = doc.createElement('div')
+	sibling.innerHTML = `<button type="button">${contract.button.name}</button>`
+	doc.body.append(sibling)
+	try {
+		await test()
+	} finally {
+		sibling.remove()
+	}
+}
+
+export const DocsPage = meta.story({ render: () => <ButtonFixture /> })
+
+DocsPage.test('a sibling story makes a default query ambiguous', async (context) => {
+	const I = actor(context)
+	await withSiblingStory(context, async () => {
+		await expect(I.click(button(contract.button.name))).rejects.toThrow(
+			'Found multiple elements with the role "button"',
+		)
+	})
+})
+
+DocsPage.test('within(canvasElement) keeps a query in its own story', async (context) => {
+	const I = actor(context)
+	await withSiblingStory(context, async () => {
+		await I.click(button(contract.button.name).within(context.canvasElement))
+		await I.see(text(contract.button.outcome))
+	})
+})
