@@ -3,8 +3,8 @@ name: CI
 on:
   push:
     branches: [main]
+  # Any base, so each PR in a stack gets its own run.
   pull_request:
-    branches: [main]
 
 permissions:
   contents: read
