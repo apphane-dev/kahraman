@@ -140,7 +140,7 @@ export const TabsFixture = () => {
 }
 
 // The status stays up while a simulated sync runs, then closes.
-const syncMs = 500
+const syncMs = 2000
 
 export const StatusFixture = () => {
 	const c = contract.status
