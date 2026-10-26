@@ -2,6 +2,7 @@
 import '../styles/global.css';
 import CodeBlock from '../components/CodeBlock.astro';
 import film from '../data/film.json';
+import { bundle, kits, matrix, sourceUrl } from '../data/conformance';
 
 const GITHUB = 'https://github.com/apphane-dev/kahraman';
 const NPM = 'https://www.npmjs.com/package/kahraman';
@@ -146,6 +147,7 @@ const faqSchema = {
           <a href="#contrast">Why</a>
           <a href="#dsl">The DSL</a>
           <a href="#fit">Where it runs</a>
+          <a href="#conformance">UI kits</a>
           <a href={README}>Docs</a>
           <a class="ghost-btn" href={GITHUB}>GitHub ↗</a>
         </nav>
@@ -459,6 +461,79 @@ const faqSchema = {
         </div>
       </section>
 
+      <!-- CONFORMANCE: first-party Storybooks from the pinned release bundle. -->
+      <section class="section" id="conformance" aria-labelledby="conformance-title">
+        <div class="wrap">
+          <div class="section-head">
+            <span class="eyebrow">Conformance across UI kits</span>
+            <h2 class="section-title" id="conformance-title">The same journeys against {kits.length} UI kits.</h2>
+            <p class="section-lead">
+              Each scenario runs unchanged against every kit's real components in Chromium on
+              every pull request. A known gap is a scenario kahraman cannot finish yet, linked to the
+              ticket that fixes it. Pick a kit to run its full-page journey here, in your browser.
+            </p>
+          </div>
+          <div class="kit-run">
+            <ul class="kit-list" aria-label="Run a kit's page journey">
+              {kits.map((kit, index) => (
+                <li>
+                  <a class="kit-pick" href={kit.run} target="kit-run" aria-current={index === 0 ? 'true' : undefined}>{kit.name}</a>
+                  <span class="kit-totals">
+                    {kit.pass} pass{kit.differs > 0 && ` · ${kit.differs} differs`}{kit.knownGaps > 0 && ` · ${kit.knownGaps} known ${kit.knownGaps === 1 ? 'gap' : 'gaps'}`}
+                  </span>
+                  {kit.page.status === 'known gap' && (
+                    <p class="kit-gap">
+                      The journey stops at <a href={sourceUrl(kit.page.path)}>known gap {kit.page.ticket}</a>:
+                      <code>{kit.page.failsWith}</code>
+                    </p>
+                  )}
+                  {kit.gaps.length > 0 && (
+                    <p class="kit-gap">
+                      Scenario gaps: {kit.gaps.map((gap, i) => (
+                        <>{i > 0 && ', '}{gap.id} (<a href={sourceUrl(gap.path)}>gap {gap.ticket}</a>)</>
+                      ))}
+                    </p>
+                  )}
+                  <a class="kit-steps" href={kit.storybook}>Steps in Storybook</a>
+                </li>
+              ))}
+            </ul>
+            <figure class="kit-frame">
+              <iframe name="kit-run" src={kits[0].run} title="A UI kit's page journey, driven by kahraman" loading="lazy"></iframe>
+              <figcaption>
+                The page story test drives the kit as it loads. Pick a kit again to replay.
+              </figcaption>
+            </figure>
+          </div>
+          <div class="matrix-scroll" role="region" aria-labelledby="matrix-caption" tabindex="0">
+            <table class="mode-table matrix-table">
+              <caption id="matrix-caption">Conformance matrix · <a href={bundle.releaseUrl}>{bundle.tag}</a></caption>
+              <thead>
+                <tr><th scope="col">Scenario</th>{kits.map((kit) => <th scope="col">{kit.name}</th>)}</tr>
+              </thead>
+              <tbody>
+                {[...matrix.scenarios, { id: 'page', baseline: false, cells: matrix.page }].map((row) => (
+                  <tr>
+                    <th scope="row"><code>{row.id}</code>{row.baseline && ' (baseline)'}{row.id === 'page' && ' (whole page)'}</th>
+                    {row.cells.map((cell) => (
+                      <td class={`cell-${cell.status.replace(/\W/g, '')}`}>
+                        {cell.status === 'known gap' ? <a href={sourceUrl(cell.path)}>known gap {cell.ticket}</a>
+                          : cell.status === 'differs' ? <a href={sourceUrl(cell.path)}>differs: {cell.pattern}</a>
+                          : cell.status}
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p class="section-lead matrix-note">
+            A known gap's test passes while the scenario still fails as recorded. Differs means the
+            kit renders another valid ARIA pattern, and a workaround journey passes against it.
+          </p>
+        </div>
+      </section>
+
       <!-- EXTEND + AGENTS + REFS -->
       <section class="section">
         <div class="wrap split">
@@ -609,6 +684,16 @@ const faqSchema = {
         wordObserver.observe(word);
       });
       })();
+    </script>
+    <script>
+      // The first kit loads with the page; mark whichever kit the frame shows.
+      const picks = document.querySelectorAll('.kit-pick');
+      for (const pick of picks) {
+        pick.addEventListener('click', () => {
+          for (const other of picks) other.removeAttribute('aria-current');
+          pick.setAttribute('aria-current', 'true');
+        });
+      }
     </script>
   </body>
 </html>
