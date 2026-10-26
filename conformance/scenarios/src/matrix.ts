@@ -157,7 +157,7 @@ export const renderMatrix = (kits: readonly Kit[], tickets: ReadonlyMap<string, 
 		'',
 		"A known gap's story test passes while the scenario still fails as recorded. A differs story test passes through the workaround for the kit's pattern.",
 		'',
-		`Each kit also runs every scenario in order on one page, in its \`${pageTest}\` story test.`,
+		`Each kit's \`${pageTest}\` story test runs every scenario in order on one page, as an integration journey. A known gap there stops at its recorded failure and the journey continues without that action's effect.`,
 		'',
 	].join('\n')
 }

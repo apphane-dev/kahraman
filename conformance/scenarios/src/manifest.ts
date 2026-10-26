@@ -79,9 +79,10 @@ const actorFor = (context: StoryContext) => {
  * a type error. A scenario the kit meets with a different pattern also takes
  * the workaround that passes against it.
  *
- * `run.page(workarounds)` runs every declared scenario in catalog order with
- * one actor against a story that renders all the kit's fixtures together, so
- * the widgets must also work side by side.
+ * `run.page(workarounds)` is an integration journey: every declared scenario
+ * in catalog order with one actor, against a story that renders all the kit's
+ * fixtures together, so the widgets must also work side by side. A known gap
+ * stops at its recorded failure and the journey continues without its effect.
  */
 export const runnerFor = <M extends KitManifest>(manifest: M) => {
 	const statusOf = (id: ScenarioId): ScenarioStatus | undefined =>
