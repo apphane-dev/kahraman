@@ -248,8 +248,10 @@ then picks it directly, since the browser draws those options outside the page.
 For any other trigger it clicks, then waits for the option, so listboxes that
 mount late or load options on open work. Trigger resolution and the native/custom
 branch choice happen after `clickDelay`, so a replacement during that delay is used.
-The wait follows Testing
-Library's `asyncUtilTimeout` (1 s by default). Set it for one actor:
+When the trigger's `aria-controls` names its popup, the option is looked up there
+only, so another open listbox with the same option name does not match; otherwise
+the option must be unique in the document. The wait follows Testing Library's
+`asyncUtilTimeout` (1 s by default). Set it for one actor:
 
 ```ts
 const I = createActor({ optionTimeout: 3000 })
