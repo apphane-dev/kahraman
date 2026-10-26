@@ -129,14 +129,17 @@ button:disabled {
 	background: rgb(0 0 0 / 0.4);
 }
 
-[data-scope='dialog'][data-part='positioner'] {
+/* A closed dialog keeps its parts mounted with `hidden`; the UA hides them
+   with `display: none`, which these display declarations would otherwise
+   override and pin the closed dialog on screen. */
+[data-scope='dialog'][data-part='positioner']:not([hidden]) {
 	position: fixed;
 	inset: 0;
 	display: grid;
 	place-items: center;
 }
 
-[data-scope='dialog'][data-part='content'] {
+[data-scope='dialog'][data-part='content']:not([hidden]) {
 	display: grid;
 	gap: 0.75rem;
 	justify-items: start;
