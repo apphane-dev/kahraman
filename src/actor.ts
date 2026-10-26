@@ -82,6 +82,32 @@ const attemptRetry = async <T>(
 	}
 }
 
+// Storybook's hidden wrappers contain placeholder text that would otherwise
+// match document-wide queries. Keep this policy at the actor boundary.
+const storybookChrome = 'script, style, .sb-wrapper, .sb-wrapper *'
+
+const withTextIgnore = (canvas: Canvas, ignore: ActorOptions['textIgnore']): Canvas => ({
+	...canvas,
+	getByText: <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['getByText']>
+	) => canvas.getByText<T>(value, { ignore, ...options }),
+	queryByText: <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['queryByText']>
+	) => canvas.queryByText<T>(value, { ignore, ...options }),
+	findByText: <T extends HTMLElement = HTMLElement>(
+		...[value, options, waitOptions]: Parameters<Canvas['findByText']>
+	) => canvas.findByText<T>(value, { ignore, ...options }, waitOptions),
+	getAllByText: <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['getAllByText']>
+	) => canvas.getAllByText<T>(value, { ignore, ...options }),
+	queryAllByText: <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['queryAllByText']>
+	) => canvas.queryAllByText<T>(value, { ignore, ...options }),
+	findAllByText: <T extends HTMLElement = HTMLElement>(
+		...[value, options, waitOptions]: Parameters<Canvas['findAllByText']>
+	) => canvas.findAllByText<T>(value, { ignore, ...options }, waitOptions),
+})
+
 // Inspired by codecept.js — see https://codecept.io/blog/codeceptjs-4/ for the
 // actor API this mirrors (selectOption, hopeThat soft assertions, retryTo, etc.)
 function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOptions): BaseActor {
@@ -137,7 +163,12 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		locator: AnyLocator,
 		resolvingScopes: Set<DefiniteLocator> = new Set(),
 	): Promise<HTMLElement | HTMLElement[] | null> {
-		return await locator(await canvasFor(locator, resolvingScopes))
+		return await locator(
+			withTextIgnore(
+				await canvasFor(locator, resolvingScopes),
+				actorOptions.textIgnore ?? storybookChrome,
+			),
+		)
 	}
 
 	const elementFrom = async (
@@ -418,6 +449,12 @@ function makeActor<M extends {}>(
 }
 
 export interface ActorOptions {
+	/**
+	 * CSS selector excluded from this actor's text queries. Defaults to
+	 * 'script, style, .sb-wrapper, .sb-wrapper *'. A custom selector replaces
+	 * the default; false disables filtering. A query's ignore option wins.
+	 */
+	textIgnore?: NonNullable<Parameters<Canvas['getByText']>[1]>['ignore']
 	/**
 	 * Milliseconds to wait before each click. Useful for making interactions
 	 * observable when stories are played manually. Defaults to no delay.

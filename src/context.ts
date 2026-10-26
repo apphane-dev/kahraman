@@ -10,8 +10,12 @@
 /**
  * The Testing-Library bound-queries object, as returned by `within(...)` from
  * `storybook/test`. Locators receive this and call `getByRole`, `findByText`, …
+ * Bind the default query set explicitly, since ReturnType of the generic
+ * `within` alone loses its query-option types, including text `ignore`.
  */
-export type Canvas = ReturnType<typeof import('storybook/test').within>
+export type Canvas = ReturnType<
+	typeof import('storybook/test').within<typeof import('storybook/test').queries>
+>
 
 type UserEventInstance = ReturnType<typeof import('storybook/test').userEvent.setup>
 
