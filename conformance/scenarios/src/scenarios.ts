@@ -52,8 +52,14 @@ export const scenarios = {
 	},
 	combobox: async (I) => {
 		const c = contract.combobox
-		await I.selectOption(role('combobox', c.label), c.choice)
-		await I.see(text(c.choice).within(role('combobox', c.label)))
+		const box = role('combobox', c.label)
+		await I.selectOption(box, c.choice)
+		// An <input> combobox exposes its value; any other element, its text.
+		if ((await I.see(box)) instanceof HTMLInputElement) {
+			await I.seeInField(box, c.choice)
+		} else {
+			await I.see(text(c.choice).within(box))
+		}
 	},
 	dialog: async (I) => {
 		const c = contract.dialog
