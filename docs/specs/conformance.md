@@ -8,7 +8,8 @@ Checks how well the actor and locator DSL fit popular UI kits. Terms follow
 [ADR 0003](../decisions/0003-core-before-kit-extensions.md).
 
 The suite is a CI regression check. The conformance matrix is a view of its
-declarations, so the two cannot drift.
+declarations, so the two cannot drift. A known gap's story test passes while the
+gap stays, so report support from the matrix totals, not from green test counts.
 
 ## Layout
 

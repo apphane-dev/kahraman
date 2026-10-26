@@ -65,6 +65,16 @@ const cell = (status: ScenarioStatus | undefined, tickets: ReadonlyMap<string, s
 	return `[known gap ${status.knownGap}](../${tickets.get(status.knownGap)})`
 }
 
+const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`
+
+// A known-gap story test is green while the gap stays, so count support apart
+// from gaps instead of reading green tests as support.
+const totals = (kit: Kit) => {
+	const statuses = Object.values(kit.manifest.scenarios)
+	const passing = statuses.filter((status) => status === 'pass').length
+	return `${passing} pass, ${plural(statuses.length - passing, 'known gap')}`
+}
+
 /**
  * Renders `conformance/MATRIX.md`: scenarios against kits. `tickets` maps a
  * ticket number to its repo-relative path. Throws on an inconsistent kit.
@@ -86,6 +96,9 @@ export const renderMatrix = (kits: readonly Kit[], tickets: ReadonlyMap<string, 
 				...kits.map((kit) => cell(kit.manifest.scenarios[id], tickets)),
 			]),
 		),
+		row(['**Total**', ...kits.map(totals)]),
+		'',
+		"A known gap's story test passes while the scenario still fails as recorded.",
 		'',
 	].join('\n')
 }
