@@ -269,11 +269,12 @@ assertion. Set the actor wait for one actor, or turn it off with `0`:
 const I = createActor({ actionTimeout: 3000 })
 ```
 
-`click` and `selectOption` click where a user's click lands. A target that turns
-off its own `pointer-events`, like an input inside a field that handles the
-click, passes the click to its parent. A target inside a container that turned
-pointer events off, like an overlay during its open transition, cannot be
-clicked yet, so the action waits for it within the same timeout.
+A target with `pointer-events: none` cannot take a user's click. When the target
+turned it off itself and the browser hits its parent at the target's center, as
+with an input inside a field that handles the click, `click` and `selectOption`
+click the parent. A covering control is never clicked instead. Otherwise the
+action waits within `actionTimeout`, as during an overlay's open transition,
+then user-event reports why it cannot click.
 
 ### Actor methods
 

@@ -2,4 +2,4 @@
 'kahraman': minor
 ---
 
-`I.click` and `I.selectOption` click where a user's click lands. A target that turns off its own `pointer-events` passes the click to its parent, as Vuetify's select input does. A target inside a container that turned pointer events off, as an overlay does during its open transition, makes the action wait within `actionTimeout`; past it, user-event reports why it cannot click.
+`I.click` and `I.selectOption` handle a target with `pointer-events: none`. When the target turned it off itself and the browser hits its parent at the target's center, as with Vuetify's select input, they click the parent; a covering control is never clicked instead. Otherwise the action waits within `actionTimeout`, as during an overlay's open transition, then user-event reports why it cannot click.

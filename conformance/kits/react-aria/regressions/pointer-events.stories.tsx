@@ -89,3 +89,84 @@ Unreachable.test('click fails on a target a user cannot reach', async (context) 
 	)
 	await I.see(text('Clicked 0'))
 })
+
+const CoveredField = () => {
+	const [fieldClicks, setFieldClicks] = useState(0)
+	const [coverClicks, setCoverClicks] = useState(0)
+	return (
+		<>
+			<div
+				style={{ position: 'relative', width: 320, height: 120 }}
+				onClick={() => setFieldClicks((n) => n + 1)}
+			>
+				<input
+					aria-label="Covered field"
+					readOnly
+					style={{ pointerEvents: 'none', width: 120, height: 40 }}
+				/>
+				<button
+					style={{ position: 'absolute', inset: 0 }}
+					onClick={(event) => {
+						event.stopPropagation()
+						setCoverClicks((n) => n + 1)
+					}}
+				>
+					Covering control
+				</button>
+			</div>
+			<p>Field clicks {fieldClicks}</p>
+			<p>Cover clicks {coverClicks}</p>
+		</>
+	)
+}
+
+export const Covered = meta.story({ render: () => <CoveredField /> })
+
+Covered.test('click never redirects through an overlapping control', async (context) => {
+	const I = actor(context, { actionTimeout: 100 })
+	await expect(I.click(role('textbox', 'Covered field'))).rejects.toThrow(
+		'Unable to perform pointer interaction as the element',
+	)
+	await I.see(text('Field clicks 0'))
+	await I.see(text('Cover clicks 0'))
+})
+
+const OffsetField = () => {
+	const [clicks, setClicks] = useState(0)
+	return (
+		<>
+			<div
+				style={{ position: 'relative', width: 400, height: 120 }}
+				onClick={() => setClicks((n) => n + 1)}
+			>
+				<input
+					aria-label="Offset field"
+					readOnly
+					style={{
+						position: 'absolute',
+						left: 0,
+						top: 0,
+						width: 100,
+						height: 40,
+						pointerEvents: 'none',
+					}}
+				/>
+				<button style={{ position: 'absolute', right: 0, top: 0, width: 250, height: 120 }}>
+					Parent center is covered
+				</button>
+			</div>
+			<p>Offset clicks {clicks}</p>
+		</>
+	)
+}
+
+export const Offset = meta.story({ render: () => <OffsetField /> })
+
+Offset.test(
+	'fallback hit testing uses the original target, not the parent center',
+	async (context) => {
+		const I = actor(context)
+		await I.click(role('textbox', 'Offset field'))
+		await I.see(text('Offset clicks 1'))
+	},
+)
