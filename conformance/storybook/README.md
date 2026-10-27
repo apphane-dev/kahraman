@@ -5,14 +5,16 @@ Private workspace package used by the kit fixtures.
 - `kahraman-conformance-storybook/preset` registers the Vitest addon and disables
   telemetry. React-specific CSF Next flags and docgen settings stay in each
   React kit's main configuration.
-- `kahraman-conformance-storybook/vitest` exports `kitTestConfig({ name, port })`.
-  It runs the story tests in headless Chromium and points failure links at the
-  kit's own Storybook port. Run it from the kit directory, where `.storybook`
+- `kahraman-conformance-storybook/vitest` exports
+  `kitTestConfig({ name, port, testTimeout })`. It runs the story tests in
+  headless Chromium and points failure links at the kit's own Storybook port.
+  `testTimeout` raises Vitest's per-test limit for a kit whose `page` journey
+  waits out many known gaps. Run it from the kit directory, where `.storybook`
   lives; package scripts already do this.
 - `kahraman-conformance-storybook/waits` raises Testing Library's
   `asyncUtilTimeout` to 5 s. Import it from the kit's preview, so manual
   playback and story tests wait alike.
 
 Keep framework selection, renderer flags, story globs, preview factories, Vite plugins, fonts,
-and CSS in each kit. The Vuetify kit reuses this test wiring with the Vue
-framework. Do not add a shared component theme or a cross-kit CSS reset here.
+and CSS in each kit. The Vuetify and Web Awesome kits reuse this test wiring with
+the Vue and Web Components frameworks. Do not add a shared component theme or a cross-kit CSS reset here.
