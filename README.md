@@ -11,9 +11,10 @@ mise run build
 mise run check
 ```
 
-`build` and `dev` prepare the silent film first. `check` builds the site and tests
-the rendered video element, playback attributes, accessible description, local
-assets, palette, and film checksum. It does not run Astro type diagnostics.
+`build` and `dev` prepare the silent film and the conformance demo first. `check`
+builds the site and tests the rendered video element, playback attributes,
+accessible description, local assets, palette, film checksum, and the
+conformance bundle, kit links, and matrix. It does not run Astro type diagnostics.
 
 ## Identity and film
 
@@ -34,6 +35,22 @@ text summary describes each scene for people who cannot watch it.
 
 To publish a later film, update the manifest, poster, and tests together. Keep
 large rendered MP4s out of Git.
+
+## Conformance demo
+
+`src/data/conformance.json` pins `conformance-demo.tar.gz` from a
+`conformance-<date>` release on `main` by URL, SHA-256, and size. The
+`conformance` task keeps the verified download in `.cache/` and unpacks it into
+`public/conformance/`: a static Storybook per UI kit and `matrix.json`. Both
+paths stay out of Git.
+
+The `#conformance` section renders the matrix as a table and links each kit's
+`page` story test into one iframe, so the test runs in the visitor's browser.
+Known gaps link to their tickets at the release tag. A kit whose page journey
+halts shows the recorded failure beside it.
+
+To publish a later bundle, run the `Conformance demo` workflow on `main`, then
+copy the tag, SHA-256, and size from its summary into the manifest.
 
 ## Deploy
 

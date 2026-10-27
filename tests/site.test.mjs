@@ -2,6 +2,7 @@ import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { readFile } from 'node:fs/promises';
 import test from 'node:test';
+import conformance from '../src/data/conformance.json' with { type: 'json' };
 import film from '../src/data/film.json' with { type: 'json' };
 
 const root = new URL('../dist/', import.meta.url);
@@ -50,5 +51,55 @@ test('site and film use the same documented palette', async () => {
   const tokens = JSON.parse(await readFile(new URL('brand/tokens.json', root), 'utf8'));
   for (const [name, color] of Object.entries(tokens.colors)) {
     assert.ok(css.includes(`--kahraman-${name.replaceAll('_', '-')}: ${color};`));
+  }
+});
+
+test('conformance bundle is the pinned release, unpacked first-party', async () => {
+  const bytes = await readFile(new URL('../.cache/conformance-demo.tar.gz', import.meta.url));
+  assert.equal(bytes.length, conformance.sizeBytes);
+  assert.equal(createHash('sha256').update(bytes).digest('hex'), conformance.sha256);
+  const matrix = JSON.parse(await readFile(new URL('conformance/matrix.json', root), 'utf8'));
+  assert.ok(matrix.kits.length > 0);
+  for (const kit of matrix.kits) {
+    for (const file of ['iframe.html', 'index.html', 'index.json']) {
+      assert.ok((await readFile(new URL(`conformance/kits/${kit.dir}/${file}`, root))).length > 0,
+        `${kit.dir}/${file} is missing`);
+    }
+  }
+});
+
+test('each kit runs its demo story test from our own domain', async () => {
+  const matrix = JSON.parse(await readFile(new URL('conformance/matrix.json', root), 'utf8'));
+  const frame = html.match(/<iframe\b[^>]*name="kit-run"[^>]*>/)?.[0];
+  assert.ok(frame, 'Expected the kit-run iframe');
+  assert.ok(html.includes('Known gaps are listed and skipped.'));
+  assert.match(frame, /src="\/conformance\/kits\//);
+  assert.match(frame, /title="[^"]+"/);
+  assert.match(html, /href="#conformance"/);
+  for (const kit of matrix.kits) {
+    const index = JSON.parse(await readFile(new URL(`conformance/kits/${kit.dir}/index.json`, root), 'utf8'));
+    const test = Object.values(index.entries).find((e) => e.subtype === 'test' && e.name === 'demo');
+    assert.ok(test, `${kit.dir} has no demo story test`);
+    const run = `/conformance/kits/${kit.dir}/iframe.html?id=${test.id}&viewMode=story`;
+    // Astro escapes the query's ampersand.
+    assert.ok(html.replaceAll('&#38;', '&').includes(`href="${run}" target="kit-run"`), `${kit.name} has no run link`);
+    assert.ok(html.includes(`href="/conformance/kits/${kit.dir}/?path=/story/${test.id}"`));
+  }
+});
+
+test('matrix shows every scenario, and known gaps link to their tickets at the release', async () => {
+  const matrix = JSON.parse(await readFile(new URL('conformance/matrix.json', root), 'utf8'));
+  const table = html.match(/<table class="mode-table matrix-table[\s\S]*?<\/table>/)?.[0];
+  assert.ok(table, 'Expected the matrix table');
+  for (const { id } of matrix.scenarios) assert.ok(table.includes(`<code>${id}</code>`), `${id} row missing`);
+  assert.ok(table.includes('<code>page</code>'));
+  const source = `https://github.com/apphane-dev/kahraman/blob/${conformance.tag}/`;
+  const gaps = [...matrix.scenarios.flatMap((row) => row.cells), ...matrix.page]
+    .filter((cell) => cell.status === 'known gap');
+  for (const gap of gaps) assert.ok(table.includes(`href="${source}${gap.path}"`), `gap ${gap.ticket} link missing`);
+  // A halted page journey is explained beside its kit, with the recorded failure.
+  for (const [index, cell] of matrix.page.entries()) {
+    if (cell.status !== 'known gap') continue;
+    assert.ok(html.includes(cell.failsWith.replaceAll('"', '&quot;')), `${matrix.kits[index].name} page gap not explained`);
   }
 });
