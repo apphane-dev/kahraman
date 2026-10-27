@@ -275,6 +275,12 @@ assertion. Set the actor wait for one actor, or turn it off with `0`:
 const I = createActor({ actionTimeout: 3000 })
 ```
 
+Experimental: `createActor({ shadowDom: 'open' })` makes role and text queries
+also search open shadow roots, for web component kits. Matches from every root
+count toward the one-match rule. Focus, hit testing, and id references do not
+cross shadow boundaries yet, so `clear`, some clicks, and `selectOption` can
+still fail; see ticket 17.
+
 A target with `pointer-events: none` cannot take a user's click. When the target
 turned it off itself and the browser hits its parent at the target's center, as
 with an input inside a field that handles the click, `click` and `selectOption`
