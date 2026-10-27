@@ -8,6 +8,7 @@ From the repository root:
 
 ```sh
 pnpm --filter kahraman-conformance-ark run storybook
+pnpm run build # required before a standalone kit test
 pnpm --filter kahraman-conformance-ark run test
 mise run conformance
 ```

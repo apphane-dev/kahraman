@@ -47,7 +47,9 @@ button:disabled {
 	opacity: 0.5;
 }
 
-:focus-visible {
+:focus-visible,
+[data-scope='checkbox'][data-part='control'][data-focus-visible],
+[data-scope='switch'][data-part='control'][data-focus-visible] {
 	outline: 2px solid var(--kahraman-cobalt);
 	outline-offset: 2px;
 }
