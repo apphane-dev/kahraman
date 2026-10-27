@@ -69,10 +69,11 @@ export const MenuFixture = defineComponent({
 				<template #activator="{ props }">
 					<v-btn v-bind="props">{{ c.trigger }}</v-btn>
 				</template>
-				<v-list>
+				<v-list role="menu">
 					<v-list-item
 						v-for="item in c.items"
 						:key="item"
+						role="menuitem"
 						:title="item"
 						@click="chosen = item === c.choice"
 					/>
