@@ -1,5 +1,6 @@
-// Runs each kit's built `page` test from conformance-demo.tar.gz the way the
-// website shows it: unpacked under /conformance/ and embedded in an iframe.
+// Runs each kit's built `page` test and Web Awesome's opt-in integration test
+// from conformance-demo.tar.gz, unpacked under /conformance/ and embedded
+// in an iframe the way the website shows it.
 // Run `pnpm conformance:demo` first.
 import assert from 'node:assert/strict'
 import { execFileSync } from 'node:child_process'
@@ -81,21 +82,26 @@ const serve = (request: IncomingMessage, response: ServerResponse) => {
 	sendFile(url.pathname, response)
 }
 
-const pageTest = (dir: string) => {
+type Journey = 'default' | 'open-shadow'
+
+const pageTest = (dir: string, journey: Journey) => {
+	const name =
+		journey === 'default' ? 'page' : 'all scenarios share a page with open-shadow queries'
 	const index = readJson(join(bundle, 'kits', dir, 'index.json')) as {
 		entries: Record<string, IndexEntry>
 	}
 	const tests = Object.values(index.entries).filter(
-		(entry) => entry.subtype === 'test' && entry.name === 'page',
+		(entry) => entry.subtype === 'test' && entry.name === name,
 	)
-	assert.equal(tests.length, 1, `${dir}: expected one built page test`)
+	assert.equal(tests.length, 1, `${dir}: expected one built ${name} test`)
 	return tests[0]!.id
 }
 
 // The journey's last steps leave Saved shown, Billing selected, the toast
 // gone, and no dialog on screen.
-const checkEndState = async (frame: FrameLocator, kit: number) => {
+const checkEndState = async (frame: FrameLocator, kit: number, journey: Journey) => {
 	const passes = (id: string) =>
+		journey === 'open-shadow' ||
 		['pass', 'differs'].includes(matrix.scenarios.find((row) => row.id === id)!.cells[kit]!.status)
 	if (passes('button')) {
 		assert.ok(await frame.getByText(contract.button.outcome, { exact: true }).isVisible())
@@ -113,8 +119,15 @@ const checkEndState = async (frame: FrameLocator, kit: number) => {
 	assert.equal(dialogsOnScreen, 0, 'A closed dialog is still on screen')
 }
 
-const smokeKit = async (browser: Browser, origin: string, dir: string, kit: number) => {
-	const id = pageTest(dir)
+const smokeKit = async (
+	browser: Browser,
+	origin: string,
+	dir: string,
+	kit: number,
+	journey: Journey = 'default',
+) => {
+	const started = performance.now()
+	const id = pageTest(dir, journey)
 	const page = await browser.newPage()
 	const errors: string[] = []
 	page.on('pageerror', (error) => errors.push(error.message))
@@ -131,9 +144,11 @@ const smokeKit = async (browser: Browser, origin: string, dir: string, kit: numb
 	const { status } = (await finished.jsonValue()) as Finished
 	assert.equal(status, 'success', `${dir}: the built page test failed ${errors.join('; ')}`)
 	assert.deepEqual(errors, [], `${dir}: page errors`)
-	await checkEndState(page.frameLocator('#run'), kit)
+	await checkEndState(page.frameLocator('#run'), kit, journey)
 	await page.close()
-	console.info(`${dir}: page journey passed from the bundle`)
+	console.info(
+		`${dir}: ${journey} page journey passed from the bundle in ${((performance.now() - started) / 1000).toFixed(1)} s`,
+	)
 }
 
 const server = createServer(serve).listen(0, '127.0.0.1')
@@ -145,6 +160,9 @@ try {
 		await previous
 		await smokeKit(browser, origin, dir, kit)
 	}, Promise.resolve())
+	const webAwesome = matrix.kits.findIndex(({ dir }) => dir === 'web-awesome')
+	assert.ok(webAwesome >= 0, 'The bundle must include Web Awesome')
+	await smokeKit(browser, origin, 'web-awesome', webAwesome, 'open-shadow')
 } finally {
 	await browser.close()
 	server.close()
