@@ -399,6 +399,9 @@ importers:
       '@types/node':
         specifier: ^24.0.0
         version: 24.19.2
+      playwright:
+        specifier: 1.64.1
+        version: 1.64.1
       storybook:
         specifier: 11.0.0-alpha.4
         version: 11.0.0-alpha.4(@types/react@19.3.0)(prettier@2.8.8)(react@19.2.7)(vite-plus@0.2.9(@arethetypeswrong/core@0.18.5)(@types/node@24.19.2)(@vitest/browser-playwright@4.1.10)(esbuild@0.28.2)(jiti@2.7.0)(publint@0.3.24)(typescript@7.0.2)(vite@8.3.5(@types/node@24.19.2)(esbuild@0.28.2)(jiti@2.7.0)(yaml@2.9.0))(yaml@2.9.0))

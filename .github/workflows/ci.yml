@@ -159,3 +159,29 @@ jobs:
 
       - name: Conformance
         run: pnpm run test
+
+  # Runs each kit's page test from the packed demo bundle, served under the
+  # website's /conformance/ path, the way the site embeds it.
+  conformance-demo:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm --filter kahraman-conformance-scenarios exec playwright install --with-deps chromium
+
+      - name: Build the bundle
+        run: pnpm run conformance:demo
+
+      - name: Smoke-test the bundle
+        run: pnpm run conformance:demo:smoke

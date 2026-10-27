@@ -29,8 +29,14 @@ jobs:
       - name: Install
         run: pnpm install --frozen-lockfile
 
+      - name: Install Chromium
+        run: pnpm --filter kahraman-conformance-scenarios exec playwright install --with-deps chromium
+
       - name: Build the bundle
         run: pnpm run conformance:demo
+
+      - name: Smoke-test the bundle
+        run: pnpm run conformance:demo:smoke
 
       - name: Publish the release
         env:

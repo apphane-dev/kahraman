@@ -143,6 +143,12 @@ Storybook under `kits/<kit>/` and `matrix.json`. The website shows the matrix
 and embeds each kit's `page` story test, which runs the journey in the visitor's
 browser.
 
+`pnpm conformance:demo:smoke` unpacks the bundle, serves it under
+`/conformance/` as the site does, embeds each kit's built `page` test in an
+iframe, and checks that Storybook reports it passed and that the journey left
+its end state on screen. CI runs it on every PR, and the publishing workflow
+runs it before it uploads.
+
 The `Conformance demo` workflow, run by hand, attaches the bundle to a
 prerelease tagged `conformance-<date>` and prints its SHA-256 and size. The
 website pins that URL, checksum, and size, the same way it pins its film.
