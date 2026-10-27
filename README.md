@@ -283,7 +283,7 @@ unassigned light DOM under an open shadow host and slot fallback content when
 that slot has assigned nodes. A role query with `{ hidden: true }` and text
 queries still include that DOM. Closed shadow roots stay out of reach. The
 [experimental contract](./docs/decisions/0005-opt-in-shadow-dom.md) keeps this
-option off by default until ticket 17's separate default-policy decision.
+option off by default. Enable it explicitly when a test needs open-shadow queries.
 
 A target with `pointer-events: none` cannot take a user's click. When the target
 turned it off itself, `click` and `selectOption` click what the browser hits at

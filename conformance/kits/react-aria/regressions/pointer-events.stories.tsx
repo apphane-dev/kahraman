@@ -2,7 +2,7 @@
 // itself, as Vuetify's select input does, and one inside a container that
 // turns them off, as an overlay does during its open transition.
 import { button, createActor, role, text, type ActorOptions, type StoryContext } from 'kahraman'
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { expect } from 'storybook/test'
 
 import preview from '../.storybook/preview'
@@ -192,3 +192,78 @@ Thumb.test('click passes through a decorative part inside the parent', async (co
 	await I.click(toggle)
 	await I.seeChecked(toggle)
 })
+
+const DecoratedField = ({
+	decoration = 'plain',
+}: {
+	decoration?: 'plain' | 'none' | 'presentation' | 'svg' | 'button'
+}) => {
+	const [clicks, setClicks] = useState(0)
+	const cover = {
+		position: 'absolute',
+		inset: 0,
+		width: '100%',
+		height: '100%',
+	} satisfies CSSProperties
+	return (
+		<>
+			<div
+				role="switch"
+				aria-label="Decorated field"
+				aria-checked={clicks > 0}
+				onClick={() => setClicks((n) => n + 1)}
+				style={{ position: 'relative', width: 120, height: 40 }}
+			>
+				<input aria-label="Decorated input" readOnly style={{ ...cover, pointerEvents: 'none' }} />
+				{decoration === 'svg' ? (
+					<svg aria-hidden="true" style={cover} viewBox="0 0 120 40">
+						<rect width="120" height="40" fill="gray" />
+					</svg>
+				) : decoration === 'button' ? (
+					<button role="presentation" style={cover} onClick={(event) => event.stopPropagation()}>
+						Real control
+					</button>
+				) : (
+					<span
+						role={decoration === 'plain' ? undefined : decoration}
+						aria-hidden="true"
+						style={{ ...cover, background: 'gray' }}
+					/>
+				)}
+			</div>
+			<p>Decorated clicks {clicks}</p>
+		</>
+	)
+}
+
+const clicksDecoration = async (context: StoryContext) => {
+	const I = actor(context, { actionTimeout: 100 })
+	await I.click(role('textbox', 'Decorated input'))
+	await I.see(text('Decorated clicks 1'))
+}
+
+export const ParentRole = meta.story({ render: () => <DecoratedField /> })
+ParentRole.test('a role-bearing parent is not an intervening control', clicksDecoration)
+
+export const Presentation = meta.story({
+	render: () => <DecoratedField decoration="presentation" />,
+})
+Presentation.test('a presentation role on decoration does not block the click', clicksDecoration)
+
+export const None = meta.story({ render: () => <DecoratedField decoration="none" /> })
+None.test('a none role on decoration does not block the click', clicksDecoration)
+
+export const SvgThumb = meta.story({ render: () => <DecoratedField decoration="svg" /> })
+SvgThumb.test('a decorative SVG part receives the click', clicksDecoration)
+
+export const PresentedButton = meta.story({ render: () => <DecoratedField decoration="button" /> })
+PresentedButton.test(
+	'a native control stays a control despite its presentation role',
+	async (context) => {
+		const I = actor(context, { actionTimeout: 100 })
+		await expect(I.click(role('textbox', 'Decorated input'))).rejects.toThrow(
+			'Unable to perform pointer interaction as the element',
+		)
+		await I.see(text('Decorated clicks 0'))
+	},
+)

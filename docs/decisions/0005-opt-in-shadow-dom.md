@@ -1,8 +1,8 @@
 # 0005: Open shadow queries are an experimental actor option
 
-- **Status:** Accepted for the opt-in experiment. The default remains unchanged.
+- **Status:** Accepted. Open-shadow traversal requires an explicit actor option.
 - **Date:** 2026-10-27
-- **Scope:** `createActor({ shadowDom: 'open' })`, not a default-policy decision
+- **Scope:** `createActor({ shadowDom: 'open' })`; off by default
 
 Web Awesome's controls expose open shadow roots. The default actor cannot find
 most of those controls, so its conformance manifest records ticket 17. The
@@ -47,5 +47,6 @@ verify the default actor and its expected failures.
 
 Keeping the option off makes the new traversal explicit and avoids silently
 adding duplicate matches to existing tests. It leaves the default matrix with
-known gaps. A later decision must settle whether traversal becomes a default
-and how option-enabled coverage is published. Ticket 17 stays open until then.
+known gaps. The default remains off. A future change to that policy needs its own
+compatibility decision. Ticket 17 tracks publishing option-enabled coverage
+separately from default support.

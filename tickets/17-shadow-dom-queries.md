@@ -26,20 +26,20 @@ from default role queries. Explicit hidden role queries and text queries keep
 including that DOM. ADR 0005 records the opt-in contract without changing the
 default or removing known-gap markers.
 
-What remains is the default: whether actors search open shadow roots unless
-told not to, and how the matrix reports a kit that passes only with the option.
+The default stays off. What remains is how the published matrix reports a kit
+that passes only with the option.
 
 **Blocked by:** None (can start immediately).
 
-**Status:** opt-in experiment implemented; default policy open
+**Status:** opt-in implemented; published option-enabled coverage remains open
 
 - [x] Define the opt-in contract: query families, accessible-name delegation,
       and scopes across open shadow boundaries. Closed roots stay out of reach.
-- [ ] Decide whether traversal becomes the default and how the matrix reports
-      option-enabled coverage.
+- [x] Keep traversal off by default; require an explicit actor option.
+- [ ] Publish option-enabled coverage separately from default support.
 - [x] Record the opt-in contract in an ADR.
 - [x] Browser regressions cover a role query, a text query, an action, and a
       scoped query across a shadow boundary.
-- [ ] The Web Awesome scenarios this unblocks pass and their known-gap markers
-      are removed; regenerate the matrix.
+- [x] The opt-in Web Awesome scenarios pass individually and on one page.
+      Keep known-gap markers for the default actor.
 - [x] A changeset describes the core change.

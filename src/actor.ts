@@ -70,7 +70,8 @@ const visibleCenter = (el: HTMLElement) => {
 // references resolve within it.
 const rootOf = (el: Element) => el.getRootNode() as Document | ShadowRoot
 
-const controls = 'a[href], button, input, select, textarea, [tabindex], [role]'
+const controls =
+	'a[href], button, input, select, textarea, [tabindex], [role]:not([role="presentation"]):not([role="none"])'
 
 // A user's click on a self-disabled input lands on what the browser hits at its
 // center: the parent, as with VSelect, or a decorative part inside the parent,
@@ -81,8 +82,8 @@ const passThrough = (hit: Element | null, parent: HTMLElement) => {
 		return parent
 	}
 	const control = hit?.closest(controls)
-	const decorative = hit && parent.contains(hit) && !(control && parent.contains(control))
-	return decorative && hit instanceof HTMLElement ? hit : null
+	const intervening = control && control !== parent && parent.contains(control)
+	return hit && parent.contains(hit) && !intervening ? hit : null
 }
 
 const pointerTarget = (el: HTMLElement) => {
@@ -319,7 +320,7 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 	const reachable = async (
 		resolve: () => Promise<HTMLElement>,
 		deadline: number,
-	): Promise<HTMLElement> => {
+	): Promise<Element> => {
 		const el = await resolve()
 		const target = pointerTarget(el)
 		if (target || Date.now() >= deadline) {
@@ -339,7 +340,7 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		return resolve()
 	}
 
-	const clickElement = async (resolve: () => Promise<HTMLElement>) => {
+	const clickElement = async (resolve: () => Promise<Element>) => {
 		await ctx().userEvent.click(await afterClickDelay(resolve))
 	}
 
