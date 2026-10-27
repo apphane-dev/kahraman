@@ -13,7 +13,7 @@ export const manifest = {
 		checkbox: 'pass',
 		switch: 'pass',
 		combobox: {
-			knownGap: '11',
+			differs: 'button + listbox',
 			failsWith: 'Unable to find an accessible element with the role "combobox"',
 		},
 		dialog: {

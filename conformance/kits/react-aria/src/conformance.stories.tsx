@@ -1,4 +1,5 @@
-import { runnerFor } from 'kahraman-conformance-scenarios'
+import { button, text } from 'kahraman'
+import { contract, runnerFor } from 'kahraman-conformance-scenarios'
 
 import preview from '../.storybook/preview'
 import {
@@ -39,7 +40,15 @@ export const Switch = meta.story({ render: () => <SwitchFixture /> })
 Switch.test('switch', run('switch'))
 
 export const Combobox = meta.story({ render: () => <ComboboxFixture /> })
-Combobox.test('combobox', run('combobox'))
+// Select's trigger is a button whose name joins the label and the value.
+Combobox.test(
+	'combobox',
+	run('combobox', async (I) => {
+		const c = contract.combobox
+		await I.selectOption(button(new RegExp(c.label)), c.choice)
+		await I.see(text(c.choice).within(button(new RegExp(c.label))))
+	}),
+)
 
 export const Dialog = meta.story({ render: () => <DialogFixture /> })
 Dialog.test('dialog', run('dialog'))
