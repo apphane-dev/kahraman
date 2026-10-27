@@ -1,4 +1,4 @@
-import { baseline, pageTest, scenarioIds, type ScenarioId } from './catalog.ts'
+import { baseline, demoTest, pageTest, scenarioIds, type ScenarioId } from './catalog.ts'
 import type { KitManifest, KnownGap, ScenarioStatus } from './manifest.ts'
 
 export interface Kit {
@@ -7,8 +7,8 @@ export interface Kit {
 	manifest: KitManifest
 	/**
 	 * The kit's story tests, as Storybook indexes them: the stories file relative
-	 * to the kit's `src/`, the scenario ID each passes to `run(...)` (`page` for
-	 * `run.page(...)`, undefined for any other body), and whether it passes a
+	 * to the kit's `src/`, the scenario ID each passes to `run(...)` (`page` or `demo` for
+	 * `run.page(...)` or `run.demo(...)`, undefined for any other body), and whether it passes a
 	 * workaround.
 	 */
 	storyTests: readonly {
@@ -29,7 +29,8 @@ type Check = (kit: Kit, tickets: ReadonlyMap<string, string>) => string[]
 
 const declares = (kit: Kit, id: string) => Object.hasOwn(kit.manifest.scenarios, id)
 
-const scenarioTests = (kit: Kit) => kit.storyTests.filter((test) => test.name !== pageTest)
+const scenarioTests = (kit: Kit) =>
+	kit.storyTests.filter((test) => test.name !== pageTest && test.name !== demoTest)
 
 const isDiffers = (status: ScenarioStatus | undefined) =>
 	typeof status === 'object' && 'differs' in status

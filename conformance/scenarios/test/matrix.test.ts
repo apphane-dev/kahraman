@@ -48,6 +48,12 @@ const withWorkaround = (...names: string[]) =>
 const tickets = new Map([['09', 'tickets/09-portalled-overlays.md']])
 
 describe('matrixOf and renderMatrix', () => {
+	it('does not count a public demo as conformance coverage', () => {
+		const normal = kit(baselinePass)
+		const withDemo = { ...normal, storyTests: [...normal.storyTests, ...tests('demo')] }
+		expect(matrixOf([withDemo], tickets)).toEqual(matrixOf([normal], tickets))
+	})
+
 	it('renders pass, known gap, differs, and n/a cells per scenario and kit', () => {
 		const scenarios = { ...baselinePass, combobox: differs, dialog: gap09, tabs: 'pass' } as const
 		const storyTests = [

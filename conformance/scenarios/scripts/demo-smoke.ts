@@ -1,4 +1,4 @@
-// Runs each kit's built `page` test and Web Awesome's opt-in integration test
+// Runs each kit's built `page` and `demo` tests and Web Awesome's opt-in integration test
 // from conformance-demo.tar.gz, unpacked under /conformance/ and embedded
 // in an iframe the way the website shows it.
 // Run `pnpm conformance:demo` first.
@@ -82,11 +82,15 @@ const serve = (request: IncomingMessage, response: ServerResponse) => {
 	sendFile(url.pathname, response)
 }
 
-type Journey = 'default' | 'open-shadow'
+type Journey = 'default' | 'demo' | 'open-shadow'
 
 const pageTest = (dir: string, journey: Journey) => {
 	const name =
-		journey === 'default' ? 'page' : 'all scenarios share a page with open-shadow queries'
+		journey === 'open-shadow'
+			? 'all scenarios share a page with open-shadow queries'
+			: journey === 'demo'
+				? 'demo'
+				: 'page'
 	const index = readJson(join(bundle, 'kits', dir, 'index.json')) as {
 		entries: Record<string, IndexEntry>
 	}
@@ -145,6 +149,18 @@ const smokeKit = async (
 	assert.equal(status, 'success', `${dir}: the built page test failed ${errors.join('; ')}`)
 	assert.deepEqual(errors, [], `${dir}: page errors`)
 	await checkEndState(page.frameLocator('#run'), kit, journey)
+	if (dir === 'react-aria' && journey === 'demo') {
+		await page.emulateMedia({ forcedColors: 'active' })
+		const disabled = page.frameLocator('#run').getByRole('button', {
+			name: contract['button-disabled'].name,
+			exact: true,
+		})
+		const colors = await disabled.evaluate((el) => {
+			const style = getComputedStyle(el)
+			return { text: style.color, background: style.backgroundColor }
+		})
+		assert.notEqual(colors.text, colors.background, 'Disabled text disappears in forced colors')
+	}
 	await page.close()
 	console.info(
 		`${dir}: ${journey} page journey passed from the bundle in ${((performance.now() - started) / 1000).toFixed(1)} s`,
@@ -159,6 +175,7 @@ try {
 	await matrix.kits.reduce(async (previous, { dir }, kit) => {
 		await previous
 		await smokeKit(browser, origin, dir, kit)
+		await smokeKit(browser, origin, dir, kit, 'demo')
 	}, Promise.resolve())
 	const webAwesome = matrix.kits.findIndex(({ dir }) => dir === 'web-awesome')
 	assert.ok(webAwesome >= 0, 'The bundle must include Web Awesome')

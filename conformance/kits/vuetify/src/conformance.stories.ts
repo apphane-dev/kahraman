@@ -65,3 +65,6 @@ Status.test('status', run('status'))
 
 export const Page = meta.story({ render: () => PageFixture })
 Page.test('page', run.page({ switch: switchAsCheckbox }))
+
+export const Demo = meta.story({ render: () => PageFixture })
+Demo.test('demo', run.demo({ switch: switchAsCheckbox }))

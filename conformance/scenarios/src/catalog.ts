@@ -26,3 +26,6 @@ export const baseline = [
 
 /** The story test that runs every declared scenario on one page. */
 export const pageTest = 'page'
+
+/** The public demonstration, which skips expected failures. */
+export const demoTest = 'demo'

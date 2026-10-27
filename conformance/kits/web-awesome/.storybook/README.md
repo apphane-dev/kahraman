@@ -32,3 +32,8 @@ shared scenarios with one `createActor({ shadowDom: 'open' })`, without
 expected-failure markers. Individual option-enabled stories remain available.
 The demo bundle smoke test runs this page as well as the default `page` journey.
 This does not change the default matrix or the website's chosen journey.
+
+The public `Demo` test uses the default actor but skips known gaps without
+waiting for expected failures. The ordinary `Page` remains the full conformance
+regression and still checks those failures. The matrix describes the default
+actor, not a claim that skipped demo interactions work.

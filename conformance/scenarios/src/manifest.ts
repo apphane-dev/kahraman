@@ -65,6 +65,7 @@ const runScenario = async (
 	id: ScenarioId,
 	status: ScenarioStatus | undefined,
 	workaround: Workaround | undefined,
+	mode: 'conformance' | 'demo' = 'conformance',
 ) => {
 	const run = () => scenarios[id](I)
 	if (status === undefined || status === 'pass') {
@@ -74,7 +75,11 @@ const runScenario = async (
 	if ('differs' in status && typeof workaround !== 'function') {
 		throw new Error(`${id} requires a workaround for its different pattern`)
 	}
-	await expectFailure({ marker: markerOf(status), failsWith: status.failsWith }, run)
+	if (mode === 'conformance') {
+		await expectFailure({ marker: markerOf(status), failsWith: status.failsWith }, run)
+	} else if ('knownGap' in status) {
+		await I.say(`Skipped ${id}: known gap ${status.knownGap}`)
+	}
 	await workaround?.(I)
 }
 
@@ -93,6 +98,8 @@ const actorFor = (context: StoryContext) => {
  * in catalog order with one actor, against a story that renders all the kit's
  * fixtures together, so the widgets must also work side by side. A known gap
  * stops at its recorded failure and the journey continues without its effect.
+ * `run.demo(workarounds)` skips known gaps immediately and runs only the
+ * equivalent workaround for a different pattern, without checking failures.
  */
 export const runnerFor = <M extends KitManifest>(manifest: M) => {
 	const statusOf = (id: ScenarioId): ScenarioStatus | undefined =>
@@ -105,13 +112,17 @@ export const runnerFor = <M extends KitManifest>(manifest: M) => {
 		async (context: StoryContext) => {
 			await runScenario(actorFor(context), id, statusOf(id), workaround)
 		}
-	const journey = async (I: BaseActor, workarounds: Partial<Record<ScenarioId, Workaround>>) => {
+	const journey = async (
+		I: BaseActor,
+		workarounds: Partial<Record<ScenarioId, Workaround>>,
+		mode: 'conformance' | 'demo' = 'conformance',
+	) => {
 		const declared = scenarioIds.filter((id) => Object.hasOwn(manifest.scenarios, id))
 		for (const id of declared) {
 			try {
 				// Scenarios share the page, so they run one after another.
 				// oxlint-disable-next-line no-await-in-loop
-				await runScenario(I, id, statusOf(id), workarounds[id])
+				await runScenario(I, id, statusOf(id), workarounds[id], mode)
 			} catch (error) {
 				throw new Error(`${id} on the full page: ${messageOf(error)}`, { cause: error })
 			}
@@ -131,5 +142,12 @@ export const runnerFor = <M extends KitManifest>(manifest: M) => {
 				run,
 			)
 		}
-	return Object.assign(run, { page })
+	// Demo does not verify expected failures. It skips known gaps and runs
+	// only the equivalent workaround for a different valid ARIA pattern.
+	const demo =
+		(...[workarounds]: PageArgs<M>) =>
+		async (context: StoryContext) => {
+			await journey(actorFor(context), workarounds ?? {}, 'demo')
+		}
+	return Object.assign(run, { page, demo })
 }
