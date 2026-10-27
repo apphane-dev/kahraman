@@ -245,12 +245,13 @@ with a Testing Library canvas, outside an actor, use that canvas's query default
 
 `selectOption` picks a native `<select>`'s option directly, since the browser
 draws those options outside the page. For any other trigger it clicks, then
-waits for the option, so listboxes
-that mount late or load options on open work. When the trigger's
-`aria-controls` names its popup, the option is looked up there only, so another
-open listbox with the same option name does not match; otherwise the option must
-be unique in the document. The wait follows Testing Library's
-`asyncUtilTimeout` (1 s by default). Set it for one actor:
+waits for the option, so listboxes that mount late or load options on open
+work. When the trigger's `aria-controls` names its popup, the option is looked
+up there only, so another open listbox with the same option name does not
+match; otherwise the option must be unique in the document. Each try looks up
+the trigger and its popup again, since opening may replace the trigger's node,
+and a named popup that has not mounted yet is waited for. The wait follows
+Testing Library's `asyncUtilTimeout` (1 s by default). Set it for one actor:
 
 ```ts
 const I = createActor({ optionTimeout: 3000 })
@@ -271,8 +272,8 @@ A target with `pointer-events: none` cannot take a user's click. When the target
 turned it off itself and the browser hits its parent at the target's center, as
 with an input inside a field that handles the click, `click` and `selectOption`
 click the parent. A covering control is never clicked instead. Otherwise the
-action waits within `actionTimeout`, as during an overlay's open transition,
-then user-event reports why it cannot click.
+action waits within `actionTimeout`, or `optionTimeout` for an option, as during
+an overlay's open transition, then user-event reports why it cannot click.
 
 ### Actor methods
 
