@@ -5,7 +5,7 @@ export interface Marker {
 	failsWith: string
 }
 
-export const messageOf = (error: unknown) => (error instanceof Error ? error.message : String(error))
+const messageOf = (error: unknown) => (error instanceof Error ? error.message : String(error))
 
 /**
  * Runs a scenario expected to fail for a stated reason. Passes while `run`
