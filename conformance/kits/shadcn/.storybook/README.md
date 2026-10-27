@@ -8,6 +8,7 @@ From the repository root:
 
 ```sh
 pnpm --filter kahraman-conformance-shadcn run storybook
+pnpm run build # required before a standalone kit test
 pnpm --filter kahraman-conformance-shadcn run test
 mise run conformance
 ```
@@ -21,12 +22,12 @@ The twelve scenarios run through the shared contract and `runnerFor(manifest)`
 with no kit-specific actor methods. The
 [conformance matrix](../../../MATRIX.md) lists which pass and which are known
 gaps. A known-gap test is green only while the scenario still fails for the
-recorded reason, so native select and textarea work by hand even though the
-actor cannot drive them yet.
+recorded reason. The manifest is authoritative for the current gaps.
 
 `../src/components/ui/` contains the official CLI-generated sources and upstream
 license. Read its provenance guide before regenerating. The original component
-classes and behavior are intact; local formatting is the only source change.
+classes are intact. Besides local formatting, the Tabs wrapper forwards its
+orientation to Radix Root as described below.
 `../src/styles.css` loads the generated neutral theme, Tailwind utilities,
 shadcn state variants, animations, and locally bundled Geist font. The only
 extra CSS controls the story's page width and padding. Tests load the same CSS.
