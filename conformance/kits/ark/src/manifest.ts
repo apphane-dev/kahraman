@@ -17,7 +17,7 @@ export const manifest = {
 		},
 		'native-select': {
 			knownGap: '13',
-			failsWith: 'toHaveValue(Large)',
+			failsWith: 'expect(element).toHaveValue(Large)',
 		},
 		combobox: 'pass',
 		dialog: 'pass',
