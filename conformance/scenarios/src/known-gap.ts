@@ -12,6 +12,10 @@ const messageOf = (error: unknown) => (error instanceof Error ? error.message : 
  * `run` resolves, so a fixed gap cannot linger as a stale marker.
  */
 export const knownGap = async ({ ticket, failsWith }: Gap, run: () => Promise<void>) => {
+	// An empty substring is in every message, so any error would count.
+	if (failsWith.trim() === '') {
+		throw new Error(`${ticket}: failsWith must not be empty`)
+	}
 	try {
 		await run()
 	} catch (error) {

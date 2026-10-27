@@ -21,6 +21,17 @@ describe('knownGap', () => {
 		).rejects.toThrow('ticket 09: expected a failure containing \'role "dialog"\'')
 	})
 
+	it('rejects an empty failsWith, which would accept any error', async () => {
+		let ran = false
+		await expect(
+			knownGap({ ticket: 'ticket 09', failsWith: ' ' }, async () => {
+				ran = true
+				throw new Error('anything')
+			}),
+		).rejects.toThrow('ticket 09: failsWith must not be empty')
+		expect(ran).toBe(false)
+	})
+
 	it('fails with a removal hint once the scenario passes', async () => {
 		await expect(knownGap(gap, async () => {})).rejects.toThrow(
 			'known gap fixed, remove marker: ticket 09',
