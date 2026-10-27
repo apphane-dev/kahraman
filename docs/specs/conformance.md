@@ -154,8 +154,13 @@ component sources, upstream license, and generation details live in the kit.
 
 ## Kit extensions
 
-A kit extension starts as a jsrepo registry item (`kits/<kit>`). It becomes an
-npm package only on demand.
+A kit extension starts as a jsrepo registry item (`kits/<kit>`), with its source
+in `kits/`. It becomes an npm package only on demand. It is opt-in and does not
+change the matrix: a known gap stays recorded, and the kit's regressions test the
+extension next to the plain actor's recorded failure.
+
+`kits/vuetify` adds `chooseMenuItem(trigger, name)` for `VMenu` menus, whose
+entries are list items rather than menu items (backlog ticket 16).
 
 ## Out of scope
 

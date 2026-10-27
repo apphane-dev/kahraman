@@ -26,3 +26,8 @@ on `v-dialog`, which lands on the `role="dialog"` overlay, and labelled
 `VSwitch` renders a checkbox input without `role="switch"`, so the `switch`
 story passes a checkbox workaround. The [conformance matrix](../../../MATRIX.md)
 records the known gaps.
+
+`VMenu` renders its entries as list items, so the `menu` scenario stays a known
+gap. The opt-in `kits/vuetify` extension adds `I.chooseMenuItem(trigger, name)`;
+`../regressions/menu-extension.stories.ts` tests it next to the plain actor's
+recorded failure.

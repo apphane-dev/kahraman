@@ -10,8 +10,10 @@ never `menuitem`). The `menu` scenario fails with `Unable to find an accessible
 element with the role "menuitem"`. Vuetify's menu docs give no ARIA guidance, so
 the fixture keeps the roles Vuetify renders.
 
-No Vuetify kit extension locates the list items: passing the scenario that way
-would hide a role mismatch a screen reader user meets.
+The scenario stays a known gap: passing it through an extension would hide a
+role mismatch a screen reader user meets. Apps that cannot change the markup can
+opt in to the `kits/vuetify` extension, whose `chooseMenuItem(trigger, name)`
+drives the menu as Vuetify renders it.
 
 **Blocked by:** Vuetify rendering `menu` and `menuitem` roles for `VMenu` with a
 `VList` (external).

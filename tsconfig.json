@@ -20,5 +20,13 @@
 		"noEmit": true,
 		"types": []
 	},
-	"include": ["src", "test", "examples", "tsdown.config.ts", "vite.config.ts", "jsrepo.config.ts"]
+	"include": [
+		"src",
+		"test",
+		"examples",
+		"kits",
+		"tsdown.config.ts",
+		"vite.config.ts",
+		"jsrepo.config.ts"
+	]
 }

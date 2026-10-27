@@ -52,6 +52,14 @@ export default defineConfig({
 					{ path: './test/diagnostics.test.ts', role: 'test' },
 				],
 			},
+			{
+				name: 'kits/vuetify',
+				type: 'lib',
+				title: 'Vuetify kit extension',
+				description:
+					'Opt-in I.extend(vuetify) with chooseMenuItem(), for VMenu menus whose entries are list items rather than menu items.',
+				files: [{ path: './kits/vuetify.ts' }],
+			},
 		],
 	},
 })

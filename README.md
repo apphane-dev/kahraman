@@ -79,6 +79,19 @@ npx jsrepo add github/apphane-dev/kahraman/preview
 
 # include the unit tests / example page actor too
 npx jsrepo add --with test --with example github/apphane-dev/kahraman/actor
+
+# opt-in Vuetify kit extension
+npx jsrepo add github/apphane-dev/kahraman/kits/vuetify
+```
+
+A kit extension covers one UI kit's quirk. `kits/vuetify` drives `VMenu` menus,
+whose entries are list items rather than menu items:
+
+```ts
+import { vuetify } from './kits/vuetify'
+
+const I = createActor().extend(vuetify)
+await I.chooseMenuItem(button('Actions'), 'Archive')
 ```
 
 The full source also lives in `src/` inside the published npm tarball, so it is

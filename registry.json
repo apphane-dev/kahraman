@@ -366,6 +366,40 @@
 					]
 				}
 			]
+		},
+		{
+			"name": "kits/vuetify",
+			"title": "Vuetify kit extension",
+			"description": "Opt-in I.extend(vuetify) with chooseMenuItem(), for VMenu menus whose entries are list items rather than menu items.",
+			"type": "lib",
+			"add": "when-added",
+			"registryDependencies": [
+				"actor"
+			],
+			"dependencies": [],
+			"devDependencies": [],
+			"files": [
+				{
+					"type": "lib",
+					"role": "file",
+					"path": "vuetify.ts",
+					"relativePath": "kits/vuetify.ts",
+					"_imports_": [
+						{
+							"import": "../src/index",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "index.ts"
+							},
+							"meta": {}
+						}
+					],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": []
+				}
+			]
 		}
 	]
 }
