@@ -53,15 +53,31 @@ const targetPollInterval = 50
 
 const blocksPointer = (el: Element) => getComputedStyle(el).pointerEvents === 'none'
 
-// pointer-events is inherited. An element that turns it off itself passes a
-// user's click to its container; one inside a container that turned it off
-// cannot be clicked until the container turns it back on.
+// Hit-test only the visible part of the original target, never the center of
+// its potentially much larger parent. An off-screen target has no hit point.
+const visibleCenter = (el: HTMLElement) => {
+	const rect = el.getBoundingClientRect()
+	const viewport = el.ownerDocument.documentElement
+	const left = Math.max(0, rect.left)
+	const right = Math.min(viewport.clientWidth, rect.right)
+	const top = Math.max(0, rect.top)
+	const bottom = Math.min(viewport.clientHeight, rect.bottom)
+	return right > left && bottom > top ? { x: (left + right) / 2, y: (top + bottom) / 2 } : null
+}
+
+// A limited fallback for self-disabled inputs such as VSelect: redirect only
+// when the immediate parent really receives a hit at the target's center.
+// Never turn a covering sibling/overlay into a successful parent click.
 const pointerTarget = (el: HTMLElement) => {
 	if (!blocksPointer(el)) {
 		return el
 	}
 	const parent = el.parentElement
-	return parent && !blocksPointer(parent) ? parent : null
+	if (!parent || blocksPointer(parent)) {
+		return null
+	}
+	const point = visibleCenter(el)
+	return point && el.ownerDocument.elementFromPoint(point.x, point.y) === parent ? parent : null
 }
 
 const assertValidMaxTries = (maxTries: number) => {
