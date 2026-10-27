@@ -35,3 +35,7 @@ Stories use `preview.meta(...).story(...)` and literal `.test` names. Fixtures
 live in `../src/fixtures.tsx`; the manifest and story declarations generate the
 matrix. Import the built `kahraman` package, not a source-path shortcut, so
 browser tests exercise the package consumers install.
+
+The generated Tabs wrapper has one local correction: it forwards `orientation`
+to Radix Root. `regressions/tabs-orientation.stories.tsx` checks the vertical
+ARIA attribute and ArrowDown navigation.
