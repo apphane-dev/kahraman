@@ -474,7 +474,7 @@ const faqSchema = {
             </p>
           </div>
           <div class="kit-run">
-            <ul class="kit-list" aria-label="Run a kit's page journey">
+            <ul class="kit-list" aria-label="Run a kit's supported interactions">
               {kits.map((kit, index) => (
                 <li>
                   <a class="kit-pick" href={kit.run} target="kit-run" aria-current={index === 0 ? 'true' : undefined}>{kit.name}</a>
@@ -483,7 +483,7 @@ const faqSchema = {
                   </span>
                   {kit.page.status === 'known gap' && (
                     <p class="kit-gap">
-                      The journey stops at <a href={sourceUrl(kit.page.path)}>known gap {kit.page.ticket}</a>:
+                      The conformance journey records <a href={sourceUrl(kit.page.path)}>known gap {kit.page.ticket}</a>:
                       <code>{kit.page.failsWith}</code>
                     </p>
                   )}
@@ -499,9 +499,9 @@ const faqSchema = {
               ))}
             </ul>
             <figure class="kit-frame">
-              <iframe name="kit-run" src={kits[0].run} title="A UI kit's page journey, driven by kahraman" loading="lazy"></iframe>
+              <iframe name="kit-run" src={kits[0].run} title="A UI kit's supported interactions, driven by kahraman" loading="lazy"></iframe>
               <figcaption>
-                The page story test drives the kit as it loads. Pick a kit again to replay.
+                The demo runs supported interactions as it loads. Known gaps are listed and skipped. Different ARIA patterns use their documented workaround. Pick a kit again to replay.
               </figcaption>
             </figure>
           </div>

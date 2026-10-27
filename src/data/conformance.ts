@@ -29,18 +29,18 @@ export const matrix = read<Matrix>('matrix.json');
 export const sourceUrl = (path: string) =>
   `https://github.com/apphane-dev/kahraman/blob/${bundle.tag}/${path}`;
 
-// Each kit's `page` story test runs every scenario on one page.
-const pageTestId = (dir: string) => {
+// Public demos skip expected failures. The matrix still describes conformance.
+const demoTestId = (dir: string) => {
   const entries = Object.values(read<StorybookIndex>(`kits/${dir}/index.json`).entries);
-  const entry = entries.find((e) => e.subtype === 'test' && e.name === 'page');
-  if (!entry || !/^[a-z0-9-]+:page$/.test(entry.id)) {
-    throw new Error(`${dir}: the Storybook index has no page story test`);
+  const entry = entries.find((e) => e.subtype === 'test' && e.name === 'demo');
+  if (!entry || !/^[a-z0-9-]+:demo$/.test(entry.id)) {
+    throw new Error(`${dir}: the Storybook index has no demo story test`);
   }
   return entry.id;
 };
 
 export const kits = matrix.kits.map((kit, index) => {
-  const testId = pageTestId(kit.dir);
+  const testId = demoTestId(kit.dir);
   return {
     ...kit,
     page: matrix.page[index],

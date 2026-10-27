@@ -68,17 +68,18 @@ test('conformance bundle is the pinned release, unpacked first-party', async () 
   }
 });
 
-test('each kit runs its page story test from our own domain', async () => {
+test('each kit runs its demo story test from our own domain', async () => {
   const matrix = JSON.parse(await readFile(new URL('conformance/matrix.json', root), 'utf8'));
   const frame = html.match(/<iframe\b[^>]*name="kit-run"[^>]*>/)?.[0];
   assert.ok(frame, 'Expected the kit-run iframe');
+  assert.ok(html.includes('Known gaps are listed and skipped.'));
   assert.match(frame, /src="\/conformance\/kits\//);
   assert.match(frame, /title="[^"]+"/);
   assert.match(html, /href="#conformance"/);
   for (const kit of matrix.kits) {
     const index = JSON.parse(await readFile(new URL(`conformance/kits/${kit.dir}/index.json`, root), 'utf8'));
-    const test = Object.values(index.entries).find((e) => e.subtype === 'test' && e.name === 'page');
-    assert.ok(test, `${kit.dir} has no page story test`);
+    const test = Object.values(index.entries).find((e) => e.subtype === 'test' && e.name === 'demo');
+    assert.ok(test, `${kit.dir} has no demo story test`);
     const run = `/conformance/kits/${kit.dir}/iframe.html?id=${test.id}&viewMode=story`;
     // Astro escapes the query's ampersand.
     assert.ok(html.replaceAll('&#38;', '&').includes(`href="${run}" target="kit-run"`), `${kit.name} has no run link`);
