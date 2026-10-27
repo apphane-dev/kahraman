@@ -115,7 +115,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        kit: [react-aria, shadcn, mui, ark, vuetify]
+        kit: [react-aria, shadcn, mui, ark, vuetify, web-awesome]
     defaults:
       run:
         working-directory: conformance/kits/${{ matrix.kit }}

@@ -144,8 +144,9 @@ A `conformance` job, matrix over kits, Chromium only, on every PR with no
 | 6   | Ark UI                | options mounted after open, headless      |
 
 PR 1 also carries the scenarios package, contract, runner, matrix
-generator, and CI job. Web Awesome lands with every scenario as a known gap. Shadow DOM
-support in core is separate work.
+generator, and CI job. Web Awesome renders its controls inside shadow roots,
+which the locators do not enter, so most of its scenarios are known gaps until
+ticket 17 adds shadow DOM support in core.
 
 The shadcn fixture targets the official CLI's `radix-nova` components and neutral
 theme. It does not claim coverage of raw Radix Primitives or Base UI. Generated

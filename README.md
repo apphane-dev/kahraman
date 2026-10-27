@@ -129,6 +129,7 @@ pnpm --filter kahraman-conformance-shadcn run storybook     # port 6007
 pnpm --filter kahraman-conformance-mui run storybook        # port 6008
 pnpm --filter kahraman-conformance-ark run storybook        # port 6009
 pnpm --filter kahraman-conformance-vuetify run storybook    # port 6010
+pnpm --filter kahraman-conformance-web-awesome run storybook # port 6011
 mise run conformance                                      # test all kits
 ```
 
@@ -137,7 +138,8 @@ or its named test entry to run the Kahraman journey. The shadcn project targets
 the Radix-based Nova components with the generated neutral theme. MUI uses its
 default Material theme, CssBaseline, and bundled Roboto font. Ark UI ships no
 styles, so its kit has a small fixture stylesheet. Vuetify, the Vue kit, uses
-its default theme, MDI SVG icon set, and bundled Roboto. Each kit owns
+its default theme, MDI SVG icon set, and bundled Roboto. Web Awesome, the
+Web Components kit, uses its default theme and native styles. Each kit owns
 its styling; their shared preset contains only test configuration. The
 [conformance matrix](./conformance/MATRIX.md) distinguishes passing scenarios
 from checked known gaps and different ARIA patterns.
