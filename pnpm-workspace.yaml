@@ -1,3 +1,8 @@
+packages:
+  - .
+  - conformance/scenarios
+  - conformance/kits/*
+
 # Allow these dependencies to run their install/build scripts on a fresh install
 # (esbuild links its native binary). strictDepBuilds:false keeps `pnpm install
 # --frozen-lockfile` from exiting non-zero when an approved build is merely

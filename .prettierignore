@@ -5,6 +5,7 @@ dist
 coverage
 pnpm-lock.yaml
 CHANGELOG.md
+conformance/MATRIX.md
 
 # Generated brand vectors and Cargo's lockfile
 brand/*.svg

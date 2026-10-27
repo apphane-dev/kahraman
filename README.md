@@ -58,7 +58,8 @@ npm install --save-dev kahraman
 `userEvent`) is a **peer dependency** — you already have it. `kahraman` ships
 ESM only and is renderer-agnostic: it reads only `canvasElement` and `userEvent`
 from the story context, so it works with the React, Vue, and Svelte renderers
-alike.
+alike. The [conformance matrix](./conformance/MATRIX.md) shows which widgets of
+popular UI kits the actor can drive.
 
 Supports Storybook 9, 10, and 11, including the Storybook 11 prerelease. Node.js
 22.12 or newer is required.
@@ -344,44 +345,50 @@ package:
   `test.browser.screenshotFailures` in your own Vitest config to write a
   screenshot next to the story on failure.
 
-## Testing the pure helpers
+## Testing
 
-`kahraman`'s own test suite unit-tests the **Storybook-free** logic:
+`kahraman`'s own unit tests cover the **Storybook-free** logic:
 locator label construction, step-label formatting, role-listing filtering,
-message capping, and stack-frame retargeting. It also checks CSF Next addon
+message capping, and stack-frame retargeting. They also check CSF Next addon
 composition and diagnostics configuration against the real Storybook APIs. CI
-checks compatibility with Storybook 9, 10, and 11. The full actor behavior
-requires a real Storybook browser context and is exercised by consumers'
-stories. That boundary is intentional. The DOM-touching code in `actor.ts` and
-`preview.ts` runs in the browser; the configuration tests do not render a story
-or query the DOM.
+checks compatibility with Storybook 9, 10, and 11.
+
+The conformance suite under `conformance/` runs the actor against UI kits in
+Chromium. Each kit is its own Storybook project that runs shared conformance
+scenarios as story tests against the built package. Terms are defined in
+[GLOSSARY.md](./GLOSSARY.md); the design and its build status are in
+[docs/specs/conformance.md](./docs/specs/conformance.md).
 
 ## Development
 
-Development uses Storybook 11 alpha, pinned in `pnpm-lock.yaml`. There is no
-local Storybook instance in this repository. Use Node.js 22.18+ or 24.11+ to run
-the development toolchain, which has a higher minimum than the published package.
+Development uses Storybook 11 alpha, pinned in `pnpm-lock.yaml`. Use Node.js
+22.18+ or 24.11+ to run the development toolchain, which has a higher minimum
+than the published package.
 
 This repo uses the [Vite+](https://viteplus.dev/) / Oxc toolchain. The plain
 `pnpm` commands below remain the contributor path. If you use [mise](https://mise.jdx.dev/),
 the common workflows are also available as `mise run prepare`, `mise run dev`,
 `mise run check`, and `mise run ci`.
 
-| Task       | Command            | Tool                                   |
-| ---------- | ------------------ | -------------------------------------- |
-| Typecheck  | `pnpm typecheck`   | `tsc` (TypeScript 7, native)           |
-| Lint       | `pnpm lint`        | oxlint (via `vp lint`)                 |
-| Analyze    | `pnpm lint:fallow` | fallow (dead-code, dupes, health)      |
-| Format     | `pnpm format`      | oxfmt (via `vp fmt`)                   |
-| Test       | `pnpm test`        | Vitest (via `vp test`)                 |
-| Build      | `pnpm build`       | tsdown (Rolldown) → ESM + `.d.ts`      |
-| Everything | `pnpm check`       | typecheck + lint + fallow + fmt + test |
+| Task        | Command                 | Tool                                                |
+| ----------- | ----------------------- | --------------------------------------------------- |
+| Typecheck   | `pnpm typecheck`        | `tsc` (TypeScript 7, native)                        |
+| Lint        | `pnpm lint`             | oxlint (via `vp lint`)                              |
+| Analyze     | `pnpm lint:fallow`      | fallow (dead-code, dupes, health)                   |
+| Format      | `pnpm format`           | oxfmt (via `vp fmt`)                                |
+| Test        | `pnpm test`             | Vitest (via `vp test`)                              |
+| Build       | `pnpm build`            | tsdown (Rolldown) → ESM + `.d.ts`                   |
+| Conformance | `pnpm test:conformance` | build + Storybook story tests per UI kit (Chromium) |
+| Everything  | `pnpm check`            | typecheck + lint + fallow + fmt + test              |
 
 Formatter and linter configuration lives in the `fmt` / `lint` blocks of
 `vite.config.ts` (the Vite+ convention), not in separate `.oxfmtrc.json` /
 `.oxlintrc.json` files. Notable engineering decisions are recorded under
 [`docs/decisions/`](./docs/decisions) — e.g. why type-aware linting is off by
 default ([0001](./docs/decisions/0001-type-aware-linting.md)).
+
+The conformance suite needs Playwright's Chromium once:
+`pnpm --dir conformance/kits/react-aria exec playwright install chromium`.
 
 Node, pnpm, and the git-hook runner are pinned with
 [mise](https://mise.jdx.dev/) (`mise install`). Git hooks run through

@@ -1,0 +1,8 @@
+{
+	// The root typecheck runs before any build, so map kahraman to source here.
+	// Kit fixtures typecheck the same files against dist.
+	"extends": "./tsconfig.json",
+	"compilerOptions": {
+		"paths": { "kahraman": ["../../src/index.ts"] }
+	}
+}
