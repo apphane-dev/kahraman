@@ -66,9 +66,25 @@ const visibleCenter = (el: HTMLElement) => {
 	return right > left && bottom > top ? { x: (left + right) / 2, y: (top + bottom) / 2 } : null
 }
 
-// A limited fallback for self-disabled inputs such as VSelect: redirect only
-// when the immediate parent really receives a hit at the target's center.
-// Never turn a covering sibling/overlay into a successful parent click.
+// The document, or the shadow root an element sits in: hit tests and id
+// references resolve within it.
+const rootOf = (el: Element) => el.getRootNode() as Document | ShadowRoot
+
+const controls = 'a[href], button, input, select, textarea, [tabindex], [role]'
+
+// A user's click on a self-disabled input lands on what the browser hits at its
+// center: the parent, as with VSelect, or a decorative part inside the parent,
+// like a switch thumb, whose click bubbles to it. A control in between is
+// never clicked instead.
+const passThrough = (hit: Element | null, parent: HTMLElement) => {
+	if (hit === parent) {
+		return parent
+	}
+	const control = hit?.closest(controls)
+	const decorative = hit && parent.contains(hit) && !(control && parent.contains(control))
+	return decorative && hit instanceof HTMLElement ? hit : null
+}
+
 const pointerTarget = (el: HTMLElement) => {
 	if (!blocksPointer(el)) {
 		return el
@@ -78,7 +94,7 @@ const pointerTarget = (el: HTMLElement) => {
 		return null
 	}
 	const point = visibleCenter(el)
-	return point && el.ownerDocument.elementFromPoint(point.x, point.y) === parent ? parent : null
+	return point ? passThrough(rootOf(el).elementFromPoint(point.x, point.y), parent) : null
 }
 
 const assertValidMaxTries = (maxTries: number) => {
@@ -184,7 +200,7 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		}
 		const popup = controls
 			.split(/\s+/)
-			.map((id) => trigger.ownerDocument.getElementById(id))
+			.map((id) => rootOf(trigger).getElementById(id))
 			.find((el) => el !== null)
 		invariant(popup, `Controlled popup "${controls}" has not mounted`)
 		return canvasOf(popup)
@@ -537,6 +553,15 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		},
 		clear: async (locator: DefiniteLocator) => {
 			await editInput(locator, '', async (el, userEvent) => {
+				// user-event's clear checks document.activeElement, which is the host
+				// of an input inside a shadow root.
+				if (el.getRootNode() instanceof ShadowRoot) {
+					await userEvent.type(el, '{Backspace}', {
+						initialSelectionStart: 0,
+						initialSelectionEnd: el.value.length,
+					})
+					return
+				}
 				await userEvent.clear(el)
 			})
 		},

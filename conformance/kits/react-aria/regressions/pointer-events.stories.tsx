@@ -170,3 +170,25 @@ Offset.test(
 		await I.see(text('Offset clicks 1'))
 	},
 )
+
+// A switch-like control: a decorative thumb covers the self-disabled input
+// inside its label, as Web Awesome's switch draws it.
+const ThumbSwitch = () => (
+	<label style={{ position: 'relative', display: 'inline-block', width: 40, height: 20 }}>
+		<input
+			type="checkbox"
+			aria-label="Thumb switch"
+			style={{ pointerEvents: 'none', position: 'absolute', inset: 0, margin: 0 }}
+		/>
+		<span aria-hidden="true" style={{ position: 'absolute', inset: 0, background: 'gray' }} />
+	</label>
+)
+
+export const Thumb = meta.story({ render: () => <ThumbSwitch /> })
+
+Thumb.test('click passes through a decorative part inside the parent', async (context) => {
+	const I = actor(context)
+	const toggle = role('checkbox', 'Thumb switch')
+	await I.click(toggle)
+	await I.seeChecked(toggle)
+})

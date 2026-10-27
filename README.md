@@ -276,15 +276,17 @@ const I = createActor({ actionTimeout: 3000 })
 ```
 
 Experimental: `createActor({ shadowDom: 'open' })` makes role and text queries
-also search open shadow roots, for web component kits. Matches from every root
-count toward the one-match rule. Focus, hit testing, and id references do not
-cross shadow boundaries yet, so `clear`, some clicks, and `selectOption` can
-still fail; see ticket 17.
+also search open shadow roots and the elements slotted into them, for web
+component kits. Matches from every root count toward the one-match rule, and a
+match inside a hidden component is hidden. Closed shadow roots stay out of
+reach. The default stays off until ticket 17's decision.
 
 A target with `pointer-events: none` cannot take a user's click. When the target
-turned it off itself and the browser hits its parent at the target's center, as
-with an input inside a field that handles the click, `click` and `selectOption`
-click the parent. A covering control is never clicked instead. Otherwise the
+turned it off itself, `click` and `selectOption` click what the browser hits at
+its center, if that is the parent, as with an input inside a field that handles
+the click, or a decorative part inside the parent, like a switch thumb. A
+covering control is never clicked instead. Hit tests and `aria-controls` ids
+resolve within the target's own document or shadow root. Otherwise the
 action waits within `actionTimeout`, or `optionTimeout` for an option, as during
 an overlay's open transition, then user-event reports why it cannot click.
 

@@ -1,7 +1,6 @@
-// Experiment for ticket 17: every scenario with `shadowDom: 'open'`, which also
-// searches open shadow roots. A scenario that still fails must fail as
-// recorded here, so a fix shows up as a failing test to update.
-import { button, createActor, text, type StoryContext } from 'kahraman'
+// Every scenario with `shadowDom: 'open'`, which also searches open shadow
+// roots (ticket 17). The conformance stories run the default actor.
+import { button, createActor, role, text, type StoryContext } from 'kahraman'
 import { contract, scenarios, type ScenarioId } from 'kahraman-conformance-scenarios'
 import { html } from 'lit'
 import { expect } from 'storybook/test'
@@ -9,34 +8,12 @@ import { expect } from 'storybook/test'
 import preview from '../.storybook/preview'
 import * as f from '../src/fixtures'
 
-const meta = preview.meta({ title: 'Regressions/Shadow DOM experiment' })
-
-// user-event's clear checks document.activeElement, which is the host.
-const unfocusable = 'The element to be cleared could not be focused'
-// The hit test uses document.elementFromPoint, which also returns the host.
-const hostHit = 'Unable to perform pointer interaction as the element has `pointer-events: none`'
-
-const recorded: Partial<Record<ScenarioId, string>> = {
-	textbox: unfocusable,
-	textarea: unfocusable,
-	checkbox: hostHit,
-	switch: hostHit,
-	// aria-controls names an id inside the shadow root; document.getElementById misses it.
-	combobox: 'Controlled popup "listbox" has not mounted',
-	// The accessibility check stops at the shadow root, so the hidden host does
-	// not hide the closed <dialog> inside it.
-	dialog: 'to be null',
-}
+const meta = preview.meta({ title: 'Regressions/Shadow DOM option' })
 
 const run = (id: ScenarioId) => async (context: StoryContext) => {
 	const I = createActor({ shadowDom: 'open' })
 	I.init(context)
-	const failure = recorded[id]
-	if (failure === undefined) {
-		await scenarios[id](I)
-		return
-	}
-	await expect(Promise.resolve(scenarios[id](I))).rejects.toThrow(failure)
+	await scenarios[id](I)
 }
 
 export const Button = meta.story({ render: f.ButtonFixture })
@@ -82,4 +59,38 @@ ScopedToHost.test('a query scoped to a shadow host searches its shadow root', as
 	const host = context.canvasElement.querySelector<HTMLElement>('wa-button')
 	await I.click(button(contract.button.name).within(host!))
 	await I.see(text(contract.button.outcome))
+})
+
+export const ScopedDialog = meta.story({ render: f.DialogFixture })
+ScopedDialog.test('a scope reaches a component slotted into it', async (context) => {
+	const I = createActor({ shadowDom: 'open' })
+	I.init(context)
+	const c = contract.dialog
+	await I.click(button(c.trigger))
+	await I.within(role('dialog', c.title), async () => {
+		await I.click(button(c.close))
+	})
+	await I.waitExit(role('dialog'))
+})
+
+// A listbox inside a shadow root, hidden, with its option slotted from outside.
+class HiddenPopup extends HTMLElement {
+	constructor() {
+		super()
+		this.attachShadow({ mode: 'open' }).innerHTML =
+			'<div role="listbox" aria-label="Countries" hidden><slot></slot></div>'
+	}
+}
+if (!customElements.get('hidden-popup')) {
+	customElements.define('hidden-popup', HiddenPopup)
+}
+
+export const HiddenSlot = meta.story({
+	render: () => html`<hidden-popup><div role="option">Portugal</div></hidden-popup>`,
+})
+HiddenSlot.test('an option slotted into a hidden listbox is hidden', async (context) => {
+	const I = createActor({ shadowDom: 'open' })
+	I.init(context)
+	await I.dontSee(role('option', 'Portugal'))
+	await I.see(role('option', 'Portugal').options({ hidden: true }))
 })
