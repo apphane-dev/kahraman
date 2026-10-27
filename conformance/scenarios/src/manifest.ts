@@ -11,7 +11,7 @@ export type ScenarioStatus =
 	| 'pass'
 	| {
 			knownGap: Ticket
-			/** A substring of the error the scenario fails with today. */
+			/** The prefix of the primary error diagnostic the scenario fails with today. */
 			failsWith: string
 	  }
 

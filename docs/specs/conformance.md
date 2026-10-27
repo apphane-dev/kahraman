@@ -68,7 +68,7 @@ Rules:
 
 Each kit exports a manifest: the scenarios it implements, and for each one
 either pass or a known gap: the number of the ticket that would fix it, and a
-substring of the error the scenario fails with today. The kit's stories apply `knownGap` from the manifest, and the matrix generator reads
+prefix of the primary error diagnostic the scenario fails with today. The kit's stories apply `knownGap` from the manifest, and the matrix generator reads
 the same data.
 
 - A scenario missing from the manifest is n/a: the kit has no such widget.
@@ -85,7 +85,7 @@ the same data.
 
 CSF Next's `story.test` has no `.fails`, so a wrapper does the job.
 
-- `run` throws an error containing `failsWith`: the test passes.
+- `run` throws an Error whose message starts with `failsWith`: the test passes.
 - `run` throws anything else: the test fails, so a broken fixture cannot pass
   as a known gap.
 - `run` resolves: the test fails with `known gap fixed, remove marker: ticket <NN>`.
