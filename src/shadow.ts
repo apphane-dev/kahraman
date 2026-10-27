@@ -70,8 +70,18 @@ const hidesSubtree = (el: Element) =>
 	getComputedStyle(el).display === 'none'
 
 const hiddenInRenderedTree = (el: Element) => {
-	for (let node = renderedParent(el); node; node = renderedParent(node)) {
-		if (hidesSubtree(node)) {
+	for (let node: Element | null = el; node; node = renderedParent(node)) {
+		const parent = node.parentElement
+		// Light DOM below an open shadow host is rendered only through a slot.
+		// A populated slot also removes its own fallback children from that tree.
+		if (
+			!node.assignedSlot &&
+			(parent?.shadowRoot ||
+				(parent instanceof HTMLSlotElement && parent.assignedNodes().length > 0))
+		) {
+			return true
+		}
+		if (node !== el && hidesSubtree(node)) {
 			return true
 		}
 	}

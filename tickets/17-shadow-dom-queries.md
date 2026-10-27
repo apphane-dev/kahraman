@@ -20,22 +20,26 @@ check, so a name in two components is ambiguous, not first-wins, and a role
 match inside a hidden component is hidden. Hit tests and `aria-controls` ids
 resolve within the target's root, and `clear` on an input in a shadow root
 deletes its value by typing. `regressions/shadow-dom-option.stories.ts` runs the
-Web Awesome catalog with it, and every scenario passes.
+Web Awesome catalog with it, both individually and together on one page.
+Regressions exclude unassigned light DOM and occupied-slot fallback content
+from default role queries. Explicit hidden role queries and text queries keep
+including that DOM. ADR 0005 records the opt-in contract without changing the
+default or removing known-gap markers.
 
 What remains is the default: whether actors search open shadow roots unless
 told not to, and how the matrix reports a kit that passes only with the option.
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** opt-in experiment implemented; default policy open
 
-- [ ] Decide the contract: which queries enter open shadow roots, how an
-      accessible name built from slotted content is computed, and how a scope
-      set with `I.within(...)` or `.within(...)` applies across shadow
-      boundaries. Closed shadow roots stay out of reach.
-- [ ] Record the decision in an ADR.
-- [ ] Browser regressions cover a role query, a text query, an action, and a
+- [x] Define the opt-in contract: query families, accessible-name delegation,
+      and scopes across open shadow boundaries. Closed roots stay out of reach.
+- [ ] Decide whether traversal becomes the default and how the matrix reports
+      option-enabled coverage.
+- [x] Record the opt-in contract in an ADR.
+- [x] Browser regressions cover a role query, a text query, an action, and a
       scoped query across a shadow boundary.
 - [ ] The Web Awesome scenarios this unblocks pass and their known-gap markers
       are removed; regenerate the matrix.
-- [ ] A changeset describes the core change.
+- [x] A changeset describes the core change.

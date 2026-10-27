@@ -1,7 +1,7 @@
 // Every scenario with `shadowDom: 'open'`, which also searches open shadow
 // roots (ticket 17). The conformance stories run the default actor.
 import { button, createActor, role, text, type StoryContext } from 'kahraman'
-import { contract, scenarios, type ScenarioId } from 'kahraman-conformance-scenarios'
+import { contract, scenarioIds, scenarios, type ScenarioId } from 'kahraman-conformance-scenarios'
 import { html } from 'lit'
 import { expect } from 'storybook/test'
 
@@ -40,6 +40,16 @@ export const Tabs = meta.story({ render: f.TabsFixture })
 Tabs.test('tabs', run('tabs'))
 export const Status = meta.story({ render: f.StatusFixture })
 Status.test('status', run('status'))
+
+export const Page = meta.story({ render: f.PageFixture })
+Page.test('all scenarios share a page with open-shadow queries', async (context) => {
+	const I = createActor({ shadowDom: 'open' })
+	I.init(context)
+	for (const id of scenarioIds) {
+		// oxlint-disable-next-line no-await-in-loop
+		await scenarios[id](I)
+	}
+})
 
 export const TwoButtons = meta.story({
 	render: () => html`${f.ButtonFixture()} ${f.ButtonFixture()}`,
@@ -93,4 +103,96 @@ HiddenSlot.test('an option slotted into a hidden listbox is hidden', async (cont
 	I.init(context)
 	await I.dontSee(role('option', 'Portugal'))
 	await I.see(role('option', 'Portugal').options({ hidden: true }))
+})
+
+// Light DOM children are not rendered when a component provides no slot.
+class NoSlotPanel extends HTMLElement {
+	constructor() {
+		super()
+		this.attachShadow({ mode: 'open' }).innerHTML = '<p>Visible content</p>'
+	}
+}
+if (!customElements.get('no-slot-panel')) {
+	customElements.define('no-slot-panel', NoSlotPanel)
+}
+
+export const Unslotted = meta.story({
+	render: () => html`
+		<no-slot-panel>
+			<button>Unrendered action</button>
+			<div><button>Unrendered descendant</button></div>
+			<wa-button>Unrendered nested component</wa-button>
+		</no-slot-panel>
+	`,
+})
+Unslotted.test('unassigned light DOM is absent from default role queries', async (context) => {
+	const I = createActor({ shadowDom: 'open' })
+	I.init(context)
+	await I.see(text('Visible content'))
+	const unrendered = context.canvasElement.querySelector('no-slot-panel > button')!
+	await expect(unrendered.getClientRects()).toHaveLength(0)
+	for (const name of [
+		'Unrendered action',
+		'Unrendered descendant',
+		'Unrendered nested component',
+	]) {
+		// oxlint-disable-next-line no-await-in-loop
+		await I.dontSee(button(name))
+	}
+	await expect(I.see(button('Unrendered action'))).rejects.toThrow('Unable to find')
+	// Explicitly hidden role queries and text queries retain their DOM semantics.
+	await I.see(button('Unrendered action').options({ hidden: true }))
+	await I.see(text('Unrendered action'))
+})
+
+class FallbackPanel extends HTMLElement {
+	constructor() {
+		super()
+		this.attachShadow({ mode: 'open' }).innerHTML =
+			'<slot name="action"><button>Fallback action</button></slot>'
+	}
+}
+if (!customElements.get('fallback-panel')) {
+	customElements.define('fallback-panel', FallbackPanel)
+}
+
+export const AssignedSlot = meta.story({
+	render: () => html`
+		<fallback-panel><button slot="action">Assigned action</button></fallback-panel>
+	`,
+})
+AssignedSlot.test('an assigned node suppresses slot fallback content', async (context) => {
+	const I = createActor({ shadowDom: 'open' })
+	I.init(context)
+	await I.see(button('Assigned action'))
+	await I.dontSee(button('Fallback action'))
+	await I.see(button('Fallback action').options({ hidden: true }))
+})
+
+export const UnassignedSlot = meta.story({ render: () => html`<fallback-panel></fallback-panel>` })
+UnassignedSlot.test('an empty slot renders its fallback content', async (context) => {
+	const I = createActor({ shadowDom: 'open' })
+	I.init(context)
+	await I.see(button('Fallback action'))
+})
+
+class TextSlotPanel extends HTMLElement {
+	constructor() {
+		super()
+		this.attachShadow({ mode: 'open' }).innerHTML =
+			'<slot><button>Text fallback action</button></slot>'
+	}
+}
+if (!customElements.get('text-slot-panel')) {
+	customElements.define('text-slot-panel', TextSlotPanel)
+}
+
+export const AssignedText = meta.story({
+	render: () => html`<text-slot-panel>Assigned text</text-slot-panel>`,
+})
+AssignedText.test('assigned text also suppresses slot fallback content', async (context) => {
+	const I = createActor({ shadowDom: 'open' })
+	I.init(context)
+	await I.dontSee(button('Text fallback action'))
+	await I.see(text('Assigned text'))
 })

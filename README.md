@@ -278,8 +278,12 @@ const I = createActor({ actionTimeout: 3000 })
 Experimental: `createActor({ shadowDom: 'open' })` makes role and text queries
 also search open shadow roots and the elements slotted into them, for web
 component kits. Matches from every root count toward the one-match rule, and a
-match inside a hidden component is hidden. Closed shadow roots stay out of
-reach. The default stays off until ticket 17's decision.
+match inside a hidden component is hidden. Default role queries also exclude
+unassigned light DOM under an open shadow host and slot fallback content when
+that slot has assigned nodes. A role query with `{ hidden: true }` and text
+queries still include that DOM. Closed shadow roots stay out of reach. The
+[experimental contract](./docs/decisions/0005-opt-in-shadow-dom.md) keeps this
+option off by default until ticket 17's separate default-policy decision.
 
 A target with `pointer-events: none` cannot take a user's click. When the target
 turned it off itself, `click` and `selectOption` click what the browser hits at
