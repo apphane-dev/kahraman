@@ -93,6 +93,12 @@ generator reads the same data.
 - Each story test body is `run('<id>')` for its own scenario ID, or
   `run('<id>', workaround)` for a different pattern. The types require the
   workaround exactly where the manifest says `differs`.
+- A page journey supplies its different-pattern handlers as an inline object
+  with static keys, for example `run.page({ combobox: selectByButton })`.
+  The generator checks every required key and rejects unexpected keys,
+  references, spreads, and computed keys instead of evaluating fixture code.
+  The runner also rejects a missing handler at runtime, since a string-indexed
+  TypeScript record can be empty despite satisfying the required keyed type.
 - The generator fails when a manifest omits a baseline scenario, when declared
   scenarios and story test names differ, when a test body runs another
   scenario, when a workaround is missing for `differs` or present without

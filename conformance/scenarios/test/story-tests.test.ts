@@ -23,7 +23,33 @@ describe('storyTestsOf', () => {
 			{ name: 'switch', file: 'acme.stories.tsx', scenario: 'checkbox', workaround: false },
 			{ name: 'switch-by-hand', file: 'acme.stories.tsx', scenario: undefined, workaround: false },
 			{ name: 'combobox', file: 'acme.stories.tsx', scenario: 'combobox', workaround: true },
-			{ name: 'page', file: 'acme.stories.tsx', scenario: 'page', workaround: true },
+			{
+				name: 'page',
+				file: 'acme.stories.tsx',
+				scenario: 'page',
+				workaround: true,
+				workaroundKeys: ['combobox'],
+			},
 		])
+	})
+	it('extracts quoted handler keys and preserves an empty page object', () => {
+		const code = source.replace(
+			'run.page({ combobox: async () => {} })',
+			"run.page({ 'combobox': async () => {} })",
+		)
+		expect(storyTestsOf(code, 'acme.stories.tsx').at(-1)?.workaroundKeys).toEqual(['combobox'])
+		expect(
+			storyTestsOf(source.replace('combobox: async () => {}', ''), 'acme.stories.tsx').at(-1)
+				?.workaroundKeys,
+		).toEqual([])
+	})
+
+	it('does not guess page handlers from references, spreads or computed keys', () => {
+		for (const argument of ['handlers', '{ ...handlers }', '{ [key]: handler }']) {
+			const code = source.replace('{ combobox: async () => {} }', argument)
+			const page = storyTestsOf(code, 'acme.stories.tsx').at(-1)
+			expect(page?.workaround).toBe(true)
+			expect(page?.workaroundKeys).toBeUndefined()
+		}
 	})
 })

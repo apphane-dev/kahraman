@@ -15,6 +15,34 @@ const isRunPage = (callee: Callee) =>
 	isIdentifier(callee.object, 'run') &&
 	isIdentifier(callee.property, 'page')
 
+type Argument = Extract<TestBody, { type: 'CallExpression' }>['arguments'][number]
+
+// Do not evaluate fixture code to discover handlers. Uninspectable arguments
+// are rejected by matrix validation when supplied to run.page(...).
+const workaroundKeysOf = (argument: Argument | undefined): string[] | undefined => {
+	if (argument?.type !== 'ObjectExpression') {
+		return undefined
+	}
+	const keys: string[] = []
+	for (const property of argument.properties) {
+		if (
+			(property.type !== 'ObjectProperty' && property.type !== 'ObjectMethod') ||
+			property.computed
+		) {
+			return undefined
+		}
+		const key = property.key
+		if (key.type === 'Identifier') {
+			keys.push(key.name)
+		} else if (key.type === 'StringLiteral') {
+			keys.push(key.value)
+		} else {
+			return undefined
+		}
+	}
+	return keys
+}
+
 /**
  * The literal ID in a `run('<id>')` or `run('<id>', workaround)` test body, or
  * `page` for a `run.page(...)` body.
@@ -25,7 +53,11 @@ const runOf = (body: TestBody) => {
 	}
 	const [id, workaround] = body.arguments
 	if (isRunPage(body.callee)) {
-		return { scenario: pageTest, workaround: id !== undefined }
+		return {
+			scenario: pageTest,
+			workaround: id !== undefined,
+			workaroundKeys: workaroundKeysOf(id),
+		}
 	}
 	return {
 		scenario:

@@ -64,6 +64,9 @@ const runScenario = async (
 		await run()
 		return
 	}
+	if ('differs' in status && typeof workaround !== 'function') {
+		throw new Error(`${id} requires a workaround for its different pattern`)
+	}
 	await expectFailure({ marker: markerOf(status), failsWith: status.failsWith }, run)
 	await workaround?.(I)
 }

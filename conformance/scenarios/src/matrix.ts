@@ -16,6 +16,8 @@ export interface Kit {
 		file: string
 		scenario: string | undefined
 		workaround: boolean
+		/** Static keys of a literal page workaround object; absent when not inspectable. */
+		workaroundKeys?: readonly string[]
 	}[]
 }
 
@@ -67,10 +69,24 @@ const checks: readonly Check[] = [
 		if (page.scenario !== pageTest) {
 			return [`story test ${pageTest} must run run.page(...), found ${bodyOf(page.scenario)}`]
 		}
-		const differs = Object.values(kit.manifest.scenarios).some(isDiffers)
-		return differs && !page.workaround
-			? [`story test ${pageTest} must pass the workarounds for different patterns`]
-			: []
+		const required = scenarioIds.filter((id) => isDiffers(kit.manifest.scenarios[id]))
+		if (!page.workaround) {
+			return required.length > 0
+				? [`story test ${pageTest} must pass the workarounds for different patterns`]
+				: []
+		}
+		const keys = page.workaroundKeys
+		if (keys === undefined) {
+			return [`story test ${pageTest} must pass a literal workaround object with static keys`]
+		}
+		return [
+			...required
+				.filter((id) => !keys.includes(id))
+				.map((id) => `story test ${pageTest} is missing the workaround for ${id}`),
+			...keys
+				.filter((id) => !required.some((requiredId) => requiredId === id))
+				.map((id) => `story test ${pageTest} passes an unexpected workaround for ${id}`),
+		]
 	},
 	(kit) =>
 		scenarioTests(kit).flatMap((test) => {
