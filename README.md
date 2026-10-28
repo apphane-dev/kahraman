@@ -282,7 +282,7 @@ match inside a hidden component is hidden. Default role queries also exclude
 unassigned light DOM under an open shadow host and slot fallback content when
 that slot has assigned nodes. A role query with `{ hidden: true }` and text
 queries still include that DOM. Closed shadow roots stay out of reach. The
-[experimental contract](./docs/decisions/0005-opt-in-shadow-dom.md) keeps this
+[experimental contract](https://github.com/apphane-dev/kahraman/blob/main/docs/decisions/0005-opt-in-shadow-dom.md) keeps this
 option off by default. Enable it explicitly when a test needs open-shadow queries.
 
 A target with `pointer-events: none` cannot take a user's click. When the target
