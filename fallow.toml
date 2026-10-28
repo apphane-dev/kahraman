@@ -44,7 +44,7 @@ exports = ["*"]
 ignoreImports = true
 # Storybook indexes story tests only as literal top-level `Story.test` calls, so
 # each kit's conformance stories repeat the same declarations.
-ignore = ["conformance/kits/*/src/conformance.stories.tsx"]
+ignore = ["conformance/kits/*/src/conformance.stories.*"]
 
 # actor.ts and preview.ts run only inside a Storybook browser context, so the
 # unit tests do not cover them; the conformance suite exercises them in a
