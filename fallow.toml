@@ -22,7 +22,15 @@ entry = [
 #
 # Kits list `@storybook/addon-vitest` although only the shared conformance preset
 # names it: Storybook resolves the addon's setup file from the kit directory.
-ignoreDependencies = ["storybook", "kahraman", "@storybook/addon-vitest"]
+# MUI's default styled engine loads its Emotion peers internally. They must be
+# installed by the consuming kit even though fixture code does not import them.
+ignoreDependencies = [
+	"storybook",
+	"kahraman",
+	"@storybook/addon-vitest",
+	"@emotion/react",
+	"@emotion/styled",
+]
 
 # Generated brand CSS is a standalone export, not part of the package module graph.
 ignorePatterns = ["dist/**", "coverage/**", "brand/tokens.css"]
