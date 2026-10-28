@@ -196,7 +196,7 @@ describe('matrixOf and renderMatrix', () => {
 		const scenarios = { ...baselinePass, combobox: differs }
 		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
 		const page = { ...pageTest(true), workaroundKeys: [] }
-		expect(() => renderMatrix([kit(scenarios, storyTests, page)], tickets)).toThrow(
+		expect(() => renderMatrix(matrixOf([kit(scenarios, storyTests, page)], tickets))).toThrow(
 			'page is missing the workaround for combobox',
 		)
 	})
@@ -208,7 +208,9 @@ describe('matrixOf and renderMatrix', () => {
 			...withWorkaround('combobox', 'switch'),
 		]
 		expect(() =>
-			renderMatrix([kit(scenarios, storyTests, pageTest(true, 'page', ['combobox']))], tickets),
+			renderMatrix(
+				matrixOf([kit(scenarios, storyTests, pageTest(true, 'page', ['combobox']))], tickets),
+			),
 		).toThrow('page is missing the workaround for switch')
 	})
 
@@ -217,8 +219,10 @@ describe('matrixOf and renderMatrix', () => {
 		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
 		expect(() =>
 			renderMatrix(
-				[kit(scenarios, storyTests, pageTest(true, 'page', ['combobox', 'button']))],
-				tickets,
+				matrixOf(
+					[kit(scenarios, storyTests, pageTest(true, 'page', ['combobox', 'button']))],
+					tickets,
+				),
 			),
 		).toThrow('page passes an unexpected workaround for button')
 	})
@@ -227,7 +231,7 @@ describe('matrixOf and renderMatrix', () => {
 		const scenarios = { ...baselinePass, combobox: differs }
 		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
 		const page = { ...pageTest(true), workaroundKeys: undefined }
-		expect(() => renderMatrix([kit(scenarios, storyTests, page)], tickets)).toThrow(
+		expect(() => renderMatrix(matrixOf([kit(scenarios, storyTests, page)], tickets))).toThrow(
 			'page must pass a literal workaround object with static keys',
 		)
 	})

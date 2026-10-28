@@ -18,3 +18,9 @@ Missing.test('a page cannot pass without the required differs workaround', async
 		'combobox requires a workaround for its different pattern',
 	)
 })
+
+Missing.test('a demo also requires the equivalent differs outcome', async (context) => {
+	await expect(run.demo(missing)(context)).rejects.toThrow(
+		'combobox requires a workaround for its different pattern',
+	)
+})

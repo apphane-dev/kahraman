@@ -32,7 +32,13 @@ describe('storyTestsOf', () => {
 				workaround: true,
 				workaroundKeys: ['combobox'],
 			},
-			{ name: 'demo', file: 'acme.stories.tsx', scenario: 'demo', workaround: true, workaroundKeys: ['combobox'] },
+			{
+				name: 'demo',
+				file: 'acme.stories.tsx',
+				scenario: 'demo',
+				workaround: true,
+				workaroundKeys: ['combobox'],
+			},
 		])
 	})
 	it('extracts quoted handler keys and preserves an empty page object', () => {
@@ -40,10 +46,13 @@ describe('storyTestsOf', () => {
 			'run.page({ combobox: async () => {} })',
 			"run.page({ 'combobox': async () => {} })",
 		)
-		expect(storyTestsOf(code, 'acme.stories.tsx').find((test) => test.name === 'page')?.workaroundKeys).toEqual(['combobox'])
 		expect(
-			storyTestsOf(source.replace('combobox: async () => {}', ''), 'acme.stories.tsx').find((test) => test.name === 'page')
-				?.workaroundKeys,
+			storyTestsOf(code, 'acme.stories.tsx').find((test) => test.name === 'page')?.workaroundKeys,
+		).toEqual(['combobox'])
+		expect(
+			storyTestsOf(source.replace('combobox: async () => {}', ''), 'acme.stories.tsx').find(
+				(test) => test.name === 'page',
+			)?.workaroundKeys,
 		).toEqual([])
 	})
 
