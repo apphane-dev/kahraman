@@ -205,15 +205,21 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 	const editInput = async (
 		locator: DefiniteLocator,
 		expectedValue: string,
-		action: (el: HTMLInputElement | HTMLTextAreaElement, userEvent: UserEvent) => Promise<void>,
+		action: (
+			el: HTMLInputElement | HTMLTextAreaElement,
+			userEvent: UserEvent,
+			value: string,
+		) => Promise<void>,
 	) => {
 		const { userEvent } = ctx()
 		const message = 'Expected locator to resolve to an <input> or <textarea>'
 		const el = await elementFrom(locator, message)
 		invariant(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement, message)
+		const value =
+			el instanceof HTMLTextAreaElement ? expectedValue.replace(/\r\n?/g, '\n') : expectedValue
 		await userEvent.click(el)
-		await action(el, userEvent)
-		await waitFor(() => expect(el.value).toBe(expectedValue))
+		await action(el, userEvent, value)
+		await waitFor(() => expect(el.value).toBe(value))
 		return userEvent
 	}
 
@@ -323,8 +329,11 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		click,
 		fill: async (locator: DefiniteLocator, value: string) => {
 			// oxlint-disable-next-line no-shadow
-			const userEvent = await editInput(locator, value, async (el, userEvent) => {
-				await userEvent.type(el, value, {
+			const userEvent = await editInput(locator, value, async (el, userEvent, textValue) => {
+				// fill takes literal text, not user-event's keyboard descriptor syntax.
+				const literal = textValue.replaceAll('{', '{{').replaceAll('[', '[[')
+				const keys = el instanceof HTMLTextAreaElement ? literal.replace(/\n/g, '{Enter}') : literal
+				await userEvent.type(el, keys, {
 					initialSelectionStart: 0,
 					initialSelectionEnd: el.value.length,
 				})
