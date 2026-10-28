@@ -328,6 +328,11 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		},
 		click,
 		fill: async (locator: DefiniteLocator, value: string) => {
+			if (value === '') {
+				await methods.clear(locator)
+				await ctx().userEvent.tab()
+				return
+			}
 			// oxlint-disable-next-line no-shadow
 			const userEvent = await editInput(locator, value, async (el, userEvent, textValue) => {
 				// fill takes literal text, not user-event's keyboard descriptor syntax.
