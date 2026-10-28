@@ -1,0 +1,16 @@
+{
+	"name": "kahraman-conformance-storybook",
+	"private": true,
+	"type": "module",
+	"exports": {
+		"./preset": "./src/preset.ts",
+		"./vitest": "./src/vitest.ts",
+		"./waits": "./src/waits.ts"
+	},
+	"dependencies": {
+		"@storybook/addon-vitest": "11.0.0-alpha.4",
+		"@vitest/browser-playwright": "4.1.10",
+		"storybook": "11.0.0-alpha.4",
+		"vitest": "4.1.10"
+	}
+}

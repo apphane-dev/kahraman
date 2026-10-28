@@ -65,7 +65,7 @@
 	},
 	"scripts": {
 		"build": "tsdown",
-		"typecheck": "tsc --noEmit && tsc --noEmit -p conformance/scenarios/tsconfig.check.json",
+		"typecheck": "tsc --noEmit && tsc --noEmit -p conformance/scenarios/tsconfig.check.json && tsc --noEmit -p conformance/storybook/tsconfig.json",
 		"lint": "vp lint",
 		"lint:fallow": "fallow dead-code --fail-on-issues && fallow dupes --fail-on-issues && fallow health --complexity --fail-on-issues",
 		"format": "vp fmt --check",
