@@ -29,7 +29,9 @@ conformance/
   `dist` through its `exports` map. A conformance run starts with `pnpm build`.
 - Tests run as story tests through `@storybook/addon-vitest` in Chromium.
 - Kit fixtures load the kit's real default theme. Styles decide what the
-  accessibility tree exposes.
+  accessibility tree exposes. React Aria Components is headless; its preview
+  loads a fixture-only stylesheet for both manual exploration and browser tests.
+  It adds visual states without overriding hidden elements or native inputs.
 - Kits run their latest version on Storybook 11, pinned in `pnpm-lock.yaml`
   and bumped by hand.
 
