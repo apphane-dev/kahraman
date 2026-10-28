@@ -81,7 +81,7 @@ export type DefiniteLocator = LocatorFn<HTMLElement>
 export type ArrayLocator = LocatorFn<Array<HTMLElement>>
 export type AnyLocator = Locator | DefiniteLocator | ArrayLocator
 
-type WithinScope = HTMLElement | DefiniteLocator | 'global'
+type WithinScope = HTMLElement | DefiniteLocator
 
 type NameOption = string | RegExp
 
@@ -239,17 +239,13 @@ function invokeAll(canvas: Canvas, config: LocatorConfig, mode: 'get'): HTMLElem
 function invokeAll(canvas: Canvas, config: LocatorConfig, mode: 'find'): Promise<HTMLElement[]>
 function invokeAll(canvas: Canvas, config: LocatorConfig, mode: 'get' | 'find') {
 	if (config.type === 'role') {
-		const opts = config.options
-			? { ...config.initialOptions, ...config.options }
-			: config.initialOptions
+		const opts = mergedOptions(config)
 		if (mode === 'get') {
 			return canvas.getAllByRole(config.arg, opts)
 		}
 		return canvas.findAllByRole(config.arg, opts)
 	}
-	const opts = config.options
-		? { ...config.initialOptions, ...config.options }
-		: config.initialOptions
+	const opts = mergedOptions(config)
 	if (mode === 'get') {
 		return canvas.getAllByText(config.arg, opts)
 	}
@@ -276,9 +272,6 @@ const isElement = (value: unknown): value is HTMLElement =>
 	typeof HTMLElement !== 'undefined' && value instanceof HTMLElement
 
 const scopeLabel = (scope: WithinScope) => {
-	if (scope === 'global') {
-		return 'global'
-	}
 	if (isElement(scope)) {
 		return '<element>'
 	}
@@ -364,7 +357,7 @@ export const role = (roleName: AriaRole, name?: NameOption): FluentLocator<'role
 		label: `${roleName}${name === undefined ? '' : ` ${formatLabelValue(name)}`}`,
 	})
 
-/** Query by visible text content. */
+/** Query by text content, hidden elements included. */
 export const text = (value: NameOption): FluentLocator<'text'> =>
 	createLocator({
 		type: 'text',

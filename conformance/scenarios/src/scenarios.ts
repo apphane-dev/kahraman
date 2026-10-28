@@ -5,8 +5,8 @@ import { contract } from './contract.ts'
 
 type Scenario = (I: BaseActor) => Promise<void>
 
-// Scenarios use no escape hatches such as `.within('global')`: a kit that needs
-// one shows up as a known gap.
+// Scenarios use no escape hatches such as an explicit scope or extra query
+// options: a kit that needs one shows up as a known gap.
 export const scenarios = {
 	button: async (I) => {
 		const c = contract.button

@@ -155,7 +155,7 @@ import { role, text, heading, button, link } from 'kahraman'
 
 role('textbox', 'Email') // by role + accessible name
 heading('Dashboard') // role('heading', 'Dashboard')
-text(/items? found/) // by visible text (string or RegExp)
+text(/items? found/) // by text content (string or RegExp)
 
 link('Storage').options({ current: 'page' }) // extra Testing Library options
 button('Save').within(role('dialog')) // scope to a container
@@ -173,8 +173,51 @@ role('alert').maybe() // queryBy* (nullable)
 | `.within(s)` | scope to `s`        | same variant, scoped |
 | `.options()` | merge query options | same variant         |
 
-`.within(scope)` accepts a locator, an `HTMLElement`, or `'global'` (the whole
-document body).
+Locators search the story document's body, so they find dialogs, menus, and
+toasts a UI kit portals out of the canvas. `.within(scope)` narrows that to a
+locator or an `HTMLElement` (for example `context.canvasElement`). Stories that
+share a document, as on a docs page, share that scope: a name repeated in a
+sibling story makes the query ambiguous. Run play tests in story mode, or
+narrow a test to its own story with `.within(context.canvasElement)`.
+
+The `'global'` scope keyword is removed. When migrating `.within('global')`,
+omit it only when no actor scope is active. Inside `I.within(...)`, omitting it
+keeps the locator in the active scope. Pass the story document's body to escape
+that scope and find a portalled dialog:
+
+```ts
+await I.within(role('group', 'Form'), async () => {
+	await I.click(button('Open dialog'))
+	await I.see(role('dialog').within(context.canvasElement.ownerDocument.body))
+})
+```
+
+Passing `context.canvasElement` instead keeps the query inside the canvas,
+so it does not replace `'global'` for content portalled outside the canvas.
+
+Text queries match hidden elements too. The actor excludes elements matching
+`script, style, .sb-wrapper, .sb-wrapper *` by default to skip Storybook's
+placeholder text. This selector also excludes user content with the same
+`.sb-wrapper` class. Replace it in the actor factory when your Storybook version
+uses different markup or your component uses that class:
+
+```ts
+const I = createActor({
+	textIgnore: 'script, style, .my-preview-chrome, .my-preview-chrome *',
+})
+// Or disable text filtering for this actor:
+const unfiltered = createActor({ textIgnore: false })
+
+// A query-specific ignore replaces the actor's setting:
+await I.see(text('Preview details').options({ ignore: false }))
+```
+
+A custom selector replaces the whole default, so include `script, style` if you
+still want to exclude those elements. A query's `ignore` option takes precedence
+over factory `textIgnore`, which takes precedence over the default above.
+The setting stays local to each actor, applies inside `.within()` and to custom
+locator callbacks, and does not change role queries. Locators called directly
+with a Testing Library canvas, outside an actor, use that canvas's query defaults.
 
 ### Actor methods
 
