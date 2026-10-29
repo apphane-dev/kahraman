@@ -12,14 +12,8 @@ export const manifest = {
 			differs: 'checkbox',
 			failsWith: 'Unable to find an accessible element with the role "switch"',
 		},
-		combobox: {
-			knownGap: '15',
-			failsWith: 'Unable to perform pointer interaction as the element has `pointer-events: none`',
-		},
-		dialog: {
-			knownGap: '15',
-			failsWith: 'Unable to perform pointer interaction as the element has `pointer-events: none`',
-		},
+		combobox: 'pass',
+		dialog: 'pass',
 		menu: {
 			knownGap: '16',
 			failsWith: 'Unable to find an accessible element with the role "menuitem"',

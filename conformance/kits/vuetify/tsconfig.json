@@ -4,5 +4,5 @@
 		"allowImportingTsExtensions": true,
 		"types": ["vite/client"]
 	},
-	"include": ["src", ".storybook", "vitest.config.ts"]
+	"include": ["src", "regressions", ".storybook", "vitest.config.ts"]
 }
