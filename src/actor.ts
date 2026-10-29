@@ -111,6 +111,26 @@ const withTextIgnore = (canvas: Canvas, ignore: ActorOptions['textIgnore']): Can
 	) => canvas.findAllByText<T>(value, { ignore, ...options }, waitOptions),
 })
 
+// Actions own their polling budget; fluent role/text .wait() locators must not
+// start a second Testing Library wait inside an action or its locator scopes.
+const immediateQueries = (canvas: Canvas): Canvas => ({
+	...canvas,
+	findByRole: async <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['findByRole']>
+	) => canvas.getByRole<T>(value, options),
+	findByText: async <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['findByText']>
+	) => canvas.getByText<T>(value, options),
+	findAllByRole: async <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['findAllByRole']>
+	) => canvas.getAllByRole<T>(value, options),
+	findAllByText: async <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['findAllByText']>
+	) => canvas.getAllByText<T>(value, options),
+})
+
+type ResolutionMode = 'normal' | 'action'
+
 // Inspired by codecept.js — see https://codecept.io/blog/codeceptjs-4/ for the
 // actor API this mirrors (selectOption, hopeThat soft assertions, retryTo, etc.)
 function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOptions): BaseActor {
@@ -130,13 +150,14 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 	async function resolveScopeLocator(
 		scopeLocator: DefiniteLocator,
 		resolvingScopes: Set<DefiniteLocator>,
+		mode: ResolutionMode,
 	): Promise<HTMLElement> {
 		if (resolvingScopes.has(scopeLocator)) {
 			throw new Error('Circular locator scope detected in .within(...)')
 		}
 		resolvingScopes.add(scopeLocator)
 		try {
-			const result = await resolveLocator(scopeLocator, resolvingScopes)
+			const result = await resolveLocator(scopeLocator, resolvingScopes, mode)
 			invariant(
 				result instanceof HTMLElement,
 				'Expected .within(locator) to resolve to an HTMLElement',
@@ -150,6 +171,7 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 	async function canvasFor(
 		locator: AnyLocator,
 		resolvingScopes: Set<DefiniteLocator>,
+		mode: ResolutionMode,
 	): Promise<Canvas> {
 		// __within is part of every locator type via LocatorMeta — no cast needed
 		const explicitScope = locator.__within
@@ -159,26 +181,27 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		if (explicitScope instanceof HTMLElement) {
 			return withinElement(explicitScope)
 		}
-		return withinElement(await resolveScopeLocator(explicitScope, resolvingScopes))
+		return withinElement(await resolveScopeLocator(explicitScope, resolvingScopes, mode))
 	}
 
 	async function resolveLocator(
 		locator: AnyLocator,
 		resolvingScopes: Set<DefiniteLocator> = new Set(),
+		mode: ResolutionMode = 'normal',
 	): Promise<HTMLElement | HTMLElement[] | null> {
-		return await locator(
-			withTextIgnore(
-				await canvasFor(locator, resolvingScopes),
-				actorOptions.textIgnore ?? storybookChrome,
-			),
+		const canvas = withTextIgnore(
+			await canvasFor(locator, resolvingScopes, mode),
+			actorOptions.textIgnore ?? storybookChrome,
 		)
+		return await locator(mode === 'action' ? immediateQueries(canvas) : canvas)
 	}
 
 	const elementFrom = async (
 		locator: DefiniteLocator,
 		message = 'Expected locator to resolve to an HTMLElement',
+		mode: ResolutionMode = 'normal',
 	) => {
-		const el = await resolveLocator(locator)
+		const el = await resolveLocator(locator, new Set(), mode)
 		invariant(el instanceof HTMLElement, message)
 		return el
 	}
@@ -206,12 +229,16 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		deadline: number,
 	): Promise<HTMLElement> => {
 		try {
-			return await elementFrom(locator, message)
+			return await elementFrom(locator, message, 'action')
 		} catch (error) {
-			if (!isMissingElementError(error) || Date.now() >= deadline) {
+			const remaining = deadline - Date.now()
+			if (!isMissingElementError(error) || remaining <= 0) {
 				throw error
 			}
-			await sleep(targetPollInterval)
+			await sleep(Math.min(targetPollInterval, remaining))
+			if (Date.now() >= deadline) {
+				throw error
+			}
 			return waitForTarget(locator, message, deadline)
 		}
 	}

@@ -255,8 +255,11 @@ const I = createActor({ optionTimeout: 3000 })
 to match, so an action right after an overlay opens or closes finds a target
 the overlay hid for a moment. Only the lookup repeats, and only while nothing
 matches: an ambiguous locator fails at once, and the action runs once. The wait
-also follows `asyncUtilTimeout`. `see` and `dontSee` check the page as it is
-now, without waiting. Set the wait for one actor, or turn it off with `0`:
+also follows `asyncUtilTimeout`. Actions use immediate role/text queries even for
+explicit `.wait()` locators, including locator scopes, so the action controls
+the lookup budget. `see` and `dontSee` add no polling of their own; an explicit
+waiting locator such as `I.see(button('Save').wait())` can still wait before its
+assertion. Set the actor wait for one actor, or turn it off with `0`:
 
 ```ts
 const I = createActor({ actionTimeout: 3000 })

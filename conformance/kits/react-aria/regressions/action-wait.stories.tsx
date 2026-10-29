@@ -1,6 +1,14 @@
 // Actions against a target an overlay hides for a moment, as a closing modal
 // keeps aria-hidden on the page until its exit animation ends.
-import { button, createActor, role, text, type ActorOptions, type StoryContext } from 'kahraman'
+import {
+	button,
+	createActor,
+	role,
+	text,
+	type ActorOptions,
+	type Canvas,
+	type StoryContext,
+} from 'kahraman'
 import { useState } from 'react'
 import { expect } from 'storybook/test'
 
@@ -26,7 +34,7 @@ const Overlay = () => {
 	return (
 		<>
 			<button onClick={flash}>Flash overlay</button>
-			<div aria-hidden={hidden}>
+			<div aria-hidden={hidden} role="group" aria-label="Area">
 				<button onClick={() => setClicks((n) => n + 1)}>Target</button>
 				<label>
 					Note <input />
@@ -72,4 +80,73 @@ Hidden.test('an ambiguous locator fails without waiting', async (context) => {
 	const start = performance.now()
 	await expect(I.click(button('Twin'))).rejects.toThrow('Found multiple elements')
 	expect(performance.now() - start).toBeLessThan(1000)
+})
+
+Hidden.test('a waiting action locator respects actionTimeout 0', async (context) => {
+	const I = actor(context, { actionTimeout: 0 })
+	await I.click(flash)
+	await expect(I.click(target.wait())).rejects.toThrow('Unable to find')
+})
+
+Hidden.test('a waiting scope respects actionTimeout 0', async (context) => {
+	const I = actor(context, { actionTimeout: 0 })
+	await I.click(flash)
+	await expect(I.click(target.within(role('group', 'Area').wait()))).rejects.toThrow(
+		'Unable to find',
+	)
+})
+
+Hidden.test('a missing waiting locator cannot add a Testing Library timeout', async (context) => {
+	const I = actor(context, { actionTimeout: 25 })
+	const start = performance.now()
+	await expect(I.click(button('Never rendered').wait())).rejects.toThrow('Unable to find')
+	expect(performance.now() - start).toBeLessThan(500)
+})
+
+Hidden.test('a waiting locator cannot wait for an ambiguity to disappear', async (context) => {
+	const I = actor(context)
+	const twins = context.canvasElement.querySelectorAll('button')
+	const twin = [...twins].findLast((element) => element.textContent === 'Twin')
+	expect(twin).toBeInstanceOf(HTMLButtonElement)
+	const timer = setTimeout(() => twin?.remove(), 200)
+	try {
+		await expect(I.click(button('Twin').wait())).rejects.toThrow('Found multiple elements')
+	} finally {
+		clearTimeout(timer)
+	}
+})
+
+Hidden.test('see still honors an explicitly waiting locator', async (context) => {
+	const I = actor(context, { actionTimeout: 0 })
+	await I.click(flash)
+	await I.see(target.wait())
+})
+
+Hidden.test('a waiting text locator also respects the action budget', async (context) => {
+	const I = actor(context, { actionTimeout: 25 })
+	const start = performance.now()
+	await expect(I.click(text('Never rendered text').wait())).rejects.toThrow('Unable to find')
+	expect(performance.now() - start).toBeLessThan(500)
+})
+
+Hidden.test('an action cannot discover a target after its deadline', async (context) => {
+	const I = actor(context, { actionTimeout: 25 })
+	const element = context.canvasElement.ownerDocument.createElement('button')
+	element.textContent = 'Late target'
+	let clicked = false
+	element.addEventListener('click', () => {
+		clicked = true
+	})
+	let timer: ReturnType<typeof setTimeout> | undefined
+	const late = (canvas: Canvas) => {
+		timer ??= setTimeout(() => context.canvasElement.append(element), 30)
+		return canvas.getByRole('button', { name: 'Late target' })
+	}
+	try {
+		await expect(I.click(late)).rejects.toThrow('Unable to find')
+		expect(clicked).toBe(false)
+	} finally {
+		clearTimeout(timer)
+		element.remove()
+	}
 })
