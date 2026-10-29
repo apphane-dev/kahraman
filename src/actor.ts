@@ -171,6 +171,19 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		return withinElement(ctx().canvasElement.ownerDocument.body)
 	}
 
+	function popupCanvas(trigger: HTMLElement) {
+		const controls = trigger.getAttribute('aria-controls')?.trim()
+		if (!controls) {
+			return rootCanvas()
+		}
+		const popup = controls
+			.split(/\s+/)
+			.map((id) => trigger.ownerDocument.getElementById(id))
+			.find((el) => el !== null)
+		invariant(popup, `Controlled popup "${controls}" has not mounted`)
+		return withinElement(popup)
+	}
+
 	function activeCanvas() {
 		const scope = scopeStack.at(-1)
 		return scope ? withinElement(scope) : rootCanvas()
@@ -459,7 +472,7 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 				const deadline = actionDeadline()
 				return { trigger: await waitForTarget(locator, undefined, deadline), deadline }
 			})
-			const trigger = resolved.trigger
+			let trigger = resolved.trigger
 			const deadline = resolved.deadline
 			// The browser draws a native select's options outside the page, so pick
 			// one the way its picker does. selectOptions clicks the select itself.
@@ -480,20 +493,39 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 				await ctx().userEvent.selectOptions(nativeTrigger, option)
 				return
 			}
-			await ctx().userEvent.click(await clickTarget(locator, deadline))
+			await ctx().userEvent.click(
+				await reachable(async () => {
+					trigger = await waitForTarget(locator, undefined, deadline)
+					return trigger
+				}, deadline),
+			)
 			// Options sit in a portalled listbox even inside I.within(...), and may
 			// render after the open: lazy mounting, a transition, or remote data.
+			// The trigger's aria-controls names the popup it opened, so an option
+			// in another open listbox is never chosen. Without it, the option must
+			// be unique in the document. One optionTimeout budget covers finding the
+			// option and waiting until it takes clicks.
+			const optionDeadline =
+				Date.now() + (actorOptions.optionTimeout ?? getConfig().asyncUtilTimeout)
 			await clickElement(() =>
 				reachable(
 					() =>
-						elementFrom(() =>
-							rootCanvas().findByRole(
-								'option',
-								{ name: value },
-								{ timeout: actorOptions.optionTimeout },
-							),
+						waitFor(
+							async () => {
+								try {
+									trigger = await elementFrom(locator, undefined, 'action')
+								} catch (error) {
+									// A modal popup can hide its original, still-connected
+									// trigger from role queries. Never reuse a detached one.
+									if (!trigger.isConnected || !isMissingElementError(error)) {
+										throw error
+									}
+								}
+								return popupCanvas(trigger).getByRole('option', { name: value })
+							},
+							{ timeout: Math.max(0, optionDeadline - Date.now()) },
 						),
-					actionDeadline(),
+					optionDeadline,
 				),
 			)
 		},
@@ -618,8 +650,8 @@ export interface ActorOptions {
 	 */
 	textIgnore?: NonNullable<Parameters<Canvas['getByText']>[1]>['ignore']
 	/**
-	 * Milliseconds selectOption waits for the option after opening the trigger.
-	 * Defaults to Testing Library's asyncUtilTimeout (1000 unless configured).
+	 * Milliseconds selectOption waits for the option after opening the trigger,
+	 * until it is found and takes clicks. Defaults to Testing Library's asyncUtilTimeout (1000 unless configured).
 	 */
 	optionTimeout?: number
 	/**
