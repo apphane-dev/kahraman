@@ -13,38 +13,33 @@ the host element, and `native-select` uses a plain `<select>`. The kit's
 `regressions/shadow-dom.stories.ts` confirms a click that reaches the shadow
 button works.
 
-**Experiment:** `createActor({ shadowDom: 'open' })` makes role and text queries
-also search open shadow roots (`src/shadow.ts`). Matches from every root are
-pooled before the uniqueness check, so a name in two components is ambiguous, not
-first-wins. `regressions/shadow-experiment.stories.ts` runs the Web Awesome
-catalog with it:
+**Opt-in support:** `createActor({ shadowDom: 'open' })` makes role and text
+queries also search open shadow roots and the elements slotted into them
+(`src/shadow.ts`). Matches from every root are pooled before the uniqueness
+check, so a name in two components is ambiguous, not first-wins, and a role
+match inside a hidden component is hidden. Hit tests and `aria-controls` ids
+resolve within the target's root, and `clear` on an input in a shadow root
+deletes its value by typing. `regressions/shadow-dom-option.stories.ts` runs the
+Web Awesome catalog with it, both individually and together on one page.
+Regressions exclude unassigned light DOM and occupied-slot fallback content
+from default role queries. Explicit hidden role queries and text queries keep
+including that DOM. ADR 0005 records the opt-in contract without changing the
+default or removing known-gap markers.
 
-- Pass: button, button-disabled, native-select, menu, tabs, status. Names built
-  from slotted text resolve, and `aria-labelledby` inside a shadow root works.
-- textbox, textarea: `fill` works; `clear` fails because user-event checks
-  `document.activeElement`, which is the host.
-- checkbox, switch: the inner input turns off its own pointer events, and the
-  hit test calls `document.elementFromPoint`, which also returns the host.
-- combobox: `aria-controls` names an id inside the shadow root, which
-  `document.getElementById` misses.
-- dialog: the closed `<dialog>` stays accessible after Cancel, because the
-  accessibility check walks `parentElement` and stops at the shadow root, so
-  the hidden host does not hide it.
-
-Default support needs root-aware focus, hit testing, id lookup, and
-accessibility checks, besides the queries.
+The default stays off. What remains is how the published matrix reports a kit
+that passes only with the option.
 
 **Blocked by:** None (can start immediately).
 
-**Status:** ready-for-agent
+**Status:** opt-in implemented; published option-enabled coverage remains open
 
-- [ ] Decide the contract: which queries enter open shadow roots, how an
-      accessible name built from slotted content is computed, and how a scope
-      set with `I.within(...)` or `.within(...)` applies across shadow
-      boundaries. Closed shadow roots stay out of reach.
-- [ ] Record the decision in an ADR.
-- [ ] Browser regressions cover a role query, a text query, an action, and a
+- [x] Define the opt-in contract: query families, accessible-name delegation,
+      and scopes across open shadow boundaries. Closed roots stay out of reach.
+- [x] Keep traversal off by default; require an explicit actor option.
+- [ ] Publish option-enabled coverage separately from default support.
+- [x] Record the opt-in contract in an ADR.
+- [x] Browser regressions cover a role query, a text query, an action, and a
       scoped query across a shadow boundary.
-- [ ] The Web Awesome scenarios this unblocks pass and their known-gap markers
-      are removed; regenerate the matrix.
-- [ ] A changeset describes the core change.
+- [x] The opt-in Web Awesome scenarios pass individually and on one page.
+      Keep known-gap markers for the default actor.
+- [x] A changeset describes the core change.
