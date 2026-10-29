@@ -84,7 +84,7 @@ NativeReplacement.test(
 	},
 )
 
-const RemoteNative = () => {
+const RemoteNative = ({ remount = false }: { remount?: boolean }) => {
 	const [load, setLoad] = useState(false)
 	const [ready, setReady] = useState(false)
 	const [value, setValue] = useState('none')
@@ -99,6 +99,7 @@ const RemoteNative = () => {
 		<>
 			<button onClick={() => setLoad(true)}>Load native options</button>
 			<select
+				key={String(remount && ready)}
 				aria-label="Remote country"
 				value={value}
 				onChange={(event) => setValue(event.target.value)}
@@ -143,3 +144,21 @@ Remote.test('native optionTimeout can outlast a shorter global wait', async (con
 		configure({ asyncUtilTimeout: timeout })
 	}
 })
+
+export const RemountedNative = meta.story({ render: () => <RemoteNative remount /> })
+RemountedNative.test(
+	'native option loading can replace the select before choosing',
+	async (context) => {
+		const I = createActor({ optionTimeout: 1000 })
+		I.init(context)
+		const field = role('combobox', 'Remote country')
+		const original = await I.see(field)
+		await context.userEvent.click(
+			context.canvas.getByRole('button', { name: 'Load native options' }),
+		)
+		await I.selectOption(field, 'Portugal')
+		await expect(original).not.toBeInTheDocument()
+		await I.seeInField(field, 'Portugal')
+		await I.see(text('Native choice Portugal'))
+	},
+)

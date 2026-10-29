@@ -411,14 +411,20 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			// The browser draws a native select's options outside the page, so pick
 			// one the way its picker does. selectOptions clicks the select itself.
 			if (trigger instanceof HTMLSelectElement) {
-				await ctx().userEvent.selectOptions(
-					trigger,
-					await waitForTarget(
-						() => withinElement(trigger).getByRole('option', { name: value }),
-						undefined,
-						Date.now() + (actorOptions.optionTimeout ?? getConfig().asyncUtilTimeout),
-					),
+				let nativeTrigger = trigger
+				const option = await waitForTarget(
+					async () => {
+						const current = await elementFrom(locator, undefined, 'action')
+						invariant(current instanceof HTMLSelectElement, 'Expected a native select')
+						const match = withinElement(current).getByRole('option', { name: value })
+						nativeTrigger = current
+						return match
+					},
+					undefined,
+					Date.now() + (actorOptions.optionTimeout ?? getConfig().asyncUtilTimeout),
 				)
+				// Evaluate both arguments only after finding their matching current pair.
+				await ctx().userEvent.selectOptions(nativeTrigger, option)
 				return
 			}
 			await ctx().userEvent.click(trigger)
