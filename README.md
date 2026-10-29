@@ -58,7 +58,7 @@ npm install --save-dev kahraman
 `userEvent`) is a **peer dependency** — you already have it. `kahraman` ships
 ESM only and is renderer-agnostic: it reads only `canvasElement` and `userEvent`
 from the story context, so it works with the React, Vue, and Svelte renderers
-alike. The [conformance matrix](./conformance/MATRIX.md) shows which widgets of
+alike. The [conformance matrix](https://github.com/apphane-dev/kahraman/blob/main/conformance/MATRIX.md) shows which widgets of
 popular UI kits the actor can drive.
 
 Supports Storybook 9, 10, and 11, including the Storybook 11 prerelease. Node.js
@@ -139,7 +139,7 @@ default Material theme, CssBaseline, and bundled Roboto font. Ark UI ships no
 styles, so its kit has a small fixture stylesheet. Vuetify, the Vue kit, uses
 its default theme, MDI SVG icon set, and bundled Roboto. Each kit owns
 its styling; their shared preset contains only test configuration. The
-[conformance matrix](./conformance/MATRIX.md) distinguishes passing scenarios
+[conformance matrix](https://github.com/apphane-dev/kahraman/blob/main/conformance/MATRIX.md) distinguishes passing scenarios
 from checked known gaps and different ARIA patterns.
 
 ## Usage
@@ -460,8 +460,8 @@ checks compatibility with Storybook 9, 10, and 11.
 The conformance suite under `conformance/` runs the actor against UI kits in
 Chromium. Each kit is its own Storybook project that runs shared conformance
 scenarios as story tests against the built package. Terms are defined in
-[GLOSSARY.md](./GLOSSARY.md); the design and its build status are in
-[docs/specs/conformance.md](./docs/specs/conformance.md).
+[GLOSSARY.md](https://github.com/apphane-dev/kahraman/blob/main/GLOSSARY.md); the design and its build status are in
+[docs/specs/conformance.md](https://github.com/apphane-dev/kahraman/blob/main/docs/specs/conformance.md).
 
 ## Development
 
