@@ -11,7 +11,12 @@ scenario's `selectOption` fails with `Unable to perform pointer interaction as
 the element has pointer-events: none`, thrown by user-event's
 `pointerEventsCheck`. A user clicks the field and the listbox opens.
 
-Once the click lands, the scenario's final check still fails: `VSelect` shows
+Vuetify's `VDialog` sets `pointer-events: none` on its content for about 270 ms
+while the open transition runs, so the `dialog` scenario's click on Cancel fails
+with the same error. A user's click there lands on the scrim until the content
+takes pointer events.
+
+Once the click lands, the `combobox` scenario's final check still fails: `VSelect` shows
 the chosen value in a sibling of the input, outside the named combobox.
 
 **Blocked by:** None (can start immediately).
@@ -23,6 +28,8 @@ the chosen value in a sibling of the input, outside the named combobox.
       user cannot reach at all.
 - [ ] A browser regression clicks a `pointer-events: none` combobox whose
       ancestor opens its listbox.
+- [ ] Decide whether an action waits while its target does not take pointer
+      events yet, then make the Vuetify `dialog` scenario pass.
 - [ ] Decide how `combobox` should read a value rendered outside the named
       combobox, then make the Vuetify `combobox` scenario pass or record what
       remains; regenerate the matrix.

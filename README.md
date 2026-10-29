@@ -251,6 +251,20 @@ Library's `asyncUtilTimeout` (1 s by default). Set it for one actor:
 const I = createActor({ optionTimeout: 3000 })
 ```
 
+`click`, `fill`, `clear`, and `selectOption`'s trigger wait for their locator
+to match, so an action right after an overlay opens or closes finds a target
+the overlay hid for a moment. Only the lookup repeats, and only while nothing
+matches: an ambiguous locator fails at once, and the action runs once. The wait
+also follows `asyncUtilTimeout`. Actions use immediate role/text queries even for
+explicit `.wait()` locators, including locator scopes, so the action controls
+the lookup budget. `see` and `dontSee` add no polling of their own; an explicit
+waiting locator such as `I.see(button('Save').wait())` can still wait before its
+assertion. Set the actor wait for one actor, or turn it off with `0`:
+
+```ts
+const I = createActor({ actionTimeout: 3000 })
+```
+
 ### Actor methods
 
 ```ts

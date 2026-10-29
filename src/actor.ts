@@ -1,7 +1,7 @@
 import type { AnyLocator, ArrayLocator, Canvas, DefiniteLocator, FluentLocator } from './loc'
 import type { StoryContext, UserEvent } from './context'
 
-import { expect, waitFor, within as withinElement } from 'storybook/test'
+import { expect, getConfig, waitFor, within as withinElement } from 'storybook/test'
 
 import { invariant } from './invariant'
 import { createErrorAugmenter, stepLabel, type Step } from './steps'
@@ -47,6 +47,9 @@ const isMissingElementError = (error: unknown) =>
 	error instanceof Error &&
 	error.name === 'TestingLibraryElementError' &&
 	error.message.startsWith('Unable to find')
+
+// Testing Library's waitFor polls at the same interval.
+const targetPollInterval = 50
 
 const assertValidMaxTries = (maxTries: number) => {
 	invariant(
@@ -108,6 +111,26 @@ const withTextIgnore = (canvas: Canvas, ignore: ActorOptions['textIgnore']): Can
 	) => canvas.findAllByText<T>(value, { ignore, ...options }, waitOptions),
 })
 
+// Actions own their polling budget; fluent role/text .wait() locators must not
+// start a second Testing Library wait inside an action or its locator scopes.
+const immediateQueries = (canvas: Canvas): Canvas => ({
+	...canvas,
+	findByRole: async <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['findByRole']>
+	) => canvas.getByRole<T>(value, options),
+	findByText: async <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['findByText']>
+	) => canvas.getByText<T>(value, options),
+	findAllByRole: async <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['findAllByRole']>
+	) => canvas.getAllByRole<T>(value, options),
+	findAllByText: async <T extends HTMLElement = HTMLElement>(
+		...[value, options]: Parameters<Canvas['findAllByText']>
+	) => canvas.getAllByText<T>(value, options),
+})
+
+type ResolutionMode = 'normal' | 'action'
+
 // Inspired by codecept.js — see https://codecept.io/blog/codeceptjs-4/ for the
 // actor API this mirrors (selectOption, hopeThat soft assertions, retryTo, etc.)
 function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOptions): BaseActor {
@@ -127,13 +150,14 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 	async function resolveScopeLocator(
 		scopeLocator: DefiniteLocator,
 		resolvingScopes: Set<DefiniteLocator>,
+		mode: ResolutionMode,
 	): Promise<HTMLElement> {
 		if (resolvingScopes.has(scopeLocator)) {
 			throw new Error('Circular locator scope detected in .within(...)')
 		}
 		resolvingScopes.add(scopeLocator)
 		try {
-			const result = await resolveLocator(scopeLocator, resolvingScopes)
+			const result = await resolveLocator(scopeLocator, resolvingScopes, mode)
 			invariant(
 				result instanceof HTMLElement,
 				'Expected .within(locator) to resolve to an HTMLElement',
@@ -147,6 +171,7 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 	async function canvasFor(
 		locator: AnyLocator,
 		resolvingScopes: Set<DefiniteLocator>,
+		mode: ResolutionMode,
 	): Promise<Canvas> {
 		// __within is part of every locator type via LocatorMeta — no cast needed
 		const explicitScope = locator.__within
@@ -156,26 +181,27 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		if (explicitScope instanceof HTMLElement) {
 			return withinElement(explicitScope)
 		}
-		return withinElement(await resolveScopeLocator(explicitScope, resolvingScopes))
+		return withinElement(await resolveScopeLocator(explicitScope, resolvingScopes, mode))
 	}
 
 	async function resolveLocator(
 		locator: AnyLocator,
 		resolvingScopes: Set<DefiniteLocator> = new Set(),
+		mode: ResolutionMode = 'normal',
 	): Promise<HTMLElement | HTMLElement[] | null> {
-		return await locator(
-			withTextIgnore(
-				await canvasFor(locator, resolvingScopes),
-				actorOptions.textIgnore ?? storybookChrome,
-			),
+		const canvas = withTextIgnore(
+			await canvasFor(locator, resolvingScopes, mode),
+			actorOptions.textIgnore ?? storybookChrome,
 		)
+		return await locator(mode === 'action' ? immediateQueries(canvas) : canvas)
 	}
 
 	const elementFrom = async (
 		locator: DefiniteLocator,
 		message = 'Expected locator to resolve to an HTMLElement',
+		mode: ResolutionMode = 'normal',
 	) => {
-		const el = await resolveLocator(locator)
+		const el = await resolveLocator(locator, new Set(), mode)
 		invariant(el instanceof HTMLElement, message)
 		return el
 	}
@@ -195,12 +221,43 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		}
 	}
 
-	const click = async (locator: DefiniteLocator) => {
+	// Repeats only the lookup, and only while nothing matches: an overlay can
+	// hide the target for a moment. An ambiguous or invalid locator fails at once.
+	const waitForTarget = async (
+		locator: DefiniteLocator,
+		message: string | undefined,
+		deadline: number,
+	): Promise<HTMLElement> => {
+		try {
+			return await elementFrom(locator, message, 'action')
+		} catch (error) {
+			const remaining = deadline - Date.now()
+			if (!isMissingElementError(error) || remaining <= 0) {
+				throw error
+			}
+			await sleep(Math.min(targetPollInterval, remaining))
+			if (Date.now() >= deadline) {
+				throw error
+			}
+			return waitForTarget(locator, message, deadline)
+		}
+	}
+
+	const actionTarget = (locator: DefiniteLocator, message?: string) =>
+		waitForTarget(
+			locator,
+			message,
+			Date.now() + (actorOptions.actionTimeout ?? getConfig().asyncUtilTimeout),
+		)
+
+	const clickElement = async (resolve: () => Promise<HTMLElement>) => {
 		if (actorOptions.clickDelay && actorOptions.clickDelay > 0) {
 			await sleep(actorOptions.clickDelay)
 		}
-		await ctx().userEvent.click(await elementFrom(locator))
+		await ctx().userEvent.click(await resolve())
 	}
+
+	const click = (locator: DefiniteLocator) => clickElement(() => actionTarget(locator))
 
 	const editInput = async (
 		locator: DefiniteLocator,
@@ -213,7 +270,7 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 	) => {
 		const { userEvent } = ctx()
 		const message = 'Expected locator to resolve to an <input> or <textarea>'
-		const el = await elementFrom(locator, message)
+		const el = await actionTarget(locator, message)
 		invariant(el instanceof HTMLInputElement || el instanceof HTMLTextAreaElement, message)
 		const value =
 			el instanceof HTMLTextAreaElement ? expectedValue.replace(/\r\n?/g, '\n') : expectedValue
@@ -349,8 +406,14 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			await click(locator)
 			// Options sit in a portalled listbox even inside I.within(...), and may
 			// render after the open: lazy mounting, a transition, or remote data.
-			await click(() =>
-				rootCanvas().findByRole('option', { name: value }, { timeout: actorOptions.optionTimeout }),
+			await clickElement(() =>
+				elementFrom(() =>
+					rootCanvas().findByRole(
+						'option',
+						{ name: value },
+						{ timeout: actorOptions.optionTimeout },
+					),
+				),
 			)
 		},
 		clear: async (locator: DefiniteLocator) => {
@@ -478,6 +541,12 @@ export interface ActorOptions {
 	 * Defaults to Testing Library's asyncUtilTimeout (1000 unless configured).
 	 */
 	optionTimeout?: number
+	/**
+	 * Milliseconds click, fill, clear, and selectOption's trigger wait for their
+	 * locator to match. Only a missing element is retried, and the action runs
+	 * once. 0 disables the wait. Defaults to Testing Library's asyncUtilTimeout.
+	 */
+	actionTimeout?: number
 	/**
 	 * Milliseconds to wait before each click. Useful for making interactions
 	 * observable when stories are played manually. Defaults to no delay.
