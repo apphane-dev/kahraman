@@ -144,6 +144,11 @@ its styling; their shared preset contains only test configuration. The
 [conformance matrix](https://github.com/apphane-dev/kahraman/blob/main/conformance/MATRIX.md) distinguishes passing scenarios
 from checked known gaps and different ARIA patterns.
 
+Each kit also has a `Demo` story test for public playback. It skips known gaps
+without waiting for expected failures and runs the documented workaround for
+a different ARIA pattern. `Page` remains the full conformance regression. The
+matrix describes the default actor, not the interactions skipped in a demo.
+
 ## Usage
 
 ### Create and initialize an actor

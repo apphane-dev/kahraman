@@ -17,3 +17,7 @@ coverage
 
 # Python asset tooling
 __pycache__/
+
+# Conformance demo bundle (pnpm conformance:demo)
+/conformance-demo
+/conformance-demo.tar.gz

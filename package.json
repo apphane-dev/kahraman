@@ -73,6 +73,8 @@
 		"test": "vp test run",
 		"test:watch": "vp test",
 		"conformance:matrix": "node conformance/scenarios/scripts/matrix.ts",
+		"conformance:demo": "tsdown && node conformance/scenarios/scripts/demo.ts",
+		"conformance:demo:smoke": "node conformance/scenarios/scripts/demo-smoke.ts",
 		"test:conformance": "tsdown && pnpm --filter \"./conformance/kits/*\" run typecheck && pnpm --filter \"./conformance/kits/*\" exec vitest run",
 		"check": "pnpm run typecheck && pnpm run lint && pnpm run lint:fallow && pnpm run format && pnpm run test",
 		"attw": "attw --pack . --profile esm-only",

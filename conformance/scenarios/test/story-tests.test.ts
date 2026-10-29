@@ -14,6 +14,8 @@ export const Combobox = meta.story({ render: () => null })
 Combobox.test('combobox', run('combobox', async () => {}))
 export const Page = meta.story({ render: () => null })
 Page.test('page', run.page({ combobox: async () => {} }))
+export const Demo = meta.story({ render: () => null })
+Demo.test('demo', run.demo({ combobox: async () => {} }))
 `
 
 describe('storyTestsOf', () => {
@@ -30,6 +32,13 @@ describe('storyTestsOf', () => {
 				workaround: true,
 				workaroundKeys: ['combobox'],
 			},
+			{
+				name: 'demo',
+				file: 'acme.stories.tsx',
+				scenario: 'demo',
+				workaround: true,
+				workaroundKeys: ['combobox'],
+			},
 		])
 	})
 	it('extracts quoted handler keys and preserves an empty page object', () => {
@@ -37,17 +46,20 @@ describe('storyTestsOf', () => {
 			'run.page({ combobox: async () => {} })',
 			"run.page({ 'combobox': async () => {} })",
 		)
-		expect(storyTestsOf(code, 'acme.stories.tsx').at(-1)?.workaroundKeys).toEqual(['combobox'])
 		expect(
-			storyTestsOf(source.replace('combobox: async () => {}', ''), 'acme.stories.tsx').at(-1)
-				?.workaroundKeys,
+			storyTestsOf(code, 'acme.stories.tsx').find((test) => test.name === 'page')?.workaroundKeys,
+		).toEqual(['combobox'])
+		expect(
+			storyTestsOf(source.replace('combobox: async () => {}', ''), 'acme.stories.tsx').find(
+				(test) => test.name === 'page',
+			)?.workaroundKeys,
 		).toEqual([])
 	})
 
 	it('does not guess page handlers from references, spreads or computed keys', () => {
 		for (const argument of ['handlers', '{ ...handlers }', '{ [key]: handler }']) {
 			const code = source.replace('{ combobox: async () => {} }', argument)
-			const page = storyTestsOf(code, 'acme.stories.tsx').at(-1)
+			const page = storyTestsOf(code, 'acme.stories.tsx').find((test) => test.name === 'page')
 			expect(page?.workaround).toBe(true)
 			expect(page?.workaroundKeys).toBeUndefined()
 		}

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import type { KitManifest } from '../src/manifest.ts'
-import { renderMatrix, type Kit } from '../src/matrix.ts'
+import { matrixOf, renderMatrix, type Kit } from '../src/matrix.ts'
 
 const baselinePass = {
 	button: 'pass',
@@ -47,14 +47,20 @@ const withWorkaround = (...names: string[]) =>
 
 const tickets = new Map([['09', 'tickets/09-portalled-overlays.md']])
 
-describe('renderMatrix', () => {
+describe('matrixOf and renderMatrix', () => {
+	it('does not count a public demo as conformance coverage', () => {
+		const normal = kit(baselinePass)
+		const withDemo = { ...normal, storyTests: [...normal.storyTests, ...tests('demo')] }
+		expect(matrixOf([withDemo], tickets)).toEqual(matrixOf([normal], tickets))
+	})
+
 	it('renders pass, known gap, differs, and n/a cells per scenario and kit', () => {
 		const scenarios = { ...baselinePass, combobox: differs, dialog: gap09, tabs: 'pass' } as const
 		const storyTests = [
 			...tests('button', 'textbox', 'checkbox', 'dialog', 'status', 'tabs'),
 			...withWorkaround('combobox'),
 		]
-		const matrix = renderMatrix([kit(scenarios, storyTests)], tickets)
+		const matrix = renderMatrix(matrixOf([kit(scenarios, storyTests)], tickets))
 		expect(matrix).toBe(
 			[
 				'# Conformance matrix',
@@ -86,23 +92,56 @@ describe('renderMatrix', () => {
 		)
 	})
 
+	it('keeps each cell as data, with repo-relative paths and the recorded failure', () => {
+		const scenarios = { ...baselinePass, combobox: differs, dialog: gap09 } as const
+		const storyTests = [
+			...tests('button', 'textbox', 'checkbox', 'dialog', 'status'),
+			...withWorkaround('combobox'),
+		]
+		const withPageGap: Kit = {
+			...kit(scenarios, storyTests),
+			manifest: { kit: 'Acme UI', scenarios, page: gap09 },
+		}
+		const matrix = matrixOf([withPageGap], tickets)
+		const cellOf = (id: string) => matrix.scenarios.find((row) => row.id === id)?.cells[0]
+		expect(matrix.kits).toEqual([
+			{ dir: 'acme', name: 'Acme UI', pass: 4, differs: 1, knownGaps: 1 },
+		])
+		expect(cellOf('button')).toEqual({ status: 'pass' })
+		expect(cellOf('menu')).toEqual({ status: 'n/a' })
+		expect(cellOf('combobox')).toEqual({
+			status: 'differs',
+			pattern: 'button + listbox',
+			path: 'conformance/kits/acme/src/acme.stories.tsx',
+			failsWith: 'role "combobox"',
+		})
+		const gap = {
+			status: 'known gap',
+			ticket: '09',
+			path: 'tickets/09-portalled-overlays.md',
+			failsWith: 'role "dialog"',
+		}
+		expect(cellOf('dialog')).toEqual(gap)
+		expect(matrix.page).toEqual([gap])
+	})
+
 	it('rejects a manifest that omits a baseline scenario', () => {
 		const { status: _, ...withoutStatus } = baselinePass
-		expect(() => renderMatrix([kit(withoutStatus)], tickets)).toThrow(
+		expect(() => matrixOf([kit(withoutStatus)], tickets)).toThrow(
 			'acme: manifest omits baseline scenario status',
 		)
 	})
 
 	it('rejects a declared scenario with no story test', () => {
 		const storyTests = tests('button', 'textbox', 'checkbox', 'dialog')
-		expect(() => renderMatrix([kit(baselinePass, storyTests)], tickets)).toThrow(
+		expect(() => matrixOf([kit(baselinePass, storyTests)], tickets)).toThrow(
 			'acme: manifest declares status but no story test has that name',
 		)
 	})
 
 	it('rejects a story test named after no declared scenario', () => {
 		const storyTests = tests(...Object.keys(baselinePass), 'buton')
-		expect(() => renderMatrix([kit(baselinePass, storyTests)], tickets)).toThrow(
+		expect(() => matrixOf([kit(baselinePass, storyTests)], tickets)).toThrow(
 			'acme: story test buton is not a scenario the manifest declares',
 		)
 	})
@@ -112,13 +151,13 @@ describe('renderMatrix', () => {
 			...tests(...Object.keys(baselinePass)).filter((test) => test.name !== 'status'),
 			{ name: 'status', file: 'acme.stories.tsx', scenario: 'button', workaround: false },
 		]
-		expect(() => renderMatrix([kit(baselinePass, storyTests)], tickets)).toThrow(
+		expect(() => matrixOf([kit(baselinePass, storyTests)], tickets)).toThrow(
 			"acme: story test status must run run('status'), found run('button')",
 		)
 	})
 
 	it('rejects a different pattern whose story test passes no workaround', () => {
-		expect(() => renderMatrix([kit({ ...baselinePass, combobox: differs })], tickets)).toThrow(
+		expect(() => matrixOf([kit({ ...baselinePass, combobox: differs })], tickets)).toThrow(
 			'acme: story test combobox must pass a workaround for its different pattern',
 		)
 	})
@@ -128,27 +167,27 @@ describe('renderMatrix', () => {
 			...tests('button', 'textbox', 'checkbox', 'dialog'),
 			...withWorkaround('status'),
 		]
-		expect(() => renderMatrix([kit(baselinePass, storyTests)], tickets)).toThrow(
+		expect(() => matrixOf([kit(baselinePass, storyTests)], tickets)).toThrow(
 			'acme: story test status passes a workaround, but the manifest does not say differs',
 		)
 	})
 
 	it('rejects a kit with no page story test', () => {
-		expect(() => renderMatrix([kit(baselinePass, undefined, null)], tickets)).toThrow(
+		expect(() => matrixOf([kit(baselinePass, undefined, null)], tickets)).toThrow(
 			'acme: no story test named page runs every scenario on one page',
 		)
 	})
 
 	it('rejects a page story test with another body', () => {
 		expect(() =>
-			renderMatrix([kit(baselinePass, undefined, pageTest(false, 'button'))], tickets),
+			matrixOf([kit(baselinePass, undefined, pageTest(false, 'button'))], tickets),
 		).toThrow("acme: story test page must run run.page(...), found run('button')")
 	})
 
 	it('rejects a page story test without the workarounds for different patterns', () => {
 		const scenarios = { ...baselinePass, combobox: differs }
 		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
-		expect(() => renderMatrix([kit(scenarios, storyTests, pageTest(false))], tickets)).toThrow(
+		expect(() => matrixOf([kit(scenarios, storyTests, pageTest(false))], tickets)).toThrow(
 			'acme: story test page must pass the workarounds for different patterns',
 		)
 	})
@@ -157,7 +196,7 @@ describe('renderMatrix', () => {
 		const scenarios = { ...baselinePass, combobox: differs }
 		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
 		const page = { ...pageTest(true), workaroundKeys: [] }
-		expect(() => renderMatrix([kit(scenarios, storyTests, page)], tickets)).toThrow(
+		expect(() => renderMatrix(matrixOf([kit(scenarios, storyTests, page)], tickets))).toThrow(
 			'page is missing the workaround for combobox',
 		)
 	})
@@ -169,7 +208,9 @@ describe('renderMatrix', () => {
 			...withWorkaround('combobox', 'switch'),
 		]
 		expect(() =>
-			renderMatrix([kit(scenarios, storyTests, pageTest(true, 'page', ['combobox']))], tickets),
+			renderMatrix(
+				matrixOf([kit(scenarios, storyTests, pageTest(true, 'page', ['combobox']))], tickets),
+			),
 		).toThrow('page is missing the workaround for switch')
 	})
 
@@ -178,8 +219,10 @@ describe('renderMatrix', () => {
 		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
 		expect(() =>
 			renderMatrix(
-				[kit(scenarios, storyTests, pageTest(true, 'page', ['combobox', 'button']))],
-				tickets,
+				matrixOf(
+					[kit(scenarios, storyTests, pageTest(true, 'page', ['combobox', 'button']))],
+					tickets,
+				),
 			),
 		).toThrow('page passes an unexpected workaround for button')
 	})
@@ -188,7 +231,7 @@ describe('renderMatrix', () => {
 		const scenarios = { ...baselinePass, combobox: differs }
 		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
 		const page = { ...pageTest(true), workaroundKeys: undefined }
-		expect(() => renderMatrix([kit(scenarios, storyTests, page)], tickets)).toThrow(
+		expect(() => renderMatrix(matrixOf([kit(scenarios, storyTests, page)], tickets))).toThrow(
 			'page must pass a literal workaround object with static keys',
 		)
 	})
@@ -198,17 +241,17 @@ describe('renderMatrix', () => {
 			...kit(baselinePass),
 			manifest: { kit: 'Acme UI', scenarios: baselinePass, page: { ...gap09, knownGap: ticket } },
 		})
-		expect(renderMatrix([withPageGap('09')], tickets)).toContain(
+		expect(renderMatrix(matrixOf([withPageGap('09')], tickets))).toContain(
 			'| `page` (every scenario on one page) | [known gap 09](../tickets/09-portalled-overlays.md) |',
 		)
-		expect(() => renderMatrix([withPageGap('42')], tickets)).toThrow(
+		expect(() => matrixOf([withPageGap('42')], tickets)).toThrow(
 			'acme: page known gap points at missing ticket 42',
 		)
 	})
 
 	it('rejects a known gap pointing at a missing ticket', () => {
 		expect(() =>
-			renderMatrix([kit({ ...baselinePass, dialog: { ...gap09, knownGap: '42' } })], tickets),
+			matrixOf([kit({ ...baselinePass, dialog: { ...gap09, knownGap: '42' } })], tickets),
 		).toThrow('acme: dialog known gap points at missing ticket 42')
 	})
 })

@@ -20,6 +20,7 @@ conformance/
   kits/<kit>/       private package: one Storybook project per UI kit
   kits/<kit>/regressions/  browser regressions, not matrix scenarios
   MATRIX.md         generated, checked in
+  matrix.json       the same matrix as data, generated, checked in
 ```
 
 - All packages are private workspace members. None appear in the root `files`
@@ -129,9 +130,28 @@ known gap <NN>` (or `differs: <pattern>`).
 A script renders scenarios against kits into `conformance/MATRIX.md`, each cell
 pass, known gap (linked to its ticket), differs (linked to the stories file
 holding the workaround), or n/a. It reads manifests and story
-files and needs no browser.
-CI regenerates it and runs `git diff --exit-code`. The README links it next to
+files and needs no browser. It also writes `conformance/matrix.json`, the same
+cells as data with repo-relative paths and each recorded `failsWith`, for pages
+that render the matrix themselves.
+CI regenerates both and runs `git diff --exit-code`. The README links it next to
 the supported-frameworks list.
+
+## Demo bundle
+
+`pnpm conformance:demo` packs `conformance-demo.tar.gz`: each kit's static
+Storybook under `kits/<kit>/` and `matrix.json`. The website shows the matrix
+and embeds each kit's `page` story test, which runs the journey in the visitor's
+browser.
+
+`pnpm conformance:demo:smoke` unpacks the bundle, serves it under
+`/conformance/` as the site does, embeds each kit's built `page` test in an
+iframe, and checks that Storybook reports it passed and that the journey left
+its end state on screen. CI runs it on every PR, and the publishing workflow
+runs it before it uploads.
+
+The `Conformance demo` workflow, run by hand, attaches the bundle to a
+prerelease tagged `conformance-<date>` and prints its SHA-256 and size. The
+website pins that URL, checksum, and size, the same way it pins its film.
 
 ## CI
 

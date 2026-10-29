@@ -6,6 +6,7 @@ coverage
 pnpm-lock.yaml
 CHANGELOG.md
 conformance/MATRIX.md
+conformance/matrix.json
 
 # Generated brand vectors and Cargo's lockfile
 brand/*.svg

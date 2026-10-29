@@ -1,5 +1,5 @@
-import { baseline, pageTest, scenarioIds, type ScenarioId } from './catalog.ts'
-import type { KitManifest, ScenarioStatus } from './manifest.ts'
+import { baseline, demoTest, pageTest, scenarioIds, type ScenarioId } from './catalog.ts'
+import type { KitManifest, KnownGap, ScenarioStatus } from './manifest.ts'
 
 export interface Kit {
 	/** Directory name under `conformance/kits/`, used in error messages. */
@@ -7,8 +7,8 @@ export interface Kit {
 	manifest: KitManifest
 	/**
 	 * The kit's story tests, as Storybook indexes them: the stories file relative
-	 * to the kit's `src/`, the scenario ID each passes to `run(...)` (`page` for
-	 * `run.page(...)`, undefined for any other body), and whether it passes a
+	 * to the kit's `src/`, the scenario ID each passes to `run(...)` (`page` or `demo` for
+	 * `run.page(...)` or `run.demo(...)`, undefined for any other body), and whether it passes a
 	 * workaround.
 	 */
 	storyTests: readonly {
@@ -29,7 +29,8 @@ type Check = (kit: Kit, tickets: ReadonlyMap<string, string>) => string[]
 
 const declares = (kit: Kit, id: string) => Object.hasOwn(kit.manifest.scenarios, id)
 
-const scenarioTests = (kit: Kit) => kit.storyTests.filter((test) => test.name !== pageTest)
+const scenarioTests = (kit: Kit) =>
+	kit.storyTests.filter((test) => test.name !== pageTest && test.name !== demoTest)
 
 const isDiffers = (status: ScenarioStatus | undefined) =>
 	typeof status === 'object' && 'differs' in status
@@ -109,9 +110,6 @@ const checks: readonly Check[] = [
 		),
 ]
 
-const gapLink = (ticket: string, tickets: ReadonlyMap<string, string>) =>
-	`[known gap ${ticket}](../${tickets.get(ticket)})`
-
 const validate = (kit: Kit, tickets: ReadonlyMap<string, string>) => {
 	const [problem] = checks.flatMap((check) => check(kit, tickets))
 	if (problem !== undefined) {
@@ -119,23 +117,57 @@ const validate = (kit: Kit, tickets: ReadonlyMap<string, string>) => {
 	}
 }
 
-const cell = (kit: Kit, id: ScenarioId, tickets: ReadonlyMap<string, string>) => {
-	const status: ScenarioStatus | undefined = kit.manifest.scenarios[id]
-	if (status === undefined) {
-		return 'n/a'
-	}
-	if (status === 'pass') {
-		return 'pass'
-	}
-	if ('knownGap' in status) {
-		return gapLink(status.knownGap, tickets)
-	}
-	// Links the story test that holds the workaround.
-	const file = kit.storyTests.find((test) => test.name === id)?.file
-	return `[differs: ${status.differs}](kits/${kit.dir}/src/${file})`
+/** A matrix cell. Paths are repo-relative. */
+export type Cell =
+	| { status: 'pass' }
+	| { status: 'n/a' }
+	| { status: 'known gap'; ticket: string; path: string; failsWith: string }
+	| { status: 'differs'; pattern: string; path: string; failsWith: string }
+
+export interface Matrix {
+	kits: { dir: string; name: string; pass: number; differs: number; knownGaps: number }[]
+	/** One row per catalog scenario; `cells` follow `kits`. */
+	scenarios: { id: ScenarioId; baseline: boolean; cells: Cell[] }[]
+	/** The `page` integration journey per kit. */
+	page: Cell[]
 }
 
-const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`
+// validate() rejects a missing ticket first; this guards direct use.
+const ticketPath = (ticket: string, tickets: ReadonlyMap<string, string>) => {
+	const path = tickets.get(ticket)
+	if (path === undefined) {
+		throw new Error(`missing ticket ${ticket}`)
+	}
+	return path
+}
+
+const gapCell = (gap: KnownGap, tickets: ReadonlyMap<string, string>): Cell => ({
+	status: 'known gap',
+	ticket: gap.knownGap,
+	path: ticketPath(gap.knownGap, tickets),
+	failsWith: gap.failsWith,
+})
+
+const cell = (kit: Kit, id: ScenarioId, tickets: ReadonlyMap<string, string>): Cell => {
+	const status: ScenarioStatus | undefined = kit.manifest.scenarios[id]
+	if (status === undefined) {
+		return { status: 'n/a' }
+	}
+	if (status === 'pass') {
+		return { status: 'pass' }
+	}
+	if ('knownGap' in status) {
+		return gapCell(status, tickets)
+	}
+	// Points at the story test that holds the workaround.
+	const file = kit.storyTests.find((test) => test.name === id)?.file
+	return {
+		status: 'differs',
+		pattern: status.differs,
+		path: `conformance/kits/${kit.dir}/src/${file}`,
+		failsWith: status.failsWith,
+	}
+}
 
 const kindOf = (status: ScenarioStatus) =>
 	status === 'pass' ? 'pass' : 'knownGap' in status ? 'known gap' : 'differs'
@@ -145,45 +177,75 @@ const kindOf = (status: ScenarioStatus) =>
 const totals = (kit: Kit) => {
 	const kinds = Object.values(kit.manifest.scenarios).map(kindOf)
 	const count = (kind: ReturnType<typeof kindOf>) => kinds.filter((k) => k === kind).length
-	return [
-		`${count('pass')} pass`,
-		...(count('differs') > 0 ? [`${count('differs')} differs`] : []),
-		...(count('known gap') > 0 ? [plural(count('known gap'), 'known gap')] : []),
-	].join(', ')
+	return { pass: count('pass'), differs: count('differs'), knownGaps: count('known gap') }
 }
 
 /**
- * Renders `conformance/MATRIX.md`: scenarios against kits. `tickets` maps a
- * ticket number to its repo-relative path. Throws on an inconsistent kit.
+ * Scenarios against kits, as data. `tickets` maps a ticket number to its
+ * repo-relative path. Throws on an inconsistent kit.
  */
-export const renderMatrix = (kits: readonly Kit[], tickets: ReadonlyMap<string, string>) => {
+export const matrixOf = (kits: readonly Kit[], tickets: ReadonlyMap<string, string>): Matrix => {
 	for (const kit of kits) {
 		validate(kit, tickets)
 	}
-	return [
+	return {
+		kits: kits.map((kit) => ({ dir: kit.dir, name: kit.manifest.kit, ...totals(kit) })),
+		scenarios: scenarioIds.map((id) => ({
+			id,
+			baseline: isBaseline(id),
+			cells: kits.map((kit) => cell(kit, id, tickets)),
+		})),
+		page: kits.map((kit) =>
+			kit.manifest.page === undefined ? { status: 'pass' } : gapCell(kit.manifest.page, tickets),
+		),
+	}
+}
+
+// MATRIX.md lives in conformance/.
+const linkPath = (path: string) =>
+	path.startsWith('conformance/') ? path.slice('conformance/'.length) : `../${path}`
+
+const markdownCell = (value: Cell) => {
+	switch (value.status) {
+		case 'pass':
+		case 'n/a':
+			return value.status
+		case 'known gap':
+			return `[known gap ${value.ticket}](${linkPath(value.path)})`
+		case 'differs':
+			return `[differs: ${value.pattern}](${linkPath(value.path)})`
+	}
+}
+
+const plural = (count: number, noun: string) => `${count} ${noun}${count === 1 ? '' : 's'}`
+
+const markdownTotals = ({ pass, differs, knownGaps }: Matrix['kits'][number]) =>
+	[
+		`${pass} pass`,
+		...(differs > 0 ? [`${differs} differs`] : []),
+		...(knownGaps > 0 ? [plural(knownGaps, 'known gap')] : []),
+	].join(', ')
+
+/** Renders `conformance/MATRIX.md`. */
+export const renderMatrix = (matrix: Matrix) =>
+	[
 		'# Conformance matrix',
 		'',
 		'Generated by `pnpm conformance:matrix` from kit manifests. Do not edit.',
 		'',
-		row(['Scenario', ...kits.map((kit) => kit.manifest.kit)]),
-		row(['---', ...kits.map(() => '---')]),
-		...scenarioIds.map((id) =>
+		row(['Scenario', ...matrix.kits.map((kit) => kit.name)]),
+		row(['---', ...matrix.kits.map(() => '---')]),
+		...matrix.scenarios.map((scenario) =>
 			row([
-				`\`${id}\`${isBaseline(id) ? ' (baseline)' : ''}`,
-				...kits.map((kit) => cell(kit, id, tickets)),
+				`\`${scenario.id}\`${scenario.baseline ? ' (baseline)' : ''}`,
+				...scenario.cells.map(markdownCell),
 			]),
 		),
-		row([
-			`\`${pageTest}\` (every scenario on one page)`,
-			...kits.map((kit) =>
-				kit.manifest.page === undefined ? 'pass' : gapLink(kit.manifest.page.knownGap, tickets),
-			),
-		]),
-		row(['**Total**', ...kits.map(totals)]),
+		row([`\`${pageTest}\` (every scenario on one page)`, ...matrix.page.map(markdownCell)]),
+		row(['**Total**', ...matrix.kits.map(markdownTotals)]),
 		'',
 		"A known gap's story test passes while the scenario still fails as recorded. A differs story test passes through the workaround for the kit's pattern.",
 		'',
 		`The \`${pageTest}\` row runs every declared scenario in order on one page, as an integration journey, in the kit's \`${pageTest}\` story test. A known gap there stops at its recorded failure and the journey continues without that action's effect. Totals count scenarios.`,
 		'',
 	].join('\n')
-}
