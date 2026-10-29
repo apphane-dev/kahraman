@@ -14,10 +14,7 @@ export const manifest = {
 		},
 		combobox: 'pass',
 		dialog: 'pass',
-		menu: {
-			knownGap: '16',
-			failsWith: 'Unable to find an accessible element with the role "menuitem"',
-		},
+		menu: 'pass',
 		tabs: 'pass',
 		status: 'pass',
 	},

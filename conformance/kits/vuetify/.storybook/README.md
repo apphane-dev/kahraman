@@ -21,7 +21,10 @@ component, so `native-select` is n/a.
 
 The fixture adds the ARIA an accessible app supplies itself: `aria-labelledby`
 on `v-dialog`, which lands on the `role="dialog"` overlay, and labelled
-`role="tabpanel"` window items. It keeps the roles Vuetify renders.
+`role="tabpanel"` window items. A `VMenu`'s `VList` renders as a list, so the
+fixture sets `role="menu"` on the list and `role="menuitem"` on its items, which
+Vuetify passes through; without them the menu is not announced as one. It keeps
+every other role Vuetify renders.
 
 `VSwitch` renders a checkbox input without `role="switch"`, so the `switch`
 story passes a checkbox workaround. The [conformance matrix](../../../MATRIX.md)
