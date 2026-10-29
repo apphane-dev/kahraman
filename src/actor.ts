@@ -513,7 +513,7 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 						waitFor(
 							async () => {
 								try {
-									trigger = await elementFrom(locator)
+									trigger = await elementFrom(locator, undefined, 'action')
 								} catch (error) {
 									// A modal popup can hide its original, still-connected
 									// trigger from role queries. Never reuse a detached one.
