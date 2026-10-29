@@ -4,6 +4,7 @@ import type { StoryContext, UserEvent } from './context'
 import { expect, getConfig, waitFor, within as withinElement } from 'storybook/test'
 
 import { invariant } from './invariant'
+import { withShadowRoots } from './shadow'
 import { createErrorAugmenter, stepLabel, type Step } from './steps'
 
 type MaybePromise<T> = T | Promise<T>
@@ -166,9 +167,14 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 	const scopeStack: HTMLElement[] = []
 	const softErrors: Error[] = []
 
+	function canvasOf(element: HTMLElement) {
+		const canvas = withinElement(element)
+		return actorOptions.shadowDom === 'open' ? withShadowRoots(canvas, element) : canvas
+	}
+
 	// The story document's body, so overlays portalled out of the canvas are found.
 	function rootCanvas() {
-		return withinElement(ctx().canvasElement.ownerDocument.body)
+		return canvasOf(ctx().canvasElement.ownerDocument.body)
 	}
 
 	function popupCanvas(trigger: HTMLElement) {
@@ -181,12 +187,12 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			.map((id) => trigger.ownerDocument.getElementById(id))
 			.find((el) => el !== null)
 		invariant(popup, `Controlled popup "${controls}" has not mounted`)
-		return withinElement(popup)
+		return canvasOf(popup)
 	}
 
 	function activeCanvas() {
 		const scope = scopeStack.at(-1)
-		return scope ? withinElement(scope) : rootCanvas()
+		return scope ? canvasOf(scope) : rootCanvas()
 	}
 
 	async function resolveScopeLocator(
@@ -221,9 +227,9 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			return activeCanvas()
 		}
 		if (explicitScope instanceof HTMLElement) {
-			return withinElement(explicitScope)
+			return canvasOf(explicitScope)
 		}
-		return withinElement(await resolveScopeLocator(explicitScope, resolvingScopes, mode))
+		return canvasOf(await resolveScopeLocator(explicitScope, resolvingScopes, mode))
 	}
 
 	async function resolveLocator(
@@ -660,6 +666,11 @@ export interface ActorOptions {
 	 * once. 0 disables the wait. Defaults to Testing Library's asyncUtilTimeout.
 	 */
 	actionTimeout?: number
+	/**
+	 * Experimental. 'open' makes role and text queries also search open shadow
+	 * roots, for web component kits. Off by default; see ticket 17.
+	 */
+	shadowDom?: 'open'
 	/**
 	 * Milliseconds to wait before each click. Useful for making interactions
 	 * observable when stories are played manually. Defaults to no delay.

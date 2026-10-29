@@ -116,6 +116,15 @@
 							"meta": {}
 						},
 						{
+							"import": "./shadow",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "shadow.ts"
+							},
+							"meta": {}
+						},
+						{
 							"import": "./steps",
 							"item": "actor",
 							"file": {
@@ -175,6 +184,26 @@
 					"path": "context.ts",
 					"relativePath": "src/context.ts",
 					"_imports_": [],
+					"registryDependencies": [],
+					"dependencies": [],
+					"devDependencies": []
+				},
+				{
+					"type": "lib",
+					"role": "file",
+					"path": "shadow.ts",
+					"relativePath": "src/shadow.ts",
+					"_imports_": [
+						{
+							"import": "./loc",
+							"item": "actor",
+							"file": {
+								"type": "lib",
+								"path": "loc.ts"
+							},
+							"meta": {}
+						}
+					],
 					"registryDependencies": [],
 					"dependencies": [],
 					"devDependencies": []
