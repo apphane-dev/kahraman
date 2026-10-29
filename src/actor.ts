@@ -250,11 +250,15 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			Date.now() + (actorOptions.actionTimeout ?? getConfig().asyncUtilTimeout),
 		)
 
-	const clickElement = async (resolve: () => Promise<HTMLElement>) => {
+	const afterClickDelay = async <T>(resolve: () => Promise<T>): Promise<T> => {
 		if (actorOptions.clickDelay && actorOptions.clickDelay > 0) {
 			await sleep(actorOptions.clickDelay)
 		}
-		await ctx().userEvent.click(await resolve())
+		return resolve()
+	}
+
+	const clickElement = async (resolve: () => Promise<HTMLElement>) => {
+		await ctx().userEvent.click(await afterClickDelay(resolve))
 	}
 
 	const click = (locator: DefiniteLocator) => clickElement(() => actionTarget(locator))
@@ -403,7 +407,27 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			await userEvent.tab()
 		},
 		selectOption: async (locator: DefiniteLocator, value: string | RegExp) => {
-			await click(locator)
+			const trigger = await afterClickDelay(() => actionTarget(locator))
+			// The browser draws a native select's options outside the page, so pick
+			// one the way its picker does. selectOptions clicks the select itself.
+			if (trigger instanceof HTMLSelectElement) {
+				let nativeTrigger = trigger
+				const option = await waitForTarget(
+					async () => {
+						const current = await elementFrom(locator, undefined, 'action')
+						invariant(current instanceof HTMLSelectElement, 'Expected a native select')
+						const match = withinElement(current).getByRole('option', { name: value })
+						nativeTrigger = current
+						return match
+					},
+					undefined,
+					Date.now() + (actorOptions.optionTimeout ?? getConfig().asyncUtilTimeout),
+				)
+				// Evaluate both arguments only after finding their matching current pair.
+				await ctx().userEvent.selectOptions(nativeTrigger, option)
+				return
+			}
+			await ctx().userEvent.click(trigger)
 			// Options sit in a portalled listbox even inside I.within(...), and may
 			// render after the open: lazy mounting, a transition, or remote data.
 			await clickElement(() =>
