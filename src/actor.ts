@@ -250,11 +250,15 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			Date.now() + (actorOptions.actionTimeout ?? getConfig().asyncUtilTimeout),
 		)
 
-	const clickElement = async (resolve: () => Promise<HTMLElement>) => {
+	const afterClickDelay = async <T>(resolve: () => Promise<T>): Promise<T> => {
 		if (actorOptions.clickDelay && actorOptions.clickDelay > 0) {
 			await sleep(actorOptions.clickDelay)
 		}
-		await ctx().userEvent.click(await resolve())
+		return resolve()
+	}
+
+	const clickElement = async (resolve: () => Promise<HTMLElement>) => {
+		await ctx().userEvent.click(await afterClickDelay(resolve))
 	}
 
 	const click = (locator: DefiniteLocator) => clickElement(() => actionTarget(locator))
@@ -403,17 +407,21 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 			await userEvent.tab()
 		},
 		selectOption: async (locator: DefiniteLocator, value: string | RegExp) => {
-			const trigger = await actionTarget(locator)
+			const trigger = await afterClickDelay(() => actionTarget(locator))
 			// The browser draws a native select's options outside the page, so pick
 			// one the way its picker does. selectOptions clicks the select itself.
 			if (trigger instanceof HTMLSelectElement) {
 				await ctx().userEvent.selectOptions(
 					trigger,
-					withinElement(trigger).getByRole('option', { name: value }),
+					await waitForTarget(
+						() => withinElement(trigger).getByRole('option', { name: value }),
+						undefined,
+						Date.now() + (actorOptions.optionTimeout ?? getConfig().asyncUtilTimeout),
+					),
 				)
 				return
 			}
-			await clickElement(async () => trigger)
+			await ctx().userEvent.click(trigger)
 			// Options sit in a portalled listbox even inside I.within(...), and may
 			// render after the open: lazy mounting, a transition, or remote data.
 			await clickElement(() =>
