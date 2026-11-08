@@ -31,7 +31,12 @@ A conformance scenario expected to fail against a UI kit, linked to the ticket
 that would fix it.
 _Avoid_: skip, unsupported
 
+**Different pattern**:
+A conformance scenario a UI kit meets with another valid ARIA pattern, so it
+fails as written but passes through a workaround in the kit fixture.
+_Avoid_: quirk, known gap
+
 **Conformance matrix**:
-The table of conformance scenarios against UI kits, each cell passing or a
-known gap.
+The table of conformance scenarios against UI kits, each cell passing, a known
+gap, or a different pattern.
 _Avoid_: support table, compatibility chart

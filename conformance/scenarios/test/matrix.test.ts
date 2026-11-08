@@ -11,7 +11,8 @@ const baselinePass = {
 	status: 'pass',
 } as const
 
-const tests = (...names: string[]) => names.map((name) => ({ name, scenario: name }))
+const tests = (...names: string[]) =>
+	names.map((name) => ({ name, file: 'acme.stories.tsx', scenario: name, workaround: false }))
 
 const kit = (
 	scenarios: KitManifest['scenarios'],
@@ -24,11 +25,21 @@ const kit = (
 
 const gap09 = { knownGap: '09', failsWith: 'role "dialog"' } as const
 
+const differs = { differs: 'button + listbox', failsWith: 'role "combobox"' } as const
+
+const withWorkaround = (...names: string[]) =>
+	tests(...names).map((test) => ({ ...test, workaround: true }))
+
 const tickets = new Map([['09', 'tickets/09-portalled-overlays.md']])
 
 describe('renderMatrix', () => {
-	it('renders pass, linked known gap, and n/a cells per scenario and kit', () => {
-		const matrix = renderMatrix([kit({ ...baselinePass, dialog: gap09, tabs: 'pass' })], tickets)
+	it('renders pass, known gap, differs, and n/a cells per scenario and kit', () => {
+		const scenarios = { ...baselinePass, combobox: differs, dialog: gap09, tabs: 'pass' } as const
+		const storyTests = [
+			...tests('button', 'textbox', 'checkbox', 'dialog', 'status', 'tabs'),
+			...withWorkaround('combobox'),
+		]
+		const matrix = renderMatrix([kit(scenarios, storyTests)], tickets)
 		expect(matrix).toBe(
 			[
 				'# Conformance matrix',
@@ -44,14 +55,14 @@ describe('renderMatrix', () => {
 				'| `checkbox` (baseline) | pass |',
 				'| `switch` | n/a |',
 				'| `native-select` | n/a |',
-				'| `combobox` | n/a |',
+				'| `combobox` | [differs: button + listbox](kits/acme/src/acme.stories.tsx) |',
 				'| `dialog` (baseline) | [known gap 09](../tickets/09-portalled-overlays.md) |',
 				'| `menu` | n/a |',
 				'| `tabs` | pass |',
 				'| `status` (baseline) | pass |',
-				'| **Total** | 5 pass, 1 known gap |',
+				'| **Total** | 5 pass, 1 differs, 1 known gap |',
 				'',
-				"A known gap's story test passes while the scenario still fails as recorded.",
+				"A known gap's story test passes while the scenario still fails as recorded. A differs story test passes through the workaround for the kit's pattern.",
 				'',
 			].join('\n'),
 		)
@@ -81,10 +92,26 @@ describe('renderMatrix', () => {
 	it('rejects a story test whose body runs another scenario', () => {
 		const storyTests = [
 			...tests(...Object.keys(baselinePass)).filter((test) => test.name !== 'status'),
-			{ name: 'status', scenario: 'button' },
+			{ name: 'status', file: 'acme.stories.tsx', scenario: 'button', workaround: false },
 		]
 		expect(() => renderMatrix([kit(baselinePass, storyTests)], tickets)).toThrow(
 			"acme: story test status must run run('status'), found run('button')",
+		)
+	})
+
+	it('rejects a different pattern whose story test passes no workaround', () => {
+		expect(() => renderMatrix([kit({ ...baselinePass, combobox: differs })], tickets)).toThrow(
+			'acme: story test combobox must pass a workaround for its different pattern',
+		)
+	})
+
+	it('rejects a workaround where the manifest does not say differs', () => {
+		const storyTests = [
+			...tests('button', 'textbox', 'checkbox', 'dialog'),
+			...withWorkaround('status'),
+		]
+		expect(() => renderMatrix([kit(baselinePass, storyTests)], tickets)).toThrow(
+			'acme: story test status passes a workaround, but the manifest does not say differs',
 		)
 	})
 
