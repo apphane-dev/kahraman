@@ -332,8 +332,11 @@ function createBase(ctx: () => StoryContext, track: Track, actorOptions: ActorOp
 		},
 		selectOption: async (locator: DefiniteLocator, value: string | RegExp) => {
 			await click(locator)
-			// Options sit in a portalled listbox even inside I.within(...).
-			await click(() => rootCanvas().getByRole('option', { name: value }))
+			// Options sit in a portalled listbox even inside I.within(...), and may
+			// render after the open: lazy mounting, a transition, or remote data.
+			await click(() =>
+				rootCanvas().findByRole('option', { name: value }, { timeout: actorOptions.optionTimeout }),
+			)
 		},
 		clear: async (locator: DefiniteLocator) => {
 			await editInput(locator, '', async (el, userEvent) => {
@@ -455,6 +458,11 @@ export interface ActorOptions {
 	 * the default; false disables filtering. A query's ignore option wins.
 	 */
 	textIgnore?: NonNullable<Parameters<Canvas['getByText']>[1]>['ignore']
+	/**
+	 * Milliseconds selectOption waits for the option after opening the trigger.
+	 * Defaults to Testing Library's asyncUtilTimeout (1000 unless configured).
+	 */
+	optionTimeout?: number
 	/**
 	 * Milliseconds to wait before each click. Useful for making interactions
 	 * observable when stories are played manually. Defaults to no delay.

@@ -3,10 +3,11 @@
 **What to build:** a browser regression and an explicit lookup contract for
 `I.selectOption` when multiple exposed listboxes contain the same option name.
 
-The method clicks the trigger, then looks up `getByRole('option', { name: value })`
+The method clicks the trigger, then waits for `findByRole('option', { name: value })`
 in the story document's body, regardless of an active `I.within(...)` scope.
-Two matching options cause a Testing Library multiple-match error. This lookup
-predates the document-wide default in PR #20; handling it is a separate follow-up.
+Two matching options cause a Testing Library multiple-match error, in any kit:
+the lookup does not know which popup the trigger opened. The likely contract
+follows the trigger's `aria-controls` to its listbox and searches only there.
 
 **Blocked by:** None (can start immediately).
 
