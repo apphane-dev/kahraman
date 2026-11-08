@@ -1,4 +1,4 @@
-import { baseline, scenarioIds, type ScenarioId } from './catalog.ts'
+import { baseline, pageTest, scenarioIds, type ScenarioId } from './catalog.ts'
 import type { KitManifest, ScenarioStatus } from './manifest.ts'
 
 export interface Kit {
@@ -7,14 +7,17 @@ export interface Kit {
 	manifest: KitManifest
 	/**
 	 * The kit's story tests, as Storybook indexes them: the stories file relative
-	 * to the kit's `src/`, the scenario ID each passes to `run(...)` (undefined
-	 * when the body is not `run('<id>')`), and whether it passes a workaround.
+	 * to the kit's `src/`, the scenario ID each passes to `run(...)` (`page` for
+	 * `run.page(...)`, undefined for any other body), and whether it passes a
+	 * workaround.
 	 */
 	storyTests: readonly {
 		name: string
 		file: string
 		scenario: string | undefined
 		workaround: boolean
+		/** Static keys of a literal page workaround object; absent when not inspectable. */
+		workaroundKeys?: readonly string[]
 	}[]
 }
 
@@ -26,6 +29,18 @@ type Check = (kit: Kit, tickets: ReadonlyMap<string, string>) => string[]
 
 const declares = (kit: Kit, id: string) => Object.hasOwn(kit.manifest.scenarios, id)
 
+const scenarioTests = (kit: Kit) => kit.storyTests.filter((test) => test.name !== pageTest)
+
+const isDiffers = (status: ScenarioStatus | undefined) =>
+	typeof status === 'object' && 'differs' in status
+
+const bodyOf = (scenario: string | undefined) =>
+	scenario === undefined
+		? 'another body'
+		: scenario === pageTest
+			? 'run.page(...)'
+			: `run('${scenario}')`
+
 const checks: readonly Check[] = [
 	(kit) =>
 		baseline
@@ -36,20 +51,46 @@ const checks: readonly Check[] = [
 			.filter((id) => !kit.storyTests.some((test) => test.name === id))
 			.map((id) => `manifest declares ${id} but no story test has that name`),
 	(kit) =>
-		kit.storyTests
+		scenarioTests(kit)
 			.filter((test) => !declares(kit, test.name))
 			.map((test) => `story test ${test.name} is not a scenario the manifest declares`),
 	(kit) =>
-		kit.storyTests
+		scenarioTests(kit)
 			.filter((test) => test.scenario !== test.name)
 			.map(
 				(test) =>
-					`story test ${test.name} must run run('${test.name}'), found ${test.scenario === undefined ? 'another body' : `run('${test.scenario}')`}`,
+					`story test ${test.name} must run run('${test.name}'), found ${bodyOf(test.scenario)}`,
 			),
+	(kit) => {
+		const page = kit.storyTests.find((test) => test.name === pageTest)
+		if (page === undefined) {
+			return [`no story test named ${pageTest} runs every scenario on one page`]
+		}
+		if (page.scenario !== pageTest) {
+			return [`story test ${pageTest} must run run.page(...), found ${bodyOf(page.scenario)}`]
+		}
+		const required = scenarioIds.filter((id) => isDiffers(kit.manifest.scenarios[id]))
+		if (!page.workaround) {
+			return required.length > 0
+				? [`story test ${pageTest} must pass the workarounds for different patterns`]
+				: []
+		}
+		const keys = page.workaroundKeys
+		if (keys === undefined) {
+			return [`story test ${pageTest} must pass a literal workaround object with static keys`]
+		}
+		return [
+			...required
+				.filter((id) => !keys.includes(id))
+				.map((id) => `story test ${pageTest} is missing the workaround for ${id}`),
+			...keys
+				.filter((id) => !required.some((requiredId) => requiredId === id))
+				.map((id) => `story test ${pageTest} passes an unexpected workaround for ${id}`),
+		]
+	},
 	(kit) =>
-		kit.storyTests.flatMap((test) => {
-			const status = kit.manifest.scenarios[test.name as ScenarioId]
-			const differs = typeof status === 'object' && 'differs' in status
+		scenarioTests(kit).flatMap((test) => {
+			const differs = isDiffers(kit.manifest.scenarios[test.name as ScenarioId])
 			if (differs === test.workaround) {
 				return []
 			}
@@ -131,6 +172,8 @@ export const renderMatrix = (kits: readonly Kit[], tickets: ReadonlyMap<string, 
 		row(['**Total**', ...kits.map(totals)]),
 		'',
 		"A known gap's story test passes while the scenario still fails as recorded. A differs story test passes through the workaround for the kit's pattern.",
+		'',
+		`Each kit's \`${pageTest}\` story test runs every scenario in order on one page, as an integration journey. A known gap there stops at its recorded failure and the journey continues without that action's effect.`,
 		'',
 	].join('\n')
 }

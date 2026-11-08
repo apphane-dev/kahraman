@@ -194,8 +194,10 @@ Use locator modifiers deliberately:
 - `locator.maybe()` makes an optional lookup nullable; use it only when an
   optional overlay must be acted on.
 - `locator.all()` asserts or extracts a collection.
-- `locator.within(container)` limits a query to a region; it accepts a locator,
-  captured `HTMLElement`, or `'global'` to escape the current actor scope.
+- `locator.within(container)` uses an explicit query region; it accepts a locator
+  or captured `HTMLElement`. To escape an active `I.within(...)` scope, pass
+  `context.canvasElement.ownerDocument.body`. The `'global'` keyword is removed;
+  omitting it inside `I.within(...)` keeps the query in the active scope.
 - `locator.options(...)` supplies Testing Library query options.
 
 Scope feature assertions to the region under test so global chrome and toasts do

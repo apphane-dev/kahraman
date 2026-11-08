@@ -23,3 +23,6 @@ export const baseline = [
 	'dialog',
 	'status',
 ] as const satisfies readonly ScenarioId[]
+
+/** The story test that runs every declared scenario on one page. */
+export const pageTest = 'page'

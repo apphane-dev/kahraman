@@ -17,6 +17,7 @@ gap stays, so report support from the matrix totals, not from green test counts.
 conformance/
   scenarios/        private package: scenarios, contract, runner
   kits/<kit>/       private package: one Storybook project per UI kit
+  kits/react-aria/regressions/  actor browser regressions, not scenarios
   MATRIX.md         generated, checked in
 ```
 
@@ -53,14 +54,20 @@ A scenario is a function of the actor. It runs unchanged against every kit.
 
 Rules:
 
-- Scenarios use no escape hatches. `I.see(role('dialog'))`, never
-  `role('dialog').within('global')`. A kit that portals its dialog shows up as a
-  known gap, which is the point.
+- Scenarios use no escape hatches such as `.within(document.body)` or
+  extra query options. A kit that needs one shows up as a known gap, which is
+  the point.
 - A contract module exports every accessible name and expected value
   (the "Email" textbox, the "Country" combobox with option "Portugal"). The
   scenario asserts them, the fixture renders them. The compiler checks both
   sides.
 - Each scenario is its own story test and one matrix row.
+- Each kit also renders all its fixtures on one page. Its `page` story test,
+  `run.page(workarounds)`, is an integration journey: every declared scenario
+  in catalog order with one actor. Names must stay unique, overlays must close,
+  and portals must not collide with the rest of the page. A known-gap scenario
+  stops at its recorded failure and the journey continues without that
+  action's effect, so the page does not show every action succeeding.
 - Interactions-panel step reporting is out of scope. It does not depend on the
   kit, and `test/steps.test.ts` covers step labels.
 
@@ -86,10 +93,16 @@ generator reads the same data.
 - Each story test body is `run('<id>')` for its own scenario ID, or
   `run('<id>', workaround)` for a different pattern. The types require the
   workaround exactly where the manifest says `differs`.
+- A page journey supplies its different-pattern handlers as an inline object
+  with static keys, for example `run.page({ combobox: selectByButton })`.
+  The generator checks every required key and rejects unexpected keys,
+  references, spreads, and computed keys instead of evaluating fixture code.
+  The runner also rejects a missing handler at runtime, since a string-indexed
+  TypeScript record can be empty despite satisfying the required keyed type.
 - The generator fails when a manifest omits a baseline scenario, when declared
   scenarios and story test names differ, when a test body runs another
   scenario, when a workaround is missing for `differs` or present without
-  it, or when a known gap names a ticket that exists in neither
+  it, when the `page` story test is missing or lacks the workarounds, or when a known gap names a ticket that exists in neither
   `tickets/` nor `backlog/`.
 
 ## `expectFailure({ marker, failsWith }, run)`
@@ -129,9 +142,7 @@ A `conformance` job, matrix over kits, Chromium only, on every PR with no
 | 5   | Web Awesome           | shadow DOM                                |
 
 PR 1 also carries the scenarios package, contract, runner, matrix
-generator, and CI job. React Aria Components portals its overlays, so even the
-reference kit starts with known gaps. Web
-Awesome lands with every scenario as a known gap. Shadow DOM
+generator, and CI job. Web Awesome lands with every scenario as a known gap. Shadow DOM
 support in core is separate work.
 
 ## Kit extensions

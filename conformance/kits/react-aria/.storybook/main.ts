@@ -2,7 +2,7 @@ import { defineMain } from '@storybook/react-vite/node'
 
 export default defineMain({
 	framework: '@storybook/react-vite',
-	stories: ['../src/**/*.stories.tsx'],
+	stories: ['../src/**/*.stories.tsx', '../regressions/*.stories.tsx'],
 	addons: ['@storybook/addon-vitest'],
 	core: { disableTelemetry: true },
 	features: { experimentalTestSyntax: true },

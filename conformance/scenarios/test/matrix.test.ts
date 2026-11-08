@@ -14,13 +14,28 @@ const baselinePass = {
 const tests = (...names: string[]) =>
 	names.map((name) => ({ name, file: 'acme.stories.tsx', scenario: name, workaround: false }))
 
+const pageTest = (
+	workaround: boolean,
+	scenario: string | undefined = 'page',
+	workaroundKeys: readonly string[] | undefined = workaround ? ['combobox'] : undefined,
+) => ({
+	name: 'page',
+	file: 'acme.stories.tsx',
+	scenario,
+	workaround,
+	workaroundKeys,
+})
+
 const kit = (
 	scenarios: KitManifest['scenarios'],
 	storyTests = tests(...Object.keys(scenarios)),
+	page: Kit['storyTests'][number] | null = pageTest(
+		Object.values(scenarios).some((status) => typeof status === 'object' && 'differs' in status),
+	),
 ): Kit => ({
 	dir: 'acme',
 	manifest: { kit: 'Acme UI', scenarios },
-	storyTests,
+	storyTests: page === null ? storyTests : [...storyTests, page],
 })
 
 const gap09 = { knownGap: '09', failsWith: 'role "dialog"' } as const
@@ -63,6 +78,8 @@ describe('renderMatrix', () => {
 				'| **Total** | 5 pass, 1 differs, 1 known gap |',
 				'',
 				"A known gap's story test passes while the scenario still fails as recorded. A differs story test passes through the workaround for the kit's pattern.",
+				'',
+				"Each kit's `page` story test runs every scenario in order on one page, as an integration journey. A known gap there stops at its recorded failure and the journey continues without that action's effect.",
 				'',
 			].join('\n'),
 		)
@@ -112,6 +129,66 @@ describe('renderMatrix', () => {
 		]
 		expect(() => renderMatrix([kit(baselinePass, storyTests)], tickets)).toThrow(
 			'acme: story test status passes a workaround, but the manifest does not say differs',
+		)
+	})
+
+	it('rejects a kit with no page story test', () => {
+		expect(() => renderMatrix([kit(baselinePass, undefined, null)], tickets)).toThrow(
+			'acme: no story test named page runs every scenario on one page',
+		)
+	})
+
+	it('rejects a page story test with another body', () => {
+		expect(() =>
+			renderMatrix([kit(baselinePass, undefined, pageTest(false, 'button'))], tickets),
+		).toThrow("acme: story test page must run run.page(...), found run('button')")
+	})
+
+	it('rejects a page story test without the workarounds for different patterns', () => {
+		const scenarios = { ...baselinePass, combobox: differs }
+		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
+		expect(() => renderMatrix([kit(scenarios, storyTests, pageTest(false))], tickets)).toThrow(
+			'acme: story test page must pass the workarounds for different patterns',
+		)
+	})
+
+	it('rejects an empty page workaround object for a differs scenario', () => {
+		const scenarios = { ...baselinePass, combobox: differs }
+		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
+		const page = { ...pageTest(true), workaroundKeys: [] }
+		expect(() => renderMatrix([kit(scenarios, storyTests, page)], tickets)).toThrow(
+			'page is missing the workaround for combobox',
+		)
+	})
+
+	it('rejects a page object missing one of several required handlers', () => {
+		const scenarios = { ...baselinePass, combobox: differs, switch: differs }
+		const storyTests = [
+			...tests(...Object.keys(baselinePass)),
+			...withWorkaround('combobox', 'switch'),
+		]
+		expect(() =>
+			renderMatrix([kit(scenarios, storyTests, pageTest(true, 'page', ['combobox']))], tickets),
+		).toThrow('page is missing the workaround for switch')
+	})
+
+	it('rejects a page handler for a scenario that does not differ', () => {
+		const scenarios = { ...baselinePass, combobox: differs }
+		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
+		expect(() =>
+			renderMatrix(
+				[kit(scenarios, storyTests, pageTest(true, 'page', ['combobox', 'button']))],
+				tickets,
+			),
+		).toThrow('page passes an unexpected workaround for button')
+	})
+
+	it('rejects an opaque page argument instead of guessing its handlers', () => {
+		const scenarios = { ...baselinePass, combobox: differs }
+		const storyTests = [...tests(...Object.keys(baselinePass)), ...withWorkaround('combobox')]
+		const page = { ...pageTest(true), workaroundKeys: undefined }
+		expect(() => renderMatrix([kit(scenarios, storyTests, page)], tickets)).toThrow(
+			'page must pass a literal workaround object with static keys',
 		)
 	})
 

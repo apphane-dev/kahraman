@@ -167,3 +167,20 @@ export const StatusFixture = () => {
 		</>
 	)
 }
+
+// Every fixture at once, as one page of an app.
+export const PageFixture = () => (
+	<main>
+		<ButtonFixture />
+		<ButtonDisabledFixture />
+		<TextboxFixture />
+		<TextareaFixture />
+		<CheckboxFixture />
+		<SwitchFixture />
+		<ComboboxFixture />
+		<DialogFixture />
+		<MenuFixture />
+		<TabsFixture />
+		<StatusFixture />
+	</main>
+)
