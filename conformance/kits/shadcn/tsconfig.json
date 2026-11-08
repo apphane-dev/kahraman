@@ -1,0 +1,10 @@
+{
+	"extends": "../../../tsconfig.json",
+	"compilerOptions": {
+		"jsx": "react-jsx",
+		"allowImportingTsExtensions": true,
+		"paths": { "@/*": ["./src/*"] },
+		"types": ["vite/client", "node"]
+	},
+	"include": ["src", "regressions", ".storybook", "vite.config.ts", "vitest.config.ts"]
+}

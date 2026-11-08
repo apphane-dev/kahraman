@@ -101,12 +101,16 @@ const checks: readonly Check[] = [
 			]
 		}),
 	(kit, tickets) =>
-		Object.entries(kit.manifest.scenarios).flatMap(([id, status]) =>
-			typeof status === 'object' && 'knownGap' in status && !tickets.has(status.knownGap)
-				? [`${id} known gap points at missing ticket ${status.knownGap}`]
-				: [],
+		[...Object.entries(kit.manifest.scenarios), [pageTest, kit.manifest.page] as const].flatMap(
+			([id, status]) =>
+				typeof status === 'object' && 'knownGap' in status && !tickets.has(status.knownGap)
+					? [`${id} known gap points at missing ticket ${status.knownGap}`]
+					: [],
 		),
 ]
+
+const gapLink = (ticket: string, tickets: ReadonlyMap<string, string>) =>
+	`[known gap ${ticket}](../${tickets.get(ticket)})`
 
 const validate = (kit: Kit, tickets: ReadonlyMap<string, string>) => {
 	const [problem] = checks.flatMap((check) => check(kit, tickets))
@@ -124,7 +128,7 @@ const cell = (kit: Kit, id: ScenarioId, tickets: ReadonlyMap<string, string>) =>
 		return 'pass'
 	}
 	if ('knownGap' in status) {
-		return `[known gap ${status.knownGap}](../${tickets.get(status.knownGap)})`
+		return gapLink(status.knownGap, tickets)
 	}
 	// Links the story test that holds the workaround.
 	const file = kit.storyTests.find((test) => test.name === id)?.file
@@ -169,11 +173,17 @@ export const renderMatrix = (kits: readonly Kit[], tickets: ReadonlyMap<string, 
 				...kits.map((kit) => cell(kit, id, tickets)),
 			]),
 		),
+		row([
+			`\`${pageTest}\` (every scenario on one page)`,
+			...kits.map((kit) =>
+				kit.manifest.page === undefined ? 'pass' : gapLink(kit.manifest.page.knownGap, tickets),
+			),
+		]),
 		row(['**Total**', ...kits.map(totals)]),
 		'',
 		"A known gap's story test passes while the scenario still fails as recorded. A differs story test passes through the workaround for the kit's pattern.",
 		'',
-		`Each kit's \`${pageTest}\` story test runs every scenario in order on one page, as an integration journey. A known gap there stops at its recorded failure and the journey continues without that action's effect.`,
+		`The \`${pageTest}\` row runs every declared scenario in order on one page, as an integration journey, in the kit's \`${pageTest}\` story test. A known gap there stops at its recorded failure and the journey continues without that action's effect. Totals count scenarios.`,
 		'',
 	].join('\n')
 }

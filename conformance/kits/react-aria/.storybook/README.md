@@ -8,6 +8,10 @@ mise run conformance
 ```
 
 The Storybook command builds Kahraman first and serves this kit on port 6006.
+The main configuration uses `kahraman-conformance-storybook/preset`;
+`vitest.config.ts` uses its shared Chromium configuration. Renderer selection
+and fixture styles stay local to this kit.
+
 Use a component's base story to interact manually, or select its named test
 entry to run the Kahraman journey. Stories use the CSF Next preview factory.
 
