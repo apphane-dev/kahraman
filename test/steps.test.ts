@@ -95,7 +95,7 @@ describe('createStackRetargeter', () => {
 
 	test('is a no-op when either stack is missing', () => {
 		const error = new Error('boom')
-		error.stack = undefined
+		delete error.stack
 		expect(() => retarget(error, new Error('cs'))).not.toThrow()
 	})
 })

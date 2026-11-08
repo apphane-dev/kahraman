@@ -19,11 +19,17 @@ type UserEventInstance = ReturnType<typeof import('storybook/test').userEvent.se
  * The `userEvent` methods the actor calls. Returns are `Promise<unknown>` so both
  * the `userEvent.setup()` instance on `StoryContext` (`keyboard(): Promise<void>`)
  * and the direct `userEvent` API (`keyboard(): Promise<System>`) are accepted.
+ *
+ * Method syntax is deliberate: TypeScript checks method parameters bivariantly.
+ * The direct API's `type` options are stricter than the instance's, which under
+ * `exactOptionalPropertyTypes` rejects it against a function-property signature.
  */
-export type UserEvent = {
-	[K in 'clear' | 'click' | 'keyboard' | 'tab' | 'type']: (
-		...args: Parameters<UserEventInstance[K]>
-	) => Promise<unknown>
+export interface UserEvent {
+	clear(...args: Parameters<UserEventInstance['clear']>): Promise<unknown>
+	click(...args: Parameters<UserEventInstance['click']>): Promise<unknown>
+	keyboard(...args: Parameters<UserEventInstance['keyboard']>): Promise<unknown>
+	tab(...args: Parameters<UserEventInstance['tab']>): Promise<unknown>
+	type(...args: Parameters<UserEventInstance['type']>): Promise<unknown>
 }
 
 /**
