@@ -15,7 +15,11 @@ entry = [
 
 # `storybook` is a peer dependency, resolved by consumers — not a direct import
 # graph dependency to police here.
-ignoreDependencies = ["storybook"]
+#
+# Conformance packages import the workspace `kahraman` through its exports map,
+# which points at dist/; before a build fallow cannot resolve it and would report
+# the dependency unused.
+ignoreDependencies = ["storybook", "kahraman"]
 
 # Generated brand CSS is a standalone export, not part of the package module graph.
 ignorePatterns = ["dist/**", "coverage/**", "brand/tokens.css"]
@@ -23,9 +27,9 @@ ignorePatterns = ["dist/**", "coverage/**", "brand/tokens.css"]
 [duplicates]
 ignoreImports = true
 
-# actor.ts and preview.ts run only inside a Storybook browser context, so they
-# are intentionally not unit-covered here (see README — Testing the pure
-# helpers). Fallow estimates coverage from the module graph when no coverage
+# actor.ts and preview.ts run only inside a Storybook browser context, so the
+# unit tests do not cover them; the conformance suite exercises them in a
+# browser, outside fallow's view. Fallow estimates coverage from the module graph when no coverage
 # data is supplied, which inflates CRAP for these functions even though their
 # raw complexity is low (elementsFrom: cyclomatic 7, cognitive 6). Keep a
 # visible numeric ceiling instead of a blanket suppression.
