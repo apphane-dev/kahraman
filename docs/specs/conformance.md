@@ -145,7 +145,7 @@ A `conformance` job, matrix over kits, Chromium only, on every PR with no
 | 1   | React Aria Components | reference; strictest ARIA                 |
 | 2   | shadcn/ui, Radix/Nova | portals, ARIA-only widgets, native select |
 | 3   | MUI                   | portals, listbox Select over hidden input |
-| 4   | PrimeVue              | Vue renderer                              |
+| 4   | Vuetify               | Vue renderer                              |
 | 5   | Web Awesome           | shadow DOM                                |
 | 6   | Ark UI                | options mounted after open, headless      |
 

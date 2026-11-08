@@ -1,7 +1,7 @@
 # 14: actions do not wait for a target an overlay still hides
 
 **What to build:** actions on a definite locator wait for their target to
-become accessible, so a journey can act right after an overlay closes. This is
+become accessible, so a journey can act right after an overlay opens or closes. This is
 a core fix per ADR 0003.
 
 A modal overlay hides the rest of the page with `aria-hidden` while it is
@@ -10,6 +10,11 @@ about 100 ms, and the page stays hidden until it unmounts. On the shadcn page
 story, the `menu` scenario chooses Archive and the `tabs` scenario then fails
 at once with `Unable to find an accessible element with the role "tab"`. A user
 sees the tabs the whole time. Actions resolve their locator once, with no wait.
+
+Vuetify's `VDialog` content is `visibility: hidden` for about one frame after it
+opens, while the overlay positions it. The `dialog` scenario then fails at once
+with `Unable to find an accessible element with the role "button" and name
+"Cancel"`.
 
 **Contract:**
 
@@ -35,6 +40,6 @@ sees the tabs the whole time. Actions resolve their locator once, with no wait.
       stops hiding it.
 - [ ] Regressions show an ambiguous locator failing without the wait, and a
       click that runs once.
-- [ ] The shadcn `page` story test passes and its known-gap marker is removed;
-      regenerate the matrix.
+- [ ] The shadcn `page` and Vuetify `dialog` story tests pass and their
+      known-gap markers are removed; regenerate the matrix.
 - [ ] A changeset describes the core change.

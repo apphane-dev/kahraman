@@ -14,5 +14,5 @@ Private workspace package used by the kit fixtures.
   playback and story tests wait alike.
 
 Keep framework selection, renderer flags, story globs, preview factories, Vite plugins, fonts,
-and CSS in each kit. A Vue kit can reuse this test wiring with its own Storybook
+and CSS in each kit. The Vuetify kit reuses this test wiring with the Vue
 framework. Do not add a shared component theme or a cross-kit CSS reset here.
