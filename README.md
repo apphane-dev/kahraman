@@ -55,7 +55,8 @@ npm install --save-dev kahraman
 ```
 
 `storybook` (which provides `storybook/test`, and with it Testing Library and
-`userEvent`) is a **peer dependency** — you already have it. `kahraman` ships
+`userEvent`) is a **peer dependency**. Storybook projects already have it;
+[plain Vitest](#plain-vitest-browser-mode) projects install it too. `kahraman` ships
 ESM only and is renderer-agnostic: it reads only `canvasElement` and `userEvent`
 from the story context, so it works with the React, Vue, and Svelte renderers
 alike.
@@ -143,6 +144,27 @@ const I = createActor({
 
 Keeping the environment check in the consumer makes the pacing policy visible
 and lets each Storybook choose how it distinguishes manual and automated runs.
+
+### Plain Vitest browser mode
+
+Tests without stories pass their own container and the `userEvent` from
+`storybook/test`:
+
+```ts
+import { createActor } from 'kahraman'
+import { userEvent } from 'storybook/test'
+
+const canvasElement = document.createElement('div')
+document.body.append(canvasElement)
+render(canvasElement) // mount your UI here
+
+const I = createActor()
+I.init({ canvasElement, userEvent })
+```
+
+You still install `storybook`, because the actor's queries and assertions come
+from `storybook/test`. You don't need a `.storybook` config or a running
+Storybook.
 
 ### Locators
 
