@@ -147,8 +147,8 @@ and lets each Storybook choose how it distinguishes manual and automated runs.
 
 ### Plain Vitest browser mode
 
-Tests without stories pass their own container and the `userEvent` from
-`storybook/test`:
+Tests without stories pass their own container and a `userEvent.setup()`
+instance from `storybook/test`, the same kind a story context carries:
 
 ```ts
 import { createActor } from 'kahraman'
@@ -159,8 +159,13 @@ document.body.append(canvasElement)
 render(canvasElement) // mount your UI here
 
 const I = createActor()
-I.init({ canvasElement, userEvent })
+I.init({ canvasElement, userEvent: userEvent.setup() })
 ```
+
+The instance keeps keyboard and pointer state between actor calls, so a key
+held with `I.press('{Shift>}')` is still held for the next `I.click(...)`.
+Passing `userEvent` itself also works, but each of its calls starts from fresh
+state.
 
 You still install `storybook`, because the actor's queries and assertions come
 from `storybook/test`. You don't need a `.storybook` config or a running
