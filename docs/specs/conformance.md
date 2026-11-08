@@ -18,7 +18,7 @@ conformance/
   scenarios/        private package: scenarios, contract, runner
   storybook/        private preset and Chromium test configuration
   kits/<kit>/       private package: one Storybook project per UI kit
-  kits/react-aria/regressions/  actor browser regressions, not scenarios
+  kits/<kit>/regressions/  browser regressions, not matrix scenarios
   MATRIX.md         generated, checked in
 ```
 
