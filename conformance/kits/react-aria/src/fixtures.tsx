@@ -1,4 +1,4 @@
-// React Aria Components ships unstyled, so there is no default theme to load.
+// React Aria is headless. The preview loads fixture-only presentation styles.
 import { contract } from 'kahraman-conformance-scenarios'
 import { useEffect, useRef, useState } from 'react'
 import {
@@ -59,15 +59,26 @@ export const TextareaFixture = () => (
 	</TextField>
 )
 
-export const CheckboxFixture = () => <Checkbox>{contract.checkbox.label}</Checkbox>
+export const CheckboxFixture = () => (
+	<Checkbox>
+		<span className="fixture-checkbox-indicator" aria-hidden="true" />
+		{contract.checkbox.label}
+	</Checkbox>
+)
 
-export const SwitchFixture = () => <Switch>{contract.switch.label}</Switch>
+export const SwitchFixture = () => (
+	<Switch>
+		<span className="fixture-switch-indicator" aria-hidden="true" />
+		{contract.switch.label}
+	</Switch>
+)
 
 export const ComboboxFixture = () => (
 	<Select>
 		<Label>{contract.combobox.label}</Label>
 		<Button>
 			<SelectValue />
+			<span className="fixture-select-indicator" aria-hidden="true" />
 		</Button>
 		<Popover>
 			<ListBox>
@@ -170,7 +181,7 @@ export const StatusFixture = () => {
 
 // Every fixture at once, as one page of an app.
 export const PageFixture = () => (
-	<main>
+	<main className="fixture-page">
 		<ButtonFixture />
 		<ButtonDisabledFixture />
 		<TextboxFixture />

@@ -6,6 +6,8 @@ import { configure } from 'storybook/test'
 // status toast, stay well inside every wait.
 configure({ asyncUtilTimeout: 5000 })
 
+import '../src/fixtures.css'
+
 export default definePreview({
 	addons: [kahraman()],
 })

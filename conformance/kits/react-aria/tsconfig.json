@@ -3,7 +3,7 @@
 	"compilerOptions": {
 		"jsx": "react-jsx",
 		"allowImportingTsExtensions": true,
-		"types": []
+		"types": ["vite/client"]
 	},
 	"include": ["src", "regressions", ".storybook", "vitest.config.ts"]
 }
