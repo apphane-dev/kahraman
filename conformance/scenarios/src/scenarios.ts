@@ -29,6 +29,8 @@ export const scenarios = {
 		const field = role('textbox', c.label)
 		await I.fill(field, c.value)
 		await I.seeInField(field, c.value)
+		await I.clear(field)
+		await I.seeInField(field, '')
 	},
 	checkbox: async (I) => {
 		const box = role('checkbox', contract.checkbox.label)

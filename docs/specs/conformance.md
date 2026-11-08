@@ -45,7 +45,7 @@ A scenario is a function of the actor. It runs unchanged against every kit.
 | `button`          | `click`                       | yes      |
 | `button-disabled` | `seeDisabled`                 |          |
 | `textbox`         | `fill`, `clear`, `seeInField` | yes      |
-| `textarea`        | `fill`, `seeInField`          |          |
+| `textarea`        | `fill`, `clear`, `seeInField` |          |
 | `checkbox`        | `click`, `seeChecked`         | yes      |
 | `switch`          | `click`, `seeChecked`         |          |
 | `native-select`   | `selectOption` on `<select>`  |          |
