@@ -426,22 +426,41 @@ Your Vitest or Storybook setup, not the package, controls two behaviors:
 The repository ships
 [`kahraman-storybook-testing`](https://skills.sh/apphane-dev/kahraman/kahraman-storybook-testing),
 an Agent Skill for writing and reviewing these Storybook tests. Install it with
-[`skills`](https://skills.sh):
+whichever tool you have.
+
+[`skills`](https://skills.sh), from the apphane.dev index:
+
+```sh
+npx skills add https://apphane.dev --skill kahraman-storybook-testing
+```
+
+`skills`, from this repository:
 
 ```sh
 npx skills add apphane-dev/kahraman --skill kahraman-storybook-testing
 ```
 
-From a local checkout:
+Claude Code plugin marketplace:
 
 ```sh
-npx skills add . --skill kahraman-storybook-testing
+claude plugin marketplace add apphane-dev/kahraman && claude plugin install kahraman-storybook-testing@kahraman
 ```
 
-The skill lives at
-[`skills/kahraman-storybook-testing/SKILL.md`](./skills/kahraman-storybook-testing/SKILL.md),
-so `npx skills add apphane-dev/kahraman --list` finds it in the GitHub
-repository.
+GitHub CLI:
+
+```sh
+gh skill install apphane-dev/kahraman kahraman-storybook-testing
+```
+
+curl, no installer needed:
+
+```sh
+curl -fsSL --create-dirs https://apphane.dev/agent-skills/kahraman-storybook-testing/SKILL.md -o ~/.claude/skills/kahraman-storybook-testing/SKILL.md
+```
+
+`~/.claude/skills` is Claude Code's skills directory. For other agents, swap in
+`~/.cursor/skills`, `~/.copilot/skills`, `~/.gemini/skills`, or the shared
+`~/.agents/skills`.
 
 ### Real-world setups
 
