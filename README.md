@@ -4,14 +4,13 @@
 
 kahraman lets you write Storybook and Vitest browser tests as the steps a user
 takes: `I.click(button('Continue'))`, then `I.see(heading('Welcome, Ada'))`. It
-finds elements by role, accessible name, or visible text, so tests target what
+finds elements by role, accessible name, or text content, so tests target what
 users perceive instead of markup details. When a step fails, the error shows
 the steps that led to it and points at the line in your story.
 
-- **Accessible locators only.** `role()` and `text()`, plus `heading()`,
+- **Role and text locators only.** `role()` and `text()`, plus `heading()`,
   `button()`, and `link()` shorthands. There are no CSS selector or test ID
-  locators. If a test can't reach a control by role and name, neither can
-  assistive tech.
+  locators.
 - **CodeceptJS-style actor.** `I.see`, `I.fill`, `I.click`, `hopeThat`,
   `retryTo`, and `tryTo` run inside a story's `play` function or a Vitest
   browser test. There is no separate runner or browser driver.
@@ -207,7 +206,7 @@ The kahraman version differs in what happens around each line:
 
 With plain `storybook/test` you can still reach for `getByTestId` or
 `querySelector`. kahraman's locators stop at roles, accessible names, and
-visible text, so the easiest locator to write is also the accessible one.
+text content, so the easiest locator to write is also the accessible one.
 
 ---
 
@@ -221,7 +220,7 @@ import { role, text, heading, button, link } from 'kahraman'
 
 role('textbox', 'Email') // by role + accessible name
 heading('Dashboard') // role('heading', 'Dashboard')
-text(/items? found/) // by visible text (string or RegExp)
+text(/items? found/) // by text content (string or RegExp)
 
 link('Storage').options({ current: 'page' }) // extra Testing Library options
 button('Save').within(role('dialog')) // scope to a container
@@ -283,9 +282,10 @@ await I.hopeThat(() => I.see(heading('B')))
 I.hopeThat.noErrors() // throws an AggregateError if any failed
 ```
 
-`dontSeeInField`, `dontSeeChecked`, `dontSeeDisabled`, and `dontSeeAttribute`
-negate their `see*` counterparts. `I.grabValueFrom(locator)` returns an input's
-value, and `I.say(message)` logs a line to the console.
+`dontSeeInField`, `dontSeeChecked`, and `dontSeeDisabled` negate their `see*`
+counterparts. `dontSeeAttribute(locator, name)` checks that the attribute is
+absent. `I.grabValueFrom(locator)` returns an input's value, and
+`I.say(message)` logs a line to the console.
 
 ### Pacing clicks for manual runs
 
