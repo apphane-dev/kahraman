@@ -1,0 +1,18 @@
+{
+	"name": "kahraman",
+	"description": "kahraman's agent skill for Storybook interaction tests",
+	"owner": {
+		"name": "apphane",
+		"url": "https://apphane.dev/"
+	},
+	"plugins": [
+		{
+			"name": "kahraman-storybook-testing",
+			"source": "./skills/kahraman-storybook-testing",
+			"description": "Write, review, and debug Storybook interaction tests with kahraman's actor and accessibility-first locators.",
+			"homepage": "https://apphane.dev/",
+			"repository": "https://github.com/apphane-dev/kahraman",
+			"license": "MIT"
+		}
+	]
+}
