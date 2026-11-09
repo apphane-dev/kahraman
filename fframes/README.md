@@ -30,9 +30,9 @@ brand constants or generated soundtrack are needed.
 
 ## Build
 
-The checked-in backend targets Linux with Vulkan. Install `mise`, FFmpeg,
-`pkg-config`, `clang`, `nasm`, and the x264/x265/opus development libraries using
-your system package manager. Vulkan needs a working driver. Software Vulkan
+The checked-in backend targets Linux with Vulkan. Install `mise`, FFmpeg with
+the SVT-AV1 and x264 encoders, `pkg-config`, `clang`, `nasm`, and the
+x264/x265/opus development libraries using your system package manager. Vulkan needs a working driver. Software Vulkan
 can render but will be slower.
 
 From the repo root:
@@ -66,10 +66,18 @@ snapshot. The test task checks Rust formatting and Clippy, timeline pacing, ever
 six approved snapshots,
 and the absence of audio tracks in the source timeline.
 
-The render task writes `deliverables/kahraman-silent.mp4`, updates the README
-poster in `brand/`, and verifies the encoded stream, duration, dimensions, frame
-count, faststart, silence, and full-file decoding. The final encoded MP4 must
-have exactly one stream, the video. Reports and large renders stay out of Git.
+The render task writes the fframes master to `deliverables/master/` and updates
+the README poster in `brand/`. `scripts/web-video.sh` encodes the master into
+`deliverables/kahraman-silent.h264.mp4` and `deliverables/kahraman-silent.av1.mp4`.
+The task then checks each encode's codec, duration, dimensions, frame count,
+faststart, silence, and full-file decoding. Each must have exactly one stream,
+the video. `deliverables/verification.json` records their sizes and checksums.
+Reports and large renders stay out of Git.
+
+`scripts/web-video.sh` is an unmodified copy of the encoder from the
+[web-video skill](https://github.com/evilmartians/agent-skills/blob/b964cf1b164bd0a81019fb54fcb11a7dcec522d4/skills/web-video/SKILL.md).
+It reads the repository's `.web-video` defaults. The render passes `--av1-qp 38`
+because the default QP 45 smears blocks across the scene crossfades.
 
 Watch with the native fframes player:
 
