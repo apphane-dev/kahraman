@@ -1,5 +1,11 @@
 # kahraman
 
+## 0.4.1
+
+### Patch Changes
+
+- e37a036: Accept the `userEvent` imported from `storybook/test` in `I.init` under `exactOptionalPropertyTypes`. Its `type()` options are stricter than the `userEvent.setup()` instance's, so the context failed to typecheck.
+
 ## 0.4.0
 
 ### Minor Changes
