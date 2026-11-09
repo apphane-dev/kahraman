@@ -31,7 +31,7 @@ fn run() -> Result<ExitCode, Box<dyn std::error::Error>> {
     )
     .backend(backend)
     .preview(fframes_native_player::cli_preview)
-    .default_output("deliverables/kahraman-silent.mp4")
+    .default_output("deliverables/master/kahraman-silent.mp4")
     .run())
 }
 fn main() -> ExitCode {
