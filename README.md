@@ -452,6 +452,12 @@ GitHub CLI:
 gh skill install apphane-dev/kahraman kahraman-storybook-testing
 ```
 
+[APM](https://github.com/microsoft/apm):
+
+```sh
+apm install apphane-dev/kahraman --skill kahraman-storybook-testing
+```
+
 curl, no installer needed:
 
 ```sh
