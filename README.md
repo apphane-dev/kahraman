@@ -2,30 +2,34 @@
 
 ![kahraman. Test what users perceive.](./brand/banner.svg)
 
-**Accessibility-first, codecept-style test actor and locator DSL for Storybook
-portable stories and Vitest browser mode.**
+kahraman lets you write Storybook and Vitest browser tests as the steps a user
+takes: `I.click(button('Continue'))`, then `I.see(heading('Welcome, Ada'))`. It
+finds elements by role, accessible name, or visible text, so tests target what
+users perceive instead of markup details. When a step fails, the error shows
+the steps that led to it and points at the line in your story.
 
-`kahraman` gives you a small, declarative `I.see(...)` / `I.click(...)` actor
-built on Testing Library queries, plus a fluent locator DSL that biases every
-assertion toward roles, accessible names, and visible text. It runs inside a
-Storybook story `play` function or a Vitest browser test — anywhere you have a
-canvas and `userEvent`.
-
-Built and maintained by [apphane](https://apphane.dev/).
-
-## See it in motion
-
-https://github.com/user-attachments/assets/a7e5ee02-7ded-4aea-a8a7-1ff3ad713914
-
-[Watch or download the film](https://github.com/apphane-dev/kahraman/releases/download/media-2026-10-15/kahraman-silent.mp4),
-32 seconds, full HD, silent. Made with [fframes](./fframes/README.md).
-The reusable `I.` logo, colors, and typography are in [brand/](./brand/README.md).
+- **Accessible locators only.** `role()` and `text()`, plus `heading()`,
+  `button()`, and `link()` shorthands. There are no CSS selector or test ID
+  locators. If a test can't reach a control by role and name, neither can
+  assistive tech.
+- **CodeceptJS-style actor.** `I.see`, `I.fill`, `I.click`, `hopeThat`,
+  `retryTo`, and `tryTo` run inside a story's `play` function or a Vitest
+  browser test. There is no separate runner or browser driver.
+- **Readable failures.** The error ends with a `✔`/`✖` trace of actor steps, and
+  the stack starts at the story line that made the failing call.
+- **Steps in the Interactions panel.** Storybook shows each call as a
+  collapsible `I.click(button "Continue")` group, with no setup.
+- **Any renderer.** kahraman reads only `canvasElement` and `userEvent` from the
+  story context, so React, Vue, Svelte, and the other renderers work the same.
+- **Storybook 9, 10, and 11.** CI typechecks and tests against all three. No
+  runtime dependencies besides the `storybook` peer.
 
 ```ts
 import { createActor, button, heading, role } from 'kahraman'
 
 const I = createActor()
 
+// in a CSF Next story file that defines `meta`
 export const Default = meta.story()
 Default.test('signs the user in', async (context) => {
 	I.init(context)
@@ -35,40 +39,137 @@ Default.test('signs the user in', async (context) => {
 	await I.waitExit(role('status'))
 	await I.see(heading('Welcome, Ada'))
 })
+// If the welcome heading never renders, the test fails with:
+//
+// Unable to find an accessible element with the role "heading" and name "Welcome, Ada"
+// …
+// Actor steps (most recent last):
+//   ✔ I.see(heading "Sign in")
+//   ✔ I.fill(textbox "Email", "ada@example.com")
+//   ✔ I.click(button "Continue")
+//   ✔ I.waitExit(status)
+//   ✖ I.see(heading "Welcome, Ada")
 ```
 
-## Why accessibility-first
+https://github.com/user-attachments/assets/a7e5ee02-7ded-4aea-a8a7-1ff3ad713914
 
-Every locator resolves through Testing Library's accessibility tree — by role,
-accessible name, heading, link, button, or visible text — before you ever reach
-for a lower-level selector. Tests written this way assert what a user (and a
-screen reader) actually perceives, and they surface real accessibility gaps: if
-you can't target an element by its role or name, neither can assistive tech.
-`kahraman` deliberately keeps the public locator surface small so the path of
-least resistance is also the accessible one.
+[Download the film](https://github.com/apphane-dev/kahraman/releases/download/media-2026-10-15/kahraman-silent.mp4).
+Made with [fframes](./fframes/README.md). The `I.` logo, colors, and type are in
+[brand/](./brand/README.md).
 
-## Install
+Built and maintained by [apphane](https://apphane.dev/).
+
+---
+
+## Contents
+
+- [Getting started](#getting-started)
+  - [Plain Vitest browser mode](#plain-vitest-browser-mode)
+  - [Vendor the source with jsrepo](#vendor-the-source-with-jsrepo)
+- [Why kahraman](#why-kahraman)
+- [Locators](#locators)
+- [Actor methods](#actor-methods)
+- [Page actors](#page-actors)
+- [Storybook Interactions panel](#storybook-interactions-panel)
+- [Failure diagnostics](#failure-diagnostics)
+- [Consumer configuration](#consumer-configuration)
+- [AI agent skill](#ai-agent-skill)
+- [Development](#development)
+
+## Getting started
+
+You need a Storybook 9, 10, or 11 project, with any renderer, on Node.js 22.12
+or newer. For tests without stories, see
+[Plain Vitest browser mode](#plain-vitest-browser-mode).
+
+1. Install the package. `storybook` is a peer dependency, and a Storybook
+   project already has it.
+
+   ```sh
+   npm install --save-dev kahraman
+   # or: pnpm add -D kahraman
+   ```
+
+2. Add a story whose `play` function drives the component through an actor.
+   Swap `SignIn` and the locators for one of your components, and the type
+   import for your framework package.
+
+   ```ts
+   // SignIn.stories.ts
+   import type { Meta, StoryObj } from '@storybook/react-vite'
+   import { button, createActor, heading, role } from 'kahraman'
+
+   import { SignIn } from './SignIn'
+
+   const meta = { component: SignIn } satisfies Meta<typeof SignIn>
+   export default meta
+
+   const I = createActor()
+
+   export const SignsIn: StoryObj<typeof meta> = {
+   	play: async (context) => {
+   		I.init(context)
+   		await I.see(heading('Sign in'))
+   		await I.fill(role('textbox', 'Email'), 'ada@example.com')
+   		await I.click(button('Continue'))
+   	},
+   }
+   ```
+
+   `I.init(context)` must run before any other actor call. It connects the
+   actor to the story's canvas and `userEvent` and clears the step trace. With
+   CSF Next, call it the same way inside `.test(...)`, as in the example at the
+   top.
+
+3. Open the story in Storybook. The Interactions panel lists each `I.*` call as
+   a step. If you run stories as tests with Storybook's Vitest addon, the same
+   `play` function runs there.
+
+4. Optional: register the [diagnostics addon](#shorter-element-not-found-errors)
+   to cut Testing Library's element-not-found errors down to the role you
+   queried.
+
+kahraman ships ESM only.
+
+### Plain Vitest browser mode
+
+A [Vitest browser mode](https://vitest.dev/guide/browser/) test without stories
+passes its own container and a `userEvent.setup()` instance from
+`storybook/test`, the same kind a story context carries:
+
+```ts
+import { createActor, heading } from 'kahraman'
+import { userEvent } from 'storybook/test'
+import { test } from 'vitest'
+
+test('shows the dashboard', async () => {
+	const canvasElement = document.createElement('div')
+	document.body.append(canvasElement)
+	render(canvasElement) // mount your UI here
+
+	const I = createActor()
+	I.init({ canvasElement, userEvent: userEvent.setup() })
+	await I.see(heading('Dashboard'))
+})
+```
+
+Install `storybook` next to kahraman, because the actor's queries and
+assertions come from `storybook/test`. You don't need a `.storybook` config or a
+running Storybook:
 
 ```sh
-npm install --save-dev kahraman
-# or: pnpm add -D kahraman
+npm install --save-dev kahraman storybook
 ```
 
-`storybook` (which provides `storybook/test`, and with it Testing Library and
-`userEvent`) is a **peer dependency**. Storybook projects already have it;
-[plain Vitest](#plain-vitest-browser-mode) projects install it too. `kahraman` ships
-ESM only and is renderer-agnostic: it reads only `canvasElement` and `userEvent`
-from the story context, so it works with the React, Vue, and Svelte renderers
-alike.
+The `userEvent.setup()` instance keeps keyboard and pointer state between actor
+calls, so a key held with `I.press('{Shift>}')` is still held for the next
+`I.click(...)`. Passing `userEvent` itself also works, but each of its calls
+starts from fresh state.
 
-Supports Storybook 9, 10, and 11, including the Storybook 11 prerelease. Node.js
-22.12 or newer is required.
+### Vendor the source with jsrepo
 
-### Or vendor the source with jsrepo
-
-Prefer to own the code? `kahraman` is also published as a
-[jsrepo](https://jsrepo.dev) registry, so you can copy the source straight into
-your project and adapt it:
+kahraman is also a [jsrepo](https://jsrepo.dev) registry. To own the code,
+copy the source into your project and adapt it:
 
 ```sh
 # the actor + locator DSL
@@ -77,104 +178,43 @@ npx jsrepo add github/apphane-dev/kahraman/actor
 # the opt-in diagnostics preview annotation
 npx jsrepo add github/apphane-dev/kahraman/preview
 
-# include the unit tests / example page actor too
+# include the unit tests and the example page actor too
 npx jsrepo add --with test --with example github/apphane-dev/kahraman/actor
 ```
 
-The full source also lives in `src/` inside the published npm tarball, so it is
-available for reference even when you install the package normally.
+The npm tarball also contains the full source in `src/`, for reference.
 
-## AI agent skill
+## Why kahraman
 
-The repository includes
-[`kahraman-storybook-testing`](https://skills.sh/apphane-dev/kahraman/kahraman-storybook-testing),
-a portable Agent Skill for writing and reviewing these Storybook tests. Install
-it with [`skills`](https://skills.sh):
-
-```sh
-npx skills add apphane-dev/kahraman --skill kahraman-storybook-testing
-```
-
-Or install directly from a checked-out copy:
-
-```sh
-npx skills add . --skill kahraman-storybook-testing
-```
-
-The skill lives at
-[`skills/kahraman-storybook-testing/SKILL.md`](./skills/kahraman-storybook-testing/SKILL.md),
-so `npx skills add apphane-dev/kahraman --list` can discover it from the GitHub
-repository.
-
-### Reference application setups
-
-- [`apphane-dev/karkas/.storybook`](https://github.com/apphane-dev/karkas/tree/main/.storybook)
-  — application integration stories with MSW, routing, and viewport-aware
-  browser tests.
-- [`reatom/reatom/packages/admin/.storybook`](https://github.com/reatom/reatom/tree/main/packages/admin/.storybook)
-  — Reatom Admin's adapter, preview factory, test setup, viewports, and local
-  Storybook testing guide.
-
-These are examples rather than required infrastructure; adopt only the parts
-supported by your project's Storybook setup.
-
-## Usage
-
-### Create and initialize an actor
+Here is the start of the Getting started test written against `storybook/test`
+directly:
 
 ```ts
-import { createActor } from 'kahraman'
-
-const I = createActor()
-// Inside a story play / test, before any actor call:
-I.init(context) // context: the Storybook StoryContext (any renderer)
+play: async ({ canvas, userEvent }) => {
+	await expect(canvas.getByRole('heading', { name: 'Sign in' })).toBeInTheDocument()
+	await userEvent.type(canvas.getByRole('textbox', { name: 'Email' }), 'ada@example.com')
+	await userEvent.click(canvas.getByRole('button', { name: 'Continue' }))
+}
 ```
 
-`createActor()` returns a fresh actor with its own step trace. Call
-`I.init(context)` first — it wires up the canvas and resets the trace.
+The kahraman version differs in what happens around each line:
 
-To make clicks easier to follow when manually playing a story, configure an
-explicit delay. The default is `0`, so automated tests are not slowed down:
+- `I.fill` replaces the field's value, waits until the input holds it, and tabs
+  out. `userEvent.type` appends to whatever the field already contains.
+- The Interactions panel shows `I.fill(textbox "Email", "ada@example.com")`
+  instead of the raw query, event, and `expect` calls.
+- A failure carries the step trace from the top of this README.
 
-```ts
-const I = createActor({
-	clickDelay: navigator.webdriver ? 0 : 500,
-})
-```
+With plain `storybook/test` you can still reach for `getByTestId` or
+`querySelector`. kahraman's locators stop at roles, accessible names, and
+visible text, so the easiest locator to write is also the accessible one.
 
-Keeping the environment check in the consumer makes the pacing policy visible
-and lets each Storybook choose how it distinguishes manual and automated runs.
+---
 
-### Plain Vitest browser mode
+## Locators
 
-Tests without stories pass their own container and a `userEvent.setup()`
-instance from `storybook/test`, the same kind a story context carries:
-
-```ts
-import { createActor } from 'kahraman'
-import { userEvent } from 'storybook/test'
-
-const canvasElement = document.createElement('div')
-document.body.append(canvasElement)
-render(canvasElement) // mount your UI here
-
-const I = createActor()
-I.init({ canvasElement, userEvent: userEvent.setup() })
-```
-
-The instance keeps keyboard and pointer state between actor calls, so a key
-held with `I.press('{Shift>}')` is still held for the next `I.click(...)`.
-Passing `userEvent` itself also works, but each of its calls starts from fresh
-state.
-
-You still install `storybook`, because the actor's queries and assertions come
-from `storybook/test`. You don't need a `.storybook` config or a running
-Storybook.
-
-### Locators
-
-Build locators with `role`, `text`, and the `heading` / `button` / `link`
-shorthands, then refine them fluently:
+Build locators with `role` and `text`, or the `heading`, `button`, and `link`
+shorthands, then refine them:
 
 ```ts
 import { role, text, heading, button, link } from 'kahraman'
@@ -199,10 +239,10 @@ role('alert').maybe() // queryBy* (nullable)
 | `.within(s)` | scope to `s`        | same variant, scoped |
 | `.options()` | merge query options | same variant         |
 
-`.within(scope)` accepts a locator, an `HTMLElement`, or `'global'` (the whole
-document body).
+`.within(scope)` accepts a locator, an `HTMLElement`, or `'global'` for the
+whole document body.
 
-### Actor methods
+## Actor methods
 
 ```ts
 // Assertions
@@ -237,15 +277,33 @@ if (await I.tryTo(() => I.see(role('dialog')))) {
 	/* optional */
 }
 
-// Soft assertions — collect failures, report all at once
+// Soft assertions: collect failures, report them all at once
 await I.hopeThat(() => I.see(heading('A')))
 await I.hopeThat(() => I.see(heading('B')))
 I.hopeThat.noErrors() // throws an AggregateError if any failed
 ```
 
-### Extending with page actors
+`dontSeeInField`, `dontSeeChecked`, `dontSeeDisabled`, and `dontSeeAttribute`
+negate their `see*` counterparts. `I.grabValueFrom(locator)` returns an input's
+value, and `I.say(message)` logs a line to the console.
 
-Keep reusable, page-level expectations out of your stories with `I.extend(...)`:
+### Pacing clicks for manual runs
+
+To make clicks easier to follow when you play a story by hand, set a delay
+before each click. The default is `0`, so automated tests don't slow down:
+
+```ts
+const I = createActor({
+	clickDelay: navigator.webdriver ? 0 : 500,
+})
+```
+
+The environment check lives in your code, so each Storybook decides how it
+tells manual runs from automated ones.
+
+## Page actors
+
+Move reusable, page-level expectations out of your stories with `I.extend(...)`:
 
 ```ts
 import { button, heading, role, text, type BaseActor } from 'kahraman'
@@ -266,18 +324,14 @@ const I = createActor().extend(withPageError({ title: 'Something went wrong' }))
 // ...later: await I.seeError()
 ```
 
-See [`examples/pageActor.ts`](./examples/pageActor.ts) for a fuller illustration.
-
-For a real-world app that exercises `kahraman` in its Storybook stories, see
-[`apphane-dev/karkas`](https://github.com/apphane-dev/karkas).
+[`examples/pageActor.ts`](./examples/pageActor.ts) has a fuller example.
 
 ## Storybook Interactions panel
 
-When the story context provides `context.step` (every Storybook story context
-does, including the one loaders receive), each actor call is automatically
-reported as a labeled step. The Interactions panel then reads exactly like your
-test source — collapsible, codecept-style groups instead of raw
-Testing-Library calls:
+When the story context provides `context.step`, kahraman reports each actor
+call as a labeled step. Every Storybook story context has it, including the one
+loaders receive. The Interactions panel then reads like your test source, with
+collapsible step groups in place of raw Testing Library calls:
 
 ```text
 ▶ I.seeDetailError()
@@ -289,32 +343,31 @@ Testing-Library calls:
 ▶ I.seeArticleDetail("Quarterly report")
 ```
 
-Page-actor methods created with `I.extend(...)` are steps too, with the base
-calls they make nested one level deeper — both in the panel and in the failure
-step trace. Because the tracker is async, extension methods always return a
-`Promise`; declare them `async` (page actors in practice already are).
+Page-actor methods created with `I.extend(...)` are steps too. The base calls
+they make nest one level deeper, both in the panel and in the failure step
+trace. Because the tracker is async, extension methods always return a
+`Promise`, so declare them `async`.
 
-No setup is needed; outside Storybook (portable stories, plain Vitest) the
-actor detects the missing `step` and behaves as before.
+No setup is needed. Outside Storybook, in portable stories and plain Vitest,
+the context has no `step` and the actor skips step reporting.
 
 ## Failure diagnostics
 
-When an actor call fails, `kahraman` augments the error to make the failure
-readable:
+When an actor call fails, kahraman adds two things to the error:
 
-- **Step trace** — the message ends with every actor call that ran, `✔`/`✖`,
-  with locator labels (e.g. `✖ I.see(heading "Welcome")`).
-- **Retargeted stack** — the code frame points at _your_ story / page-actor call
-  site, not `kahraman`'s internals. Internal frames are detected relative to the
-  package's own module URL, so this works whether kahraman is installed or
-  vendored.
+- **Step trace.** The message ends with the last 15 actor calls, marked `✔` or
+  `✖`, with locator labels such as `✖ I.see(heading "Welcome")`.
+- **Retargeted stack.** The stack starts at _your_ story or page-actor call
+  site. kahraman finds its own frames relative to its module URL, so this works
+  whether you install or vendor it.
 
-### Opt-in: tame element-not-found output (`kahraman/preview`)
+### Shorter element-not-found errors
 
-Testing Library's `getByRole` misses dump a listing of _every_ accessible role
-on the page — hundreds of lines on a full app mount. The `kahraman/preview`
-annotation filters that to just the queried role's near-misses and caps the DOM
-dump. For CSF Next, register the addon factory in your Storybook preview:
+A `getByRole` miss in Testing Library lists _every_ accessible role on the
+page, which runs to hundreds of lines on a full app mount. The diagnostics
+addon cuts that to the queried role's near-misses and caps the DOM dump.
+
+With CSF Next, register the addon factory in your Storybook preview:
 
 ```ts
 // .storybook/preview.ts
@@ -327,11 +380,10 @@ export default definePreview({
 })
 ```
 
-Calling `kahraman()` opts into diagnostics and types `parameters.kahraman`.
-The named actor and locator exports work without registering the addon.
+Calling `kahraman()` turns on diagnostics and types `parameters.kahraman`. The
+actor and locator exports work without the addon.
 
-For an object-style preview, the existing `kahraman/preview` annotation still
-works:
+With an object-style preview, spread the `kahraman/preview` annotation:
 
 ```ts
 // .storybook/preview.ts
@@ -343,7 +395,7 @@ export default {
 }
 ```
 
-Tune or opt out per story via parameters:
+Tune or opt out per story with parameters:
 
 ```ts
 parameters: {
@@ -355,43 +407,65 @@ parameters: {
 }
 ```
 
-Outside Storybook you can wire it up imperatively with
-`configureDiagnostics()` from `kahraman/preview`.
+Outside Storybook, call `configureDiagnostics()` from `kahraman/preview`.
 
 ## Consumer configuration
 
-Two behaviors are controlled by _your_ Vitest/Storybook setup, not by the
-package:
+Your Vitest or Storybook setup, not the package, controls two behaviors:
 
-- **`VITE_TEST_STEPS`** — set `VITE_TEST_STEPS=true` (a Vite/Vitest env var) to
-  log each actor step live as it runs, like `codeceptjs run --steps`. `kahraman`
-  reads it defensively; when unset (or under plain Node), logging is off.
-- **`screenshotFailures`** — failure screenshots are a
-  [Vitest browser mode](https://vitest.dev/guide/browser/) feature. Configure
-  `test.browser.screenshotFailures` in your own Vitest config to write a
-  screenshot next to the story on failure.
+- **`VITE_TEST_STEPS`.** Set `VITE_TEST_STEPS=true`, a Vite/Vitest env var, to
+  log each actor step as it runs, like `codeceptjs run --steps`. When it is
+  unset, or under plain Node, logging is off.
+- **`screenshotFailures`.** Failure screenshots are a
+  [Vitest browser mode](https://vitest.dev/guide/browser/) feature. Set
+  `test.browser.screenshotFailures` in your Vitest config to write a screenshot
+  next to the story on failure.
 
-## Testing the pure helpers
+## AI agent skill
 
-`kahraman`'s own test suite unit-tests the **Storybook-free** logic:
-locator label construction, step-label formatting, role-listing filtering,
-message capping, and stack-frame retargeting. It also checks CSF Next addon
-composition and diagnostics configuration against the real Storybook APIs. CI
-checks compatibility with Storybook 9, 10, and 11. The full actor behavior
-requires a real Storybook browser context and is exercised by consumers'
-stories. That boundary is intentional. The DOM-touching code in `actor.ts` and
-`preview.ts` runs in the browser; the configuration tests do not render a story
-or query the DOM.
+The repository ships
+[`kahraman-storybook-testing`](https://skills.sh/apphane-dev/kahraman/kahraman-storybook-testing),
+an Agent Skill for writing and reviewing these Storybook tests. Install it with
+[`skills`](https://skills.sh):
+
+```sh
+npx skills add apphane-dev/kahraman --skill kahraman-storybook-testing
+```
+
+From a local checkout:
+
+```sh
+npx skills add . --skill kahraman-storybook-testing
+```
+
+The skill lives at
+[`skills/kahraman-storybook-testing/SKILL.md`](./skills/kahraman-storybook-testing/SKILL.md),
+so `npx skills add apphane-dev/kahraman --list` finds it in the GitHub
+repository.
+
+### Real-world setups
+
+- [`apphane-dev/karkas/.storybook`](https://github.com/apphane-dev/karkas/tree/main/.storybook):
+  application integration stories with MSW, routing, and viewport-aware browser
+  tests.
+- [`reatom/reatom/packages/admin/.storybook`](https://github.com/reatom/reatom/tree/main/packages/admin/.storybook):
+  Reatom Admin's adapter, preview factory, test setup, viewports, and local
+  Storybook testing guide.
+
+These are examples, not required infrastructure. Adopt only the parts your
+Storybook setup supports.
+
+---
 
 ## Development
 
-Development uses Storybook 11 alpha, pinned in `pnpm-lock.yaml`. There is no
-local Storybook instance in this repository. Use Node.js 22.18+ or 24.11+ to run
-the development toolchain, which has a higher minimum than the published package.
+Development uses Storybook 11 alpha, pinned in `pnpm-lock.yaml`. The repository
+has no local Storybook instance. The development toolchain needs Node.js 22.18+
+or 24.11+, a higher minimum than the published package.
 
-This repo uses the [Vite+](https://viteplus.dev/) / Oxc toolchain. The plain
-`pnpm` commands below remain the contributor path. If you use [mise](https://mise.jdx.dev/),
-the common workflows are also available as `mise run prepare`, `mise run dev`,
+The repo uses the [Vite+](https://viteplus.dev/) / Oxc toolchain. The `pnpm`
+commands below are the contributor path. With [mise](https://mise.jdx.dev/),
+the common workflows are also `mise run prepare`, `mise run dev`,
 `mise run check`, and `mise run ci`.
 
 | Task       | Command            | Tool                                   |
@@ -404,36 +478,47 @@ the common workflows are also available as `mise run prepare`, `mise run dev`,
 | Build      | `pnpm build`       | tsdown (Rolldown) → ESM + `.d.ts`      |
 | Everything | `pnpm check`       | typecheck + lint + fallow + fmt + test |
 
-Formatter and linter configuration lives in the `fmt` / `lint` blocks of
-`vite.config.ts` (the Vite+ convention), not in separate `.oxfmtrc.json` /
-`.oxlintrc.json` files. Notable engineering decisions are recorded under
-[`docs/decisions/`](./docs/decisions) — e.g. why type-aware linting is off by
+Formatter and linter configuration lives in the `fmt` and `lint` blocks of
+`vite.config.ts`, the Vite+ convention. [`docs/decisions/`](./docs/decisions)
+records notable engineering decisions, such as why type-aware linting is off by
 default ([0001](./docs/decisions/0001-type-aware-linting.md)).
 
-Node, pnpm, and the git-hook runner are pinned with
-[mise](https://mise.jdx.dev/) (`mise install`). Git hooks run through
-[hk](https://hk.jdx.dev/) — configured in `hk.pkl`, install them once with
-`hk install` (pre-commit: format + lint + typecheck + hygiene; pre-push adds
-fallow).
+mise pins Node, pnpm, and the git-hook runner (`mise install`). Git hooks run
+through [hk](https://hk.jdx.dev/), configured in `hk.pkl`. Install them once
+with `hk install`. Pre-commit runs format, lint, typecheck, and hygiene checks;
+pre-push adds fallow.
 
-Publish quality is gated by `publint` and
+`publint` and
 [`@arethetypeswrong/cli`](https://github.com/arethetypeswrong/arethetypeswrong.github.io)
-against the packed tarball, releases run through
-[Changesets](https://github.com/changesets/changesets), and every commit gets an
-installable preview via [pkg.pr.new](https://pkg.pr.new).
+check the packed tarball. [Changesets](https://github.com/changesets/changesets)
+drives releases, and [pkg.pr.new](https://pkg.pr.new) publishes an installable
+preview of every commit.
+
+### Testing the pure helpers
+
+kahraman's own suite unit-tests the Storybook-free logic: locator labels,
+step-label formatting, role-listing filtering, message capping, and stack-frame
+retargeting. It also checks CSF Next addon composition and diagnostics
+configuration against the real Storybook APIs, and CI runs it against
+Storybook 9, 10, and 11.
+
+The full actor behavior needs a real Storybook browser context, so consumers'
+stories exercise it. That boundary is intentional. The DOM-touching code in
+`actor.ts` and `preview.ts` runs in the browser, and the configuration tests
+neither render a story nor query the DOM.
 
 ## Acknowledgements
 
-kahraman stands on prior art:
+kahraman builds on prior art:
 
-- **[CodeceptJS](https://codecept.io)** (MIT) — the actor DSL is modelled on its
+- **[CodeceptJS](https://codecept.io)** (MIT). The actor DSL follows its
   `I.see(...)` / `I.click(...)` / `hopeThat` / `retryTo` / `tryTo` style. The
-  concepts and API shape are borrowed; the implementation here is original (no
-  CodeceptJS code is used or redistributed).
-- **[Testing Library](https://testing-library.com)** — every locator resolves
+  concepts and API shape are borrowed; the implementation is original, and no
+  CodeceptJS code is used or redistributed.
+- **[Testing Library](https://testing-library.com).** Every locator resolves
   through its accessibility-first queries.
-- **[Storybook](https://storybook.js.org)** — the actor runs against the
-  `storybook/test` runtime (portable stories, Vitest browser mode).
+- **[Storybook](https://storybook.js.org).** The actor runs against the
+  `storybook/test` runtime in portable stories and Vitest browser mode.
 
 ## License
 
