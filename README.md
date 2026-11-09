@@ -50,9 +50,9 @@ Default.test('signs the user in', async (context) => {
 //   ✖ I.see(heading "Welcome, Ada")
 ```
 
-https://github.com/user-attachments/assets/a7e5ee02-7ded-4aea-a8a7-1ff3ad713914
+https://github.com/user-attachments/assets/1af273a1-0e68-4671-be60-81f64f301886
 
-[Download the film](https://github.com/apphane-dev/kahraman/releases/download/media-2026-10-15/kahraman-silent.mp4).
+[Download the film](https://github.com/user-attachments/assets/1af273a1-0e68-4671-be60-81f64f301886).
 Made with [fframes](./fframes/README.md). The `I.` logo, colors, and type are in
 [brand/](./brand/README.md).
 

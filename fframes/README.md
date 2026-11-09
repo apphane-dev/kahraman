@@ -1,11 +1,12 @@
 # kahraman, test what users perceive
 
 A 32-second, 1920 x 1080, 30 fps film made with fframes 1.2.0. No soundtrack,
-narration, or audio stream. The published MP4 is H.264, yuv420p, with faststart.
+narration, or audio stream. The published MP4 is the render's H.264 web
+encode, with faststart.
 
-https://github.com/user-attachments/assets/a7e5ee02-7ded-4aea-a8a7-1ff3ad713914
+https://github.com/user-attachments/assets/1af273a1-0e68-4671-be60-81f64f301886
 
-[Download the film](https://github.com/apphane-dev/kahraman/releases/download/media-2026-10-15/kahraman-silent.mp4)
+[Download the film](https://github.com/user-attachments/assets/1af273a1-0e68-4671-be60-81f64f301886)
 
 ## What changed
 
@@ -95,23 +96,28 @@ FFRAMES_UPDATE_SNAPSHOTS=1 mise exec -- cargo test --release --locked
 
 ## Publish media
 
+The README plays and links `deliverables/kahraman-silent.h264.mp4` as a GitHub
+user attachment. Only a bare `https://github.com/user-attachments/assets/...`
+URL in its own paragraph becomes GitHub's inline player. GitHub strips
+`<source>`, `autoplay`, `loop`, and `poster` from README HTML, so the AV1 encode
+has no place there. Keep rendered MP4s outside Git.
+
+Upload from `fframes/` after review:
+
+```sh
+repo_id=$(gh api repos/apphane-dev/kahraman --jq .id)
+gh api --method POST -H 'Content-Type: video/mp4' \
+  "https://uploads.github.com/user-attachments/assets?name=kahraman-silent.h264.mp4&content_type=video/mp4&repository_id=$repo_id" \
+  --input deliverables/kahraman-silent.h264.mp4 --jq .url
+```
+
+Put the returned URL in both READMEs, and record it with the checksum from
+`deliverables/verification.json` in `published.json`. The brand CI test rejects
+a README that loses the bare attachment URL. A fresh attachment can answer 404
+to signed-out requests, so check the URL logged out once the README lands on
+`main`.
+
 Media releases use a `media-YYYY-MM-DD` tag, are marked prerelease, and are never
-GitHub's latest package release. They do not change the npm version or trigger
-the branch-based npm publishing workflow themselves.
-
-After review, commit and push the source. Create a media release targeting that
-commit and attach `kahraman-silent.mp4`, the review strip, verification report,
-and a ZIP of the exported brand assets. Update the README's release links
-when publishing a later film. Keep the rendered MP4 outside Git.
-
-For the README player, upload the MP4 as a GitHub user attachment and place the
-returned `https://github.com/user-attachments/assets/...` URL in its own paragraph.
-A release download link or a linked poster does not create GitHub's inline
-player. Keep the release link as a separate download fallback.
-
-The installed GitHub CLI's attachment uploader uses
-`POST https://uploads.github.com/user-attachments/assets` with `name`,
-`content_type`, and `repository_id` query parameters, a binary request body, and
-GitHub authentication. Its JSON response contains the attachment `url`. Record
-that URL and the video's checksum in `published.json`. The brand CI test rejects
-a README that loses the bare attachment URL.
+GitHub's latest package release. They hold the review strip, verification
+report, and a ZIP of the exported brand assets. They do not change the npm
+version or trigger the branch-based npm publishing workflow themselves.
